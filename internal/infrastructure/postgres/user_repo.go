@@ -1,0 +1,386 @@
+package postgres
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+
+	"github.com/k4sper1love/buskr/internal/domain/user"
+)
+
+type UserRepository struct {
+	db *sql.DB
+}
+
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
+func (r *UserRepository) Create(ctx context.Context, u *user.User) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	queryUser := `
+		INSERT INTO users (id, telegram_id, username, name, role, status, noise_level, karma, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+	`
+
+	var username sql.NullString
+	if u.Username != "" {
+		username = sql.NullString{String: u.Username, Valid: true}
+	} else {
+		username = sql.NullString{Valid: false}
+	}
+
+	_, err = tx.ExecContext(ctx, queryUser,
+		u.ID,
+		u.TelegramID,
+		username,
+		u.Name,
+		string(u.Role),
+		string(u.Status),
+		string(u.NoiseLevel),
+		u.Karma,
+		u.CreatedAt,
+		u.UpdatedAt,
+	)
+	if err != nil {
+		return err
+	}
+
+	queryStats := `
+		INSERT INTO user_stats (user_id, total_bookings, successful_checkins, no_shows)
+		VALUES ($1, 0, 0, 0)
+	`
+
+	_, err = tx.ExecContext(ctx, queryStats, u.ID)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (r *UserRepository) GetByID(ctx context.Context, id string) (*user.User, error) {
+	query := `
+		SELECT id, telegram_id, username, name, role, status, noise_level, karma, created_at, updated_at
+		FROM users
+		WHERE id = $1
+	`
+
+	var u user.User
+	var role, status, noiseLevel string
+	var username sql.NullString
+
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&u.ID,
+		&u.TelegramID,
+		&username,
+		&u.Name,
+		&role,
+		&status,
+		&noiseLevel,
+		&u.Karma,
+		&u.CreatedAt,
+		&u.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, user.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	if username.Valid {
+		u.Username = username.String
+	}
+	u.Role = user.Role(role)
+	u.Status = user.Status(status)
+	u.NoiseLevel = user.NoiseLevel(noiseLevel)
+
+	return &u, nil
+}
+
+func (r *UserRepository) GetByTelegramID(ctx context.Context, telegramID int64) (*user.User, error) {
+	query := `
+		SELECT id, telegram_id, username, name, role, status, noise_level, karma, created_at, updated_at
+		FROM users
+		WHERE telegram_id = $1
+	`
+
+	var u user.User
+	var role, status, noiseLevel string
+	var username sql.NullString
+
+	err := r.db.QueryRowContext(ctx, query, telegramID).Scan(
+		&u.ID,
+		&u.TelegramID,
+		&username,
+		&u.Name,
+		&role,
+		&status,
+		&noiseLevel,
+		&u.Karma,
+		&u.CreatedAt,
+		&u.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, user.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	if username.Valid {
+		u.Username = username.String
+	}
+	u.Role = user.Role(role)
+	u.Status = user.Status(status)
+	u.NoiseLevel = user.NoiseLevel(noiseLevel)
+
+	return &u, nil
+}
+
+func (r *UserRepository) Update(ctx context.Context, u *user.User) error {
+	query := `
+		UPDATE users
+		SET username = $1, name = $2, role = $3, status = $4, noise_level = $5, karma = $6, updated_at = $7
+		WHERE id = $8
+	`
+
+	var username sql.NullString
+	if u.Username != "" {
+		username = sql.NullString{String: u.Username, Valid: true}
+	} else {
+		username = sql.NullString{Valid: false}
+	}
+
+	res, err := r.db.ExecContext(ctx, query,
+		username,
+		u.Name,
+		string(u.Role),
+		string(u.Status),
+		string(u.NoiseLevel),
+		u.Karma,
+		u.UpdatedAt,
+		u.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return user.ErrUserNotFound
+	}
+
+	return nil
+}
+
+func (r *UserRepository) GetStats(ctx context.Context, userID string) (*user.UserStats, error) {
+	query := `
+		SELECT user_id, total_bookings, successful_checkins, no_shows
+		FROM user_stats
+		WHERE user_id = $1
+	`
+
+	var stats user.UserStats
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(
+		&stats.UserID,
+		&stats.TotalBookings,
+		&stats.SuccessfulCheckins,
+		&stats.NoShows,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// stats should always exist, but if not, return empty rather than crashing
+			return &user.UserStats{UserID: userID}, nil
+		}
+		return nil, err
+	}
+
+	return &stats, nil
+}
+
+func (r *UserRepository) UpdateStats(ctx context.Context, stats *user.UserStats) error {
+	query := `
+		UPDATE user_stats
+		SET total_bookings = $1, successful_checkins = $2, no_shows = $3
+		WHERE user_id = $4
+	`
+
+	res, err := r.db.ExecContext(ctx, query,
+		stats.TotalBookings,
+		stats.SuccessfulCheckins,
+		stats.NoShows,
+		stats.UserID,
+	)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		// if update fails because row doesn't exist, try to insert it (fallback)
+		insertQuery := `
+			INSERT INTO user_stats (user_id, total_bookings, successful_checkins, no_shows)
+			VALUES ($1, $2, $3, $4)
+		`
+		_, err = r.db.ExecContext(ctx, insertQuery, stats.UserID, stats.TotalBookings, stats.SuccessfulCheckins, stats.NoShows)
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepository) CreateInvite(ctx context.Context, invite *user.Invite) error {
+	query := `
+		INSERT INTO invites (id, token, noise_level, is_used, created_at, expires_at)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`
+
+	_, err := r.db.ExecContext(ctx, query,
+		invite.ID,
+		invite.Token,
+		string(invite.NoiseLevel),
+		invite.IsUsed,
+		invite.CreatedAt,
+		invite.ExpiresAt,
+	)
+
+	return err
+}
+
+func (r *UserRepository) GetInviteByToken(ctx context.Context, token string) (*user.Invite, error) {
+	query := `
+		SELECT id, token, noise_level, is_used, created_at, expires_at
+		FROM invites
+		WHERE token = $1
+	`
+
+	var inv user.Invite
+	var noise string
+
+	err := r.db.QueryRowContext(ctx, query, token).Scan(
+		&inv.ID,
+		&inv.Token,
+		&noise,
+		&inv.IsUsed,
+		&inv.CreatedAt,
+		&inv.ExpiresAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, user.ErrInviteNotFound
+		}
+		return nil, err
+	}
+
+	inv.NoiseLevel = user.NoiseLevel(noise)
+	return &inv, nil
+}
+
+func (r *UserRepository) UpdateInvite(ctx context.Context, invite *user.Invite) error {
+	query := `
+		UPDATE invites
+		SET is_used = $1
+		WHERE id = $2
+	`
+
+	_, err := r.db.ExecContext(ctx, query, invite.IsUsed, invite.ID)
+	return err
+}
+
+func (r *UserRepository) GetActiveUsers(ctx context.Context) ([]*user.User, error) {
+	query := `
+		SELECT id, telegram_id, role, status, noise_level, created_at, updated_at, username
+		FROM users
+		WHERE status = 'active'
+	`
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*user.User
+	for rows.Next() {
+		var u user.User
+		var role, status, noiseLevel string
+		var username sql.NullString
+
+		err := rows.Scan(
+			&u.ID,
+			&u.TelegramID,
+			&role,
+			&status,
+			&noiseLevel,
+			&u.CreatedAt,
+			&u.UpdatedAt,
+			&username,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		u.Role = user.Role(role)
+		u.Status = user.Status(status)
+		u.NoiseLevel = user.NoiseLevel(noiseLevel)
+		if username.Valid {
+			u.Username = username.String
+		}
+
+		users = append(users, &u)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*user.User, error) {
+	query := `
+        SELECT id, telegram_id, username, name, role, status, noise_level, karma, created_at, updated_at
+        FROM users
+        WHERE username = $1
+    `
+
+	var u user.User
+	var role, status, noiseLevel string
+	var uname sql.NullString
+
+	err := r.db.QueryRowContext(ctx, query, username).Scan(
+		&u.ID, &u.TelegramID, &uname, &u.Name, &role, &status, &noiseLevel, &u.Karma, &u.CreatedAt, &u.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, user.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	if uname.Valid {
+		u.Username = uname.String
+	}
+	u.Role = user.Role(role)
+	u.Status = user.Status(status)
+	u.NoiseLevel = user.NoiseLevel(noiseLevel)
+
+	return &u, nil
+}
