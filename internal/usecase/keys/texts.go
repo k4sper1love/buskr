@@ -1,0 +1,150 @@
+package keys
+
+// common
+const (
+	TextCommonErrGeneral      = "common.err.general"
+	TextCommonBtnBack         = "common.btn.back"
+	TextCommonBtnMenu         = "common.btn.menu"
+	TextCommonBtnCancel       = "common.btn.cancel"
+	TextCommonLblNoiseLight   = "common.lbl.noise_light"
+	TextCommonLblNoiseMedium  = "common.lbl.noise_medium"
+	TextCommonLblNoiseHard    = "common.lbl.noise_hard"
+	TextCommonLblNoiseNone    = "common.lbl.noise_none"
+	TextCommonLblRoleMusician = "common.lbl.role_musician"
+	TextCommonLblRoleAdmin    = "common.lbl.role_admin"
+)
+
+// auth
+const (
+	TextAuthGuestTitle        = "auth.guest.title"
+	TextAuthGuestBtnApply     = "auth.guest.btn_apply"
+	TextAuthPendingTitle      = "auth.pending.title"
+	TextAuthBannedTitle       = "auth.banned.title"
+	TextAuthActiveTitle       = "auth.active.title"
+	TextAuthActiveBtnBook     = "auth.active.btn_book"
+	TextAuthActiveBtnBookings = "auth.active.btn_bookings"
+	TextAuthActiveBtnProfile  = "auth.active.btn_profile"
+	TextAuthActiveBtnAdmin    = "auth.active.btn_admin"
+	TextAuthInvitedPromptName = "auth.invited.prompt_name"
+)
+
+// onboarding
+const (
+	TextOnboardStep1PromptName   = "onboard.step1.prompt_name"
+	TextOnboardStep2PromptFormat = "onboard.step2.prompt_format"
+	TextOnboardStep3PromptMedia  = "onboard.step3.prompt_media"
+	TextOnboardBtnSolo           = "onboard.btn_solo"
+	TextOnboardBtnGroup          = "onboard.btn_group"
+	TextOnboardMsgSuccess        = "onboard.msg_success"
+	TextOnboardMsgErr            = "onboard.msg_err"
+)
+
+// admin
+const (
+	// Panel
+	TextAdminPanelTitle      = "admin.panel.title"
+	TextAdminPanelBtnInvites = "admin.panel.btn_invites"
+	TextAdminPanelBtnLocs    = "admin.panel.btn_locs"
+	TextAdminPanelBtnUsers   = "admin.panel.btn_users"
+
+	// Invites
+	TextAdminInvTitle   = "admin.inv.title"
+	TextAdminInvCreated = "admin.inv.created"
+
+	// Moderation
+	TextAdminModBtnApprove    = "admin.mod.btn_approve"
+	TextAdminModBtnReject     = "admin.mod.btn_reject"
+	TextAdminModAppTitle      = "admin.mod.app_title"
+	TextAdminModAppLink       = "admin.mod.app_link"
+	TextAdminModNoiseTitle    = "admin.mod.noise_title"
+	TextAdminModMsgApprSfx    = "admin.mod.msg_appr_sfx"
+	TextAdminModMsgApprCb     = "admin.mod.msg_appr_cb"
+	TextAdminModMsgApprNotify = "admin.mod.msg_appr_notify"
+	TextAdminModMsgRejSfx     = "admin.mod.msg_rej_sfx"
+	TextAdminModMsgRejCb      = "admin.mod.msg_rej_cb"
+	TextAdminModMsgRejNotify  = "admin.mod.msg_rej_notify"
+	TextAdminModMsgUpgSfx     = "admin.mod.msg_upg_sfx"
+	TextAdminModMsgUpgCb      = "admin.mod.msg_upg_cb"
+	TextAdminModMsgUpgNotify  = "admin.mod.msg_upg_notify"
+
+	// Locations
+	TextAdminLocsTitle         = "admin.locs.title"
+	TextAdminLocsBtnAdd        = "admin.locs.btn_add"
+	TextAdminLocsAddStep1      = "admin.locs.add_step1"
+	TextAdminLocsAddStep2      = "admin.locs.add_step2"
+	TextAdminLocsAddStep3      = "admin.locs.add_step3"
+	TextAdminLocsAddStep4      = "admin.locs.add_step4"
+	TextAdminLocsMsgAddSuccess = "admin.locs.msg_add_success"
+	TextAdminLocsMsgAddErr     = "admin.locs.msg_add_err"
+	TextAdminLocsMsgCancel     = "admin.locs.msg_cancel"
+	TextAdminLocsMsgNotFound   = "admin.locs.msg_not_found"
+	TextAdminLocsBtnList       = "admin.locs.btn_list"
+	TextAdminLocsDetails       = "admin.locs.details"
+	TextAdminLocsBtnEnable     = "admin.locs.btn_enable"
+	TextAdminLocsBtnDisable    = "admin.locs.btn_disable"
+
+	// Users
+	TextAdminUsersPromptSearch    = "admin.users.prompt_search"
+	TextAdminUsersMsgInvalid      = "admin.users.msg_invalid"
+	TextAdminUsersMsgNotFound     = "admin.users.msg_not_found"
+	TextAdminUsersSearchResult    = "admin.users.search_result"
+	TextAdminUsersBtnBan          = "admin.users.btn_ban"
+	TextAdminUsersBtnUnban        = "admin.users.btn_unban"
+	TextAdminUsersMsgIsAdmin      = "admin.users.msg_is_admin"
+	TextAdminUsersMsgBanSuccess   = "admin.users.msg_ban_success"
+	TextAdminUsersMsgUnbanSuccess = "admin.users.msg_unban_success"
+)
+
+// profile
+const (
+	TextProfileMainTitle          = "profile.main.title"
+	TextProfileMainLblKarmaGood   = "profile.main.lbl_karma_good"
+	TextProfileMainLblKarmaBad    = "profile.main.lbl_karma_bad"
+	TextProfileMainBtnEditName    = "profile.main.btn_edit_name"
+	TextProfileMainBtnUpgNoise    = "profile.main.btn_upg_noise"
+	TextProfileEditNamePrompt     = "profile.edit_name.prompt"
+	TextProfileEditNameMsgSuccess = "profile.edit_name.msg_success"
+	TextProfileEditNameMsgErr     = "profile.edit_name.msg_err"
+	TextProfileUpgMsgSuccess      = "profile.upg.msg_success"
+)
+
+// booking
+const (
+	// create flow
+	TextBookCreatePromptDate   = "book.create.prompt_date"
+	TextBookCreateLblToday     = "book.create.lbl_today"
+	TextBookCreateLblTomorrow  = "book.create.lbl_tomorrow"
+	TextBookCreateLblOther     = "book.create.lbl_other"
+	TextBookCreateMsgNoLocs    = "book.create.msg_no_locs"
+	TextBookCreateBtnDates     = "book.create.btn_dates"
+	TextBookCreatePromptLoc    = "book.create.prompt_loc"
+	TextBookCreateMsgNoSlots   = "book.create.msg_no_slots"
+	TextBookCreateBtnLocs      = "book.create.btn_locs"
+	TextBookCreatePromptSlot   = "book.create.prompt_slot"
+	TextBookCreateBtnSlots     = "book.create.btn_slots"
+	TextBookCreatePromptDur    = "book.create.prompt_dur"
+	TextBookCreateLblHours     = "book.create.lbl_hours"
+	TextBookCreateMsgSuccess   = "book.create.msg_success"
+	TextBookCreateMsgSuccessCb = "book.create.msg_success_cb"
+	TextBookCreateMsgCancel    = "book.create.msg_cancel"
+
+	// list flow
+	TextBookListTitle    = "book.list.title"
+	TextBookListMsgEmpty = "book.list.msg_empty"
+
+	// details flow
+	TextBookDetTitle            = "book.det.title"
+	TextBookDetLblPending       = "book.det.lbl_pending"
+	TextBookDetLblActive        = "book.det.lbl_active"
+	TextBookDetLblCompleted     = "book.det.lbl_completed"
+	TextBookDetLblCancelled     = "book.det.lbl_cancelled"
+	TextBookDetLblNoshow        = "book.det.lbl_noshow"
+	TextBookDetLblUnknown       = "book.det.lbl_unknown"
+	TextBookDetBtnCheckin       = "book.det.btn_checkin"
+	TextBookDetBtnCancel        = "book.det.btn_cancel"
+	TextBookDetBtnList          = "book.det.btn_list"
+	TextBookDetMsgCancelSuccess = "book.det.msg_cancel_success"
+	TextBookDetMsgCheckinSfx    = "book.det.msg_checkin_sfx"
+	TextBookDetMsgCheckinCb     = "book.det.msg_checkin_cb"
+	TextBookDetMsgGrabTitle     = "book.det.msg_grab_title"
+)
