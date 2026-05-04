@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/k4sper1love/buskr/internal/config"
 	"github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
@@ -20,13 +21,12 @@ import (
 )
 
 func main() {
-	log.Println("Starting Buskr App...")
+	cfg := config.MustLoad()
 
-	botToken := "your_bot_token_here"
-	pgConnStr := "your_postgres_dsn_here"
-	redisAddr := "your_redis_addr_here"
+	log.Print("Starting bot in env:", cfg.Env)
 
-	db, err := sql.Open("postgres", pgConnStr)
+	// database
+	db, err := sql.Open("postgres", cfg.Database.DSN)
 	if err != nil {
 		log.Fatalf("Failed to connect to Postgres: %v", err)
 	}
@@ -37,29 +37,38 @@ func main() {
 	}
 	log.Println("PostgreSQL connected successfully!")
 
+	// redis
 	rdb := redis.NewClient(&redis.Options{
-		Addr: redisAddr,
+		Addr:        cfg.Redis.Host,
+		Password:    cfg.Redis.Password,
+		DB:          cfg.Redis.DB,
+		DialTimeout: cfg.Redis.DialTimeout,
 	})
+	defer rdb.Close()
+
 	if err := rdb.Ping(context.Background()).Err(); err != nil {
 		log.Fatalf("Redis is dead: %v", err)
 	}
 	log.Println("Redis connected successfully!")
 
+	// repositories
 	stateStore := redisInfra.NewStateStore(rdb)
 	userRepo := postgres.NewUserRepository(db)
 	locRepo := postgres.NewLocationRepository(db)
 	bookingRepo := postgres.NewBookingRepository(db)
 
+	// servives
 	userService := user.NewService(userRepo)
 	locService := location.NewService(locRepo)
-
 	bookingService := booking.NewService(bookingRepo, userService, locService)
 
-	bot, err := telegram.NewBot(botToken, userService, bookingService, locService, stateStore)
+	// bot
+	bot, err := telegram.NewBot(&cfg.Telegram, userService, bookingService, locService, stateStore)
 	if err != nil {
 		log.Fatalf("Failed to initialize bot: %v", err)
 	}
 
+	// workers
 	scheduler := worker.NewScheduler(bot.GetTelebot(), bookingService, userService, locService, stateStore)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -67,6 +76,7 @@ func main() {
 
 	scheduler.Start(ctx)
 
+	// graceful shutdown
 	go func() {
 		stop := make(chan os.Signal, 1)
 		signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
@@ -76,7 +86,9 @@ func main() {
 		bot.GetTelebot().Stop()
 	}()
 
+	// start bot
 	bot.Start()
 
+	// when apllication was stopped
 	log.Println("App stopped.")
 }
