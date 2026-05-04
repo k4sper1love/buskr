@@ -8,19 +8,19 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-type AdminCallbacks struct {
+type Admin struct {
 	uc       *admin.Usecase
 	renderer *render.Renderer
 }
 
-func NewAdminCallbacks(uc *admin.Usecase, renderer *render.Renderer) *AdminCallbacks {
-	return &AdminCallbacks{
+func NewAdmin(uc *admin.Usecase, renderer *render.Renderer) *Admin {
+	return &Admin{
 		uc:       uc,
 		renderer: renderer,
 	}
 }
 
-func (h *AdminCallbacks) HandleAdminPanel(c telebot.Context) error {
+func (h *Admin) HandleAdminPanel(c telebot.Context) error {
 	cc, err := extractCtx(c)
 	if err != nil {
 		return err
@@ -39,7 +39,7 @@ func (h *AdminCallbacks) HandleAdminPanel(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminCallbacks) HandleAdminPanelSend(c telebot.Context) error {
+func (h *Admin) HandleAdminPanelSend(c telebot.Context) error {
 	cc, err := extractCtx(c)
 	if err != nil {
 		return err
@@ -62,7 +62,7 @@ func (h *AdminCallbacks) HandleAdminPanelSend(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminCallbacks) HandleAdminInvites(c telebot.Context) error {
+func (h *Admin) HandleAdminInvites(c telebot.Context) error {
 	cc, err := extractCtx(c)
 	if err != nil {
 		return err
@@ -81,7 +81,7 @@ func (h *AdminCallbacks) HandleAdminInvites(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminCallbacks) HandleAdminGenerateInvite(c telebot.Context) error {
+func (h *Admin) HandleAdminGenerateInvite(c telebot.Context) error {
 	cc, err := extractCtx(c)
 	if err != nil {
 		return err
@@ -107,7 +107,7 @@ func (h *AdminCallbacks) HandleAdminGenerateInvite(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminCallbacks) HandleAdminApproveApplication(c telebot.Context) error {
+func (h *Admin) HandleAdminApproveApplication(c telebot.Context) error {
 	cc, err := extractCtx(c)
 	if err != nil {
 		return err
@@ -137,7 +137,7 @@ func (h *AdminCallbacks) HandleAdminApproveApplication(c telebot.Context) error 
 	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
 }
 
-func (h *AdminCallbacks) HandleAdminRejectApplication(c telebot.Context) error {
+func (h *Admin) HandleAdminRejectApplication(c telebot.Context) error {
 	cc, err := extractCtx(c)
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (h *AdminCallbacks) HandleAdminRejectApplication(c telebot.Context) error {
 	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
 }
 
-func (h *AdminCallbacks) HandleAdminApproveNoiseUpgrade(c telebot.Context) error {
+func (h *Admin) HandleAdminApproveNoiseUpgrade(c telebot.Context) error {
 	cc, err := extractCtx(c)
 	if err != nil {
 		return err
@@ -196,7 +196,7 @@ func (h *AdminCallbacks) HandleAdminApproveNoiseUpgrade(c telebot.Context) error
 	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
 }
 
-func (h *AdminCallbacks) HandleAdminRejectNoiseUpgrade(c telebot.Context) error {
+func (h *Admin) HandleAdminRejectNoiseUpgrade(c telebot.Context) error {
 	cc, err := extractCtx(c)
 	if err != nil {
 		return err

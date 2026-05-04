@@ -1,10 +1,34 @@
 package callbacks
 
 import (
+	"context"
+	"fmt"
+
+	"github.com/k4sper1love/buskr/internal/domain/user"
+	"github.com/k4sper1love/buskr/internal/transport/telegram/ctxkey"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/render"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 	"gopkg.in/telebot.v3"
 )
+
+type callbackCtx struct {
+	ctx  context.Context
+	user *user.User
+}
+
+func extractCtx(c telebot.Context) (callbackCtx, error) {
+	ctx, ok := c.Get("ctx").(context.Context)
+	if !ok {
+		return callbackCtx{}, fmt.Errorf("ctx not found in telebot context")
+	}
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return callbackCtx{}, err
+	}
+
+	return callbackCtx{ctx: ctx, user: u}, nil
+}
 
 func sendReplyToUser(bot *telebot.Bot, r *render.Renderer, tgID int64, rep response.Reply) {
 	text := r.Translate("", rep.Text)
@@ -47,7 +71,7 @@ func sendReplyToUser(bot *telebot.Bot, r *render.Renderer, tgID int64, rep respo
 			opts = append(opts, menu)
 		}
 	}
-	
+
 	opts = append(opts, telebot.ModeMarkdown)
 	_, _ = bot.Send(&telebot.User{ID: tgID}, text, opts...)
 }

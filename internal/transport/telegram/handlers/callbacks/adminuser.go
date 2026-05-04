@@ -9,19 +9,19 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-type AdminUserCallbacks struct {
+type AdminUser struct {
 	uc       *adminuser.Usecase
 	renderer *render.Renderer
 }
 
-func NewAdminUserCallbacks(uc *adminuser.Usecase, renderer *render.Renderer) *AdminUserCallbacks {
-	return &AdminUserCallbacks{
+func NewAdminUser(uc *adminuser.Usecase, renderer *render.Renderer) *AdminUser {
+	return &AdminUser{
 		uc:       uc,
 		renderer: renderer,
 	}
 }
 
-func (h *AdminUserCallbacks) HandleAdminSearch(c telebot.Context) error {
+func (h *AdminUser) HandleAdminSearch(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -42,7 +42,7 @@ func (h *AdminUserCallbacks) HandleAdminSearch(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminUserCallbacks) HandleAdminBan(c telebot.Context) error {
+func (h *AdminUser) HandleAdminBan(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -69,7 +69,7 @@ func (h *AdminUserCallbacks) HandleAdminBan(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminUserCallbacks) HandleAdminUnban(c telebot.Context) error {
+func (h *AdminUser) HandleAdminUnban(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)

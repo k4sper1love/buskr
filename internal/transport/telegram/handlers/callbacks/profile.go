@@ -10,19 +10,19 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-type ProfileCallbacks struct {
+type Profile struct {
 	uc       *profile.Usecase
 	renderer *render.Renderer
 }
 
-func NewProfileCallbacks(uc *profile.Usecase, renderer *render.Renderer) *ProfileCallbacks {
-	return &ProfileCallbacks{
+func NewProfile(uc *profile.Usecase, renderer *render.Renderer) *Profile {
+	return &Profile{
 		uc:       uc,
 		renderer: renderer,
 	}
 }
 
-func (h *ProfileCallbacks) HandleProfile(c telebot.Context) error {
+func (h *Profile) HandleProfile(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -43,7 +43,7 @@ func (h *ProfileCallbacks) HandleProfile(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *ProfileCallbacks) HandleNoiseUpgrade(c telebot.Context) error {
+func (h *Profile) HandleNoiseUpgrade(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -64,7 +64,7 @@ func (h *ProfileCallbacks) HandleNoiseUpgrade(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *ProfileCallbacks) HandleNoiseUpgradeSelect(c telebot.Context) error {
+func (h *Profile) HandleNoiseUpgradeSelect(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -91,7 +91,7 @@ func (h *ProfileCallbacks) HandleNoiseUpgradeSelect(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *ProfileCallbacks) HandleEditName(c telebot.Context) error {
+func (h *Profile) HandleEditName(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)

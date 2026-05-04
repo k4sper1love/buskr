@@ -10,19 +10,19 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-type AdminLocCallbacks struct {
+type AdminLoc struct {
 	uc       *adminloc.Usecase
 	renderer *render.Renderer
 }
 
-func NewAdminLocCallbacks(uc *adminloc.Usecase, renderer *render.Renderer) *AdminLocCallbacks {
-	return &AdminLocCallbacks{
+func NewAdminLoc(uc *adminloc.Usecase, renderer *render.Renderer) *AdminLoc {
+	return &AdminLoc{
 		uc:       uc,
 		renderer: renderer,
 	}
 }
 
-func (h *AdminLocCallbacks) HandleAdminAddLoc(c telebot.Context) error {
+func (h *AdminLoc) HandleAdminAddLoc(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -43,7 +43,7 @@ func (h *AdminLocCallbacks) HandleAdminAddLoc(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminLocCallbacks) HandleAdminOnNoiseSelected(c telebot.Context) error {
+func (h *AdminLoc) HandleAdminOnNoiseSelected(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -70,7 +70,7 @@ func (h *AdminLocCallbacks) HandleAdminOnNoiseSelected(c telebot.Context) error 
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminLocCallbacks) HandleAdminOnLocation(c telebot.Context) error {
+func (h *AdminLoc) HandleAdminOnLocation(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -107,7 +107,7 @@ func (h *AdminLocCallbacks) HandleAdminOnLocation(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminLocCallbacks) HandleAdminLocs(c telebot.Context) error {
+func (h *AdminLoc) HandleAdminLocs(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -128,7 +128,7 @@ func (h *AdminLocCallbacks) HandleAdminLocs(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminLocCallbacks) HandleAdminLocDetails(c telebot.Context) error {
+func (h *AdminLoc) HandleAdminLocDetails(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -155,7 +155,7 @@ func (h *AdminLocCallbacks) HandleAdminLocDetails(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminLocCallbacks) HandleAdminLocToggle(c telebot.Context) error {
+func (h *AdminLoc) HandleAdminLocToggle(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -182,7 +182,7 @@ func (h *AdminLocCallbacks) HandleAdminLocToggle(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *AdminLocCallbacks) HandleAdminLocCancel(c telebot.Context) error {
+func (h *AdminLoc) HandleAdminLocCancel(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)

@@ -10,24 +10,24 @@ import (
 	"gopkg.in/telebot.v3"
 )
 
-type BookingCallbacks struct {
+type Booking struct {
 	uc       *booking.Usecase
 	renderer *render.Renderer
 }
 
-func NewBookingCallbacks(uc *booking.Usecase, renderer *render.Renderer) *BookingCallbacks {
-	return &BookingCallbacks{
+func NewBooking(uc *booking.Usecase, renderer *render.Renderer) *Booking {
+	return &Booking{
 		uc:       uc,
 		renderer: renderer,
 	}
 }
 
 // Uc exposes the underlying usecase for one-off use in bot.go inline handlers.
-func (h *BookingCallbacks) Uc() *booking.Usecase {
+func (h *Booking) Uc() *booking.Usecase {
 	return h.uc
 }
 
-func (h *BookingCallbacks) HandleBook(c telebot.Context) error {
+func (h *Booking) HandleBook(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -48,7 +48,7 @@ func (h *BookingCallbacks) HandleBook(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *BookingCallbacks) HandleBookDateSelected(c telebot.Context) error {
+func (h *Booking) HandleBookDateSelected(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -75,7 +75,7 @@ func (h *BookingCallbacks) HandleBookDateSelected(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *BookingCallbacks) HandleBookLocationSelected(c telebot.Context) error {
+func (h *Booking) HandleBookLocationSelected(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -102,7 +102,7 @@ func (h *BookingCallbacks) HandleBookLocationSelected(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *BookingCallbacks) HandleBookSlotSelected(c telebot.Context) error {
+func (h *Booking) HandleBookSlotSelected(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -134,7 +134,7 @@ func (h *BookingCallbacks) HandleBookSlotSelected(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *BookingCallbacks) HandleBookDurationSelected(c telebot.Context) error {
+func (h *Booking) HandleBookDurationSelected(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -170,7 +170,7 @@ func (h *BookingCallbacks) HandleBookDurationSelected(c telebot.Context) error {
 	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
 }
 
-func (h *BookingCallbacks) HandleBookingBackToLocs(c telebot.Context) error {
+func (h *Booking) HandleBookingBackToLocs(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -191,7 +191,7 @@ func (h *BookingCallbacks) HandleBookingBackToLocs(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *BookingCallbacks) HandleBookingBackToSlots(c telebot.Context) error {
+func (h *Booking) HandleBookingBackToSlots(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -212,7 +212,7 @@ func (h *BookingCallbacks) HandleBookingBackToSlots(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *BookingCallbacks) HandleBookingList(c telebot.Context) error {
+func (h *Booking) HandleBookingList(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -233,7 +233,7 @@ func (h *BookingCallbacks) HandleBookingList(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *BookingCallbacks) HandleBookingDetails(c telebot.Context) error {
+func (h *Booking) HandleBookingDetails(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -260,7 +260,7 @@ func (h *BookingCallbacks) HandleBookingDetails(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *BookingCallbacks) HandleBookingCancelConfirm(c telebot.Context) error {
+func (h *Booking) HandleBookingCancelConfirm(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -287,7 +287,7 @@ func (h *BookingCallbacks) HandleBookingCancelConfirm(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *BookingCallbacks) HandleBookingCheckIn(c telebot.Context) error {
+func (h *Booking) HandleBookingCheckIn(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -318,7 +318,7 @@ func (h *BookingCallbacks) HandleBookingCheckIn(c telebot.Context) error {
 	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
 }
 
-func (h *BookingCallbacks) HandleBookingGrabHotSlot(c telebot.Context) error {
+func (h *Booking) HandleBookingGrabHotSlot(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)
@@ -355,7 +355,7 @@ func (h *BookingCallbacks) HandleBookingGrabHotSlot(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-func (h *BookingCallbacks) HandleBookingCancelFlow(c telebot.Context) error {
+func (h *Booking) HandleBookingCancelFlow(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
 	u, err := ctxkey.GetUser(c)

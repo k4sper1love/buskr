@@ -11,14 +11,14 @@ import (
 	"github.com/k4sper1love/buskr/internal/usecase/adminuser"
 	"github.com/k4sper1love/buskr/internal/usecase/auth"
 	"github.com/k4sper1love/buskr/internal/usecase/booking"
+	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/onboarding"
 	"github.com/k4sper1love/buskr/internal/usecase/profile"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
-	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"gopkg.in/telebot.v3"
 )
 
-type FSMHandlers struct {
+type FSM struct {
 	State      *redis.StateStore
 	Renderer   *render.Renderer
 	Onboarding *onboarding.Usecase
@@ -31,7 +31,7 @@ type FSMHandlers struct {
 
 type textStep func(ctx context.Context, u *user.User, text string) (response.Reply, error)
 
-func (h *FSMHandlers) HandleText(c telebot.Context) error {
+func (h *FSM) HandleText(c telebot.Context) error {
 	u, err := ctxkey.GetUser(c)
 	if err != nil {
 		return err
@@ -45,9 +45,9 @@ func (h *FSMHandlers) HandleText(c telebot.Context) error {
 		keys.StateAuthInvitedName: h.Auth.OnText,
 
 		// onboarding
-		keys.StateOnboardName:     h.Onboarding.OnText,
+		keys.StateOnboardName:   h.Onboarding.OnText,
 		keys.StateOnboardFormat: h.Onboarding.OnText,
-		keys.StateOnboardMedia:    h.Onboarding.OnText,
+		keys.StateOnboardMedia:  h.Onboarding.OnText,
 
 		// admin location
 		keys.StateAdminLocName: h.AdminLoc.OnText,
@@ -77,7 +77,7 @@ func (h *FSMHandlers) HandleText(c telebot.Context) error {
 	return h.Renderer.Render(c, rep)
 }
 
-func (h *FSMHandlers) HandleVideo(c telebot.Context) error {
+func (h *FSM) HandleVideo(c telebot.Context) error {
 	u, err := ctxkey.GetUser(c)
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func (h *FSMHandlers) HandleVideo(c telebot.Context) error {
 
 	state, _ := h.State.GetState(ctx, c.Sender().ID)
 
-	if state == "onboarding.state_apply_media" { // ← исправлен ключ
+	if state == "onboarding.state_apply_media" {
 		rep, err := h.Onboarding.OnVideo(ctx, u, c.Message().Video.FileID)
 		if err != nil {
 			return err
@@ -100,7 +100,7 @@ func (h *FSMHandlers) HandleVideo(c telebot.Context) error {
 	return nil
 }
 
-func (h *FSMHandlers) HandleLocationMsg(c telebot.Context) error {
+func (h *FSM) HandleLocationMsg(c telebot.Context) error {
 	u, err := ctxkey.GetUser(c)
 	if err != nil {
 		return err
