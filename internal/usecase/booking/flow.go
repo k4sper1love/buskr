@@ -31,7 +31,7 @@ func (uc *Usecase) Book(ctx context.Context, u *user.User) (response.Reply, erro
 	now := time.Now().In(loc)
 
 	var rows [][]response.Button
-	for i := 0; i < 5; i++ {
+	for i := 0; i < uc.maxAdvanceDays; i++ {
 		targetDate := now.AddDate(0, 0, i)
 		dateValue := targetDate.Format("2006-01-02")
 		dateHuman := targetDate.Format("02.01")
@@ -492,18 +492,18 @@ func (uc *Usecase) BackToLocations(ctx context.Context, u *user.User) (response.
 	// Revert the FSM to StateBookLoc step.
 	// The user clicked "Back to Locations" from the Slot Selection screen.
 	// The Date was already selected and stored in the FSM state.
-	
+
 	// We need to fetch the saved date from state and pass it back to DateSelected.
 	// Reset the actual state to DateBookDate just to pretend we're stepping perfectly forward.
 	_ = uc.state.SetState(ctx, u.TelegramID, keys.StateBookDate, uc.ttl)
-	
+
 	var dateStr string
 	err := uc.state.GetData(ctx, u.TelegramID, keys.DataBookingDate, &dateStr)
 	if err != nil || dateStr == "" {
 		// If we lost state, just restart the book flow
 		return uc.Book(ctx, u)
 	}
-	
+
 	// This will render the Location Selection screen using the saved date
 	return uc.DateSelected(ctx, u, dateStr)
 }
@@ -511,17 +511,17 @@ func (uc *Usecase) BackToLocations(ctx context.Context, u *user.User) (response.
 func (uc *Usecase) BackToSlots(ctx context.Context, u *user.User) (response.Reply, error) {
 	// Revert the FSM to StateBookSlot step.
 	// The user clicked "Back to Slots" from the Duration Selection screen.
-	
+
 	// Reset the state perfectly backward
 	_ = uc.state.SetState(ctx, u.TelegramID, keys.StateBookLoc, uc.ttl)
-	
+
 	var locID string
 	err := uc.state.GetData(ctx, u.TelegramID, keys.DataBookingLoc, &locID)
 	if err != nil || locID == "" {
 		// If we lost state, fallback to locations step
 		return uc.BackToLocations(ctx, u)
 	}
-	
+
 	// This will render the Slot Selection screen using the saved location
 	return uc.LocationSelected(ctx, u, locID)
 }
