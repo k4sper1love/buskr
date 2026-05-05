@@ -60,10 +60,10 @@ func main() {
 	// servives
 	userService := user.NewService(userRepo)
 	locService := location.NewService(locRepo)
-	bookingService := booking.NewService(bookingRepo, userService, locService)
+	bookingService := booking.NewService(bookingRepo, userService, locService, cfg.Booking.MaxActive, cfg.Booking.MaxPerLocationAtDay, cfg.Booking.MaxAdvanceDays)
 
 	// bot
-	bot, err := telegram.NewBot(&cfg.Telegram, userService, bookingService, locService, stateStore)
+	bot, err := telegram.NewBot(&cfg.Telegram, userService, bookingService, locService, stateStore, cfg.Booking.MaxAdvanceDays)
 	if err != nil {
 		log.Fatalf("Failed to initialize bot: %v", err)
 	}

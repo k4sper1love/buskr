@@ -51,6 +51,7 @@ func NewBot(
 	bookings *booking.Service,
 	locs *location.Service,
 	state *redis.StateStore,
+	maxAdvanceDays int,
 ) (*Bot, error) {
 	// create bot instance
 	pref := telebot.Settings{
@@ -72,7 +73,7 @@ func NewBot(
 
 	// usecases
 	authUc := auth.NewUsecase(state, users, 1*time.Hour)
-	bookingUc := bookingUsecase.NewUsecase(state, locs, bookings, 1*time.Hour)
+	bookingUc := bookingUsecase.NewUsecase(state, locs, bookings, 1*time.Hour, maxAdvanceDays)
 	adminUc := admin.NewUsecase(state, users, 1*time.Hour, 1)
 	adminlocUc := adminloc.NewUsecase(state, locs, 1*time.Hour)
 	adminuserUc := adminuser.NewUsecase(state, users, 1*time.Hour)

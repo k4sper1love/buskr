@@ -8,10 +8,17 @@ import (
 )
 
 type Config struct {
-	Env      string `env:"ENV" env-default:"local"`
+	Env string `env:"ENV" env-default:"local"`
+
+	// transport
 	Telegram TelegramConfig
+
+	// infra
 	Database DatabaseConfig
 	Redis    RedisConfig
+
+	// services
+	Booking BookingConfig
 }
 
 type TelegramConfig struct {
@@ -30,6 +37,12 @@ type RedisConfig struct {
 	Password    string        `env:"REDIS_PASSWORD"`
 	DB          int           `env:"REDIS_DB" env-default:"0"`
 	DialTimeout time.Duration `env:"REDIS_DIAL_TIMEOUT" env-default:"5s"`
+}
+
+type BookingConfig struct {
+	MaxActive           int `env:"BOOKING_MAX_ACTIVE" env-default:"2"`
+	MaxPerLocationAtDay int `env:"BOOKING_MAX_PER_LOCATION_AT_DAY" env-default:"1"`
+	MaxAdvanceDays      int `env:"BOOKING_MAX_ADVANCE_DAYS" env-default:"5"`
 }
 
 // singleton pattern

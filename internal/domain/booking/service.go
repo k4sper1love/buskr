@@ -17,13 +17,16 @@ type LocationProvider interface {
 }
 
 type Service struct {
-	repo  Repository
-	users UserProvider
-	locs  LocationProvider
+	repo                   Repository
+	users                  UserProvider
+	locs                   LocationProvider
+	maxActiveBookings      int
+	maxBookingsPerLocation int
+	maxAdvanceDays         int
 }
 
-func NewService(repo Repository, users UserProvider, locs LocationProvider) *Service {
-	return &Service{repo: repo, users: users, locs: locs}
+func NewService(repo Repository, users UserProvider, locs LocationProvider, maxActiveBookings int, maxBookingsPerLocation int, maxAdvanceDays int) *Service {
+	return &Service{repo: repo, users: users, locs: locs, maxActiveBookings: maxActiveBookings, maxBookingsPerLocation: maxBookingsPerLocation, maxAdvanceDays: maxAdvanceDays}
 }
 
 func (s *Service) GetScheduleForLocation(ctx context.Context, locID string, date time.Time) ([]*Booking, error) {
@@ -58,11 +61,42 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 		return nil, ErrNoiseExceeded
 	}
 
-	overlap, err := s.repo.HasOverlap(ctx, locID, start, end)
+	if start.After(time.Now().AddDate(0, 0, s.maxAdvanceDays)) {
+		return nil, ErrTooFarInFuture
+	}
+
+	activeBookings, err := s.repo.CountActiveFuture(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	if overlap {
+
+	if activeBookings >= s.maxActiveBookings {
+		return nil, ErrMaxActiveBookings
+	}
+
+	bookingsPerLocation, err := s.repo.CountByUserAndLocationAndDay(ctx, userID, locID, start)
+	if err != nil {
+		return nil, err
+	}
+
+	if bookingsPerLocation >= s.maxBookingsPerLocation {
+		return nil, ErrMaxBookingsPerLocation
+	}
+
+	userOverlap, err := s.repo.HasOverlapByUser(ctx, userID, start, end)
+	if err != nil {
+		return nil, err
+	}
+
+	if userOverlap {
+		return nil, ErrTimeOverlap
+	}
+
+	locOverlap, err := s.repo.HasOverlapByLocation(ctx, locID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	if locOverlap {
 		return nil, ErrSlotTaken
 	}
 
