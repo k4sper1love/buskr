@@ -50,17 +50,19 @@ type CheckInResult struct {
 }
 
 type Usecase struct {
-	state    StateStore
-	locs     Locations
-	bookings Bookings
-	ttl      time.Duration
+	state          StateStore
+	locs           Locations
+	bookings       Bookings
+	ttl            time.Duration
+	maxAdvanceDays int
 }
 
-func NewUsecase(state StateStore, locs Locations, bookings Bookings, ttl time.Duration) *Usecase {
+func NewUsecase(state StateStore, locs Locations, bookings Bookings, ttl time.Duration, maxAdvanceDays int) *Usecase {
 	return &Usecase{
-		state:    state,
-		locs:     locs,
-		bookings: bookings,
-		ttl:      ttl,
+		state:          state,
+		locs:           locs,
+		bookings:       bookings,
+		ttl:            ttl,
+		maxAdvanceDays: maxAdvanceDays,
 	}
 }
