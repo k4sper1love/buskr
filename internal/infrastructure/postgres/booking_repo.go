@@ -97,7 +97,7 @@ func (r *BookingRepository) Update(ctx context.Context, b *booking.Booking) erro
 	return nil
 }
 
-func (r *BookingRepository) HasOverlap(ctx context.Context, locID string, start, end time.Time) (bool, error) {
+func (r *BookingRepository) HasOverlapByLocation(ctx context.Context, locID string, start, end time.Time) (bool, error) {
 	// overlap occurs if (existing_start < new_end) AND (existing_end > new_start)
 	query := `
 		SELECT EXISTS(
@@ -112,6 +112,28 @@ func (r *BookingRepository) HasOverlap(ctx context.Context, locID string, start,
 
 	var hasOverlap bool
 	err := r.db.QueryRowContext(ctx, query, locID, start, end).Scan(&hasOverlap)
+	if err != nil {
+		return false, err
+	}
+
+	return hasOverlap, nil
+}
+
+func (r *BookingRepository) HasOverlapByUser(ctx context.Context, userID string, start, end time.Time) (bool, error) {
+	// overlap occurs if (existing_start < new_end) AND (existing_end > new_start)
+	query := `
+		SELECT EXISTS(
+			SELECT 1 
+			FROM bookings 
+			WHERE user_id = $1 
+			  AND status IN ('pending', 'active') 
+			  AND start_time < $3 
+			  AND end_time > $2
+		)
+	`
+
+	var hasOverlap bool
+	err := r.db.QueryRowContext(ctx, query, userID, start, end).Scan(&hasOverlap)
 	if err != nil {
 		return false, err
 	}
@@ -200,6 +222,40 @@ func (r *BookingRepository) GetPendingOrActiveByUser(ctx context.Context, userID
 	defer rows.Close()
 
 	return r.scanBookings(rows)
+}
+
+func (r *BookingRepository) CountActiveFuture(ctx context.Context, userID string) (int, error) {
+	query := `
+		SELECT count(*)
+		FROM bookings
+		WHERE user_id = $1 AND status IN ('pending', 'active') AND end_time >= NOW()
+	`
+
+	var count int
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *BookingRepository) CountByUserAndLocationAndDay(ctx context.Context, userID string, locID string, date time.Time) (int, error) {
+	query := `
+		SELECT count(*)
+		FROM bookings
+		WHERE user_id = $1 
+			AND location_id = $2
+			AND start_time::date = $3::date
+			AND status IN ('pending', 'active', 'completed')
+	`
+
+	var count int
+	err := r.db.QueryRowContext(ctx, query, userID, locID, date.Format("2006-01-02")).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 func (r *BookingRepository) scanBookings(rows *sql.Rows) ([]*booking.Booking, error) {
