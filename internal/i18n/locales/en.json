@@ -20,12 +20,13 @@
   "auth.active.btn_admin": "⚙️ Admin Panel",
   "auth.invited.prompt_name": "✅ Invite accepted! Enter your stage name or band name:",
   "onboard.step1.prompt_name": "✍️ *Step 1 of 3:* Enter your stage name or band name:",
-  "onboard.step2.prompt_format": "🎭 *Step 2 of 3:* Select your performance format.",
+  "onboard.step2.prompt_noise": "🎭 *Step 2 of 3:* Select your performance format.",
   "onboard.step3.prompt_media": "🎬 *Step 3 of 3:* Send an Instagram/YouTube link or upload a video.",
   "onboard.btn_solo": "🎸 Solo (Acoustic/Vocals)",
   "onboard.btn_group": "🥁 Group (With Equipment)",
   "onboard.msg_success": "✅ *Application submitted!*\n\nWe will notify you when your account is activated.",
   "onboard.msg_err": "❌ Error submitting application. Please try again later.",
+  "onboard.msg_cancel": "*Application cancelled*\n\nYou can now start again with /start.",
   "admin.panel.title": "⚙️ *Admin Panel*\n\nSelect a section:",
   "admin.panel.btn_invites": "🔗 Invites",
   "admin.panel.btn_locs": "📍 Locations",
@@ -108,5 +109,10 @@
   "book.det.msg_cancel_success": "✅ Booking successfully cancelled.",
   "book.det.msg_checkin_sfx": "\n\n✅ Check-in complete!",
   "book.det.msg_checkin_cb": "✅ Checked in!",
-  "book.det.msg_grab_title": "🔥 *Hot Slot Booked!*\n\n📍 {{.name}}\nUntil: {{.end_time}}"
+  "book.det.msg_grab_title": "🔥 *Hot Slot Booked!*\n\n📍 {{.name}}\nUntil: {{.end_time}}",
+  "worker.reminder.msg": "🔔 *Reminder!*\n\nYour performance starts in one hour (at {{.time}}).\n\n⚠️ Make sure to click the button below when you arrive at the location, otherwise your booking will be cancelled.",
+  "worker.reminder.btn": "📍 I'm here",
+  "worker.checkin.fail_msg": "❌ *Your booking has been cancelled.*\n\nYou did not confirm your presence within 15 minutes after the slot started. Your rating has been lowered.",
+  "worker.hotspot.msg": "🔥 *HOT SLOT!*\n\nA musician didn't show up, so this location is available right now!\n\n📍 *Location:* {{.loc}}\n⏰ *Time:* {{.start}}:00 - {{.end}}:00\n🔊 *Max noise:* {{.noise}}\n\n_First to click the button takes the slot._",
+  "worker.hotspot.btn": "⚡ Grab slot"
 }

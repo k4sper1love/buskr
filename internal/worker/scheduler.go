@@ -11,20 +11,27 @@ import (
 	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/infrastructure/redis"
+	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"gopkg.in/telebot.v3"
 )
 
+type Translator interface {
+	T(lang, key string, args map[string]any) string
+}
+
 type Scheduler struct {
 	bot      *telebot.Bot
+	tr       Translator
 	bookings *booking.Service
 	users    *user.Service
 	locs     *location.Service
 	state    *redis.StateStore
 }
 
-func NewScheduler(bot *telebot.Bot, bookings *booking.Service, users *user.Service, locs *location.Service, state *redis.StateStore) *Scheduler {
+func NewScheduler(bot *telebot.Bot, tr Translator, bookings *booking.Service, users *user.Service, locs *location.Service, state *redis.StateStore) *Scheduler {
 	return &Scheduler{
 		bot:      bot,
+		tr:       tr,
 		bookings: bookings,
 		users:    users,
 		locs:     locs,
@@ -73,10 +80,14 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 		}
 
 		menu := &telebot.ReplyMarkup{}
-		btnCheckIn := menu.Data("📍 Я на месте", "btn_checkin", b.ID)
+
+		btnText := s.tr.T("ru", keys.TextWorkerReminderBtn, nil)
+		btnCheckIn := menu.Data(btnText, keys.BtnBookCheckin, b.ID)
 		menu.Inline(menu.Row(btnCheckIn))
 
-		msg := fmt.Sprintf("🔔 **Напоминание!**\n\nВаше выступление начинается через час (в %02d:00).\n\n⚠️ Обязательно нажмите кнопку ниже, когда прибудете на точку, иначе бронь сгорит.", b.StartTime.Hour())
+		msg := s.tr.T("ru", keys.TextWorkerReminderMsg, map[string]any{
+			"time": b.StartTime.Format("15:04"),
+		})
 
 		_, err = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, menu, telebot.ModeMarkdown)
 		if err == nil {
@@ -103,7 +114,7 @@ func (s *Scheduler) processCheckins(ctx context.Context) {
 
 		targetUser, _ := s.users.GetByID(ctx, b.UserID)
 		if targetUser != nil {
-			msg := "❌ **Ваша бронь аннулирована.**\n\nВы не подтвердили присутствие в течение 15 минут после начала слота. Ваш рейтинг понижен."
+			msg := s.tr.T("ru", keys.TextWorkerCheckinFailMsg, nil)
 			_, _ = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, telebot.ModeMarkdown)
 		}
 
@@ -143,18 +154,17 @@ func (s *Scheduler) broadcastHotSpot(ctx context.Context, b *booking.Booking) {
 	endHour := b.EndTime.In(locTz).Hour()
 	duration := endHour - startHour
 
-	msg := fmt.Sprintf(
-		"🔥 **ГОРЯЩИЙ СЛОТ!**\n\n"+
-			"Музыкант не явился на точку, она свободна прямо сейчас!\n\n"+
-			"📍 **Локация:** %s\n"+
-			"⏰ **Время:** %02d:00 - %02d:00\n"+
-			"🔊 **Макс. шум:** %s\n\n"+
-			"_Кто первый нажмет кнопку, тот и заберет слот._",
-		loc.Name, startHour, endHour, loc.MaxNoise,
-	)
+	noiseText := s.tr.T("ru", keys.TextCommonLblNoise+"_"+string(loc.MaxNoise), nil)
+	msg := s.tr.T("ru", keys.TextWorkerHotSpotMsg, map[string]any{
+		"loc":   loc.Name,
+		"start": fmt.Sprintf("%02d", startHour),
+		"end":   fmt.Sprintf("%02d", endHour),
+		"noise": noiseText,
+	})
 
 	menu := &telebot.ReplyMarkup{}
-	btnGrab := menu.Data("⚡ Забрать слот", "btn_grab_hot", loc.ID, strconv.Itoa(startHour), strconv.Itoa(duration))
+	btnText := s.tr.T("ru", keys.TextWorkerHotSpotBtn, nil)
+	btnGrab := menu.Data(btnText, keys.BtnBookGrabHot, loc.ID, strconv.Itoa(startHour), strconv.Itoa(duration))
 	menu.Inline(menu.Row(btnGrab))
 
 	for _, u := range activeUsers {

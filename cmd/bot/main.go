@@ -12,6 +12,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
+	"github.com/k4sper1love/buskr/internal/i18n"
 	"github.com/k4sper1love/buskr/internal/infrastructure/postgres"
 	redisInfra "github.com/k4sper1love/buskr/internal/infrastructure/redis"
 	"github.com/k4sper1love/buskr/internal/transport/telegram"
@@ -51,6 +52,9 @@ func main() {
 	}
 	log.Println("Redis connected successfully!")
 
+	// translator
+	tr := i18n.NewTranslator()
+
 	// repositories
 	stateStore := redisInfra.NewStateStore(rdb)
 	userRepo := postgres.NewUserRepository(db)
@@ -63,13 +67,12 @@ func main() {
 	bookingService := booking.NewService(bookingRepo, userService, locService, cfg.Booking.MaxActive, cfg.Booking.MaxPerLocationAtDay, cfg.Booking.MaxAdvanceDays)
 
 	// bot
-	bot, err := telegram.NewBot(&cfg.Telegram, userService, bookingService, locService, stateStore, cfg.Booking.MaxAdvanceDays)
+	bot, err := telegram.NewBot(&cfg.Telegram, tr, stateStore, userService, bookingService, locService, cfg.Booking.MaxAdvanceDays)
 	if err != nil {
 		log.Fatalf("Failed to initialize bot: %v", err)
 	}
-
 	// workers
-	scheduler := worker.NewScheduler(bot.GetTelebot(), bookingService, userService, locService, stateStore)
+	scheduler := worker.NewScheduler(bot.GetTelebot(), tr, bookingService, userService, locService, stateStore)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
