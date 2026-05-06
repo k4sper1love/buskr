@@ -6,6 +6,7 @@ const (
 	TextCommonBtnBack         = "common.btn.back"
 	TextCommonBtnMenu         = "common.btn.menu"
 	TextCommonBtnCancel       = "common.btn.cancel"
+	TextCommonLblNoise        = "common.lbl.noise"
 	TextCommonLblNoiseLight   = "common.lbl.noise_light"
 	TextCommonLblNoiseMedium  = "common.lbl.noise_medium"
 	TextCommonLblNoiseHard    = "common.lbl.noise_hard"
@@ -30,13 +31,14 @@ const (
 
 // onboarding
 const (
-	TextOnboardStep1PromptName   = "onboard.step1.prompt_name"
-	TextOnboardStep2PromptFormat = "onboard.step2.prompt_format"
-	TextOnboardStep3PromptMedia  = "onboard.step3.prompt_media"
-	TextOnboardBtnSolo           = "onboard.btn_solo"
-	TextOnboardBtnGroup          = "onboard.btn_group"
-	TextOnboardMsgSuccess        = "onboard.msg_success"
-	TextOnboardMsgErr            = "onboard.msg_err"
+	TextOnboardStep1PromptName  = "onboard.step1.prompt_name"
+	TextOnboardStep2PromptNoise = "onboard.step2.prompt_noise"
+	TextOnboardStep3PromptMedia = "onboard.step3.prompt_media"
+	TextOnboardBtnSolo          = "onboard.btn_solo"
+	TextOnboardBtnGroup         = "onboard.btn_group"
+	TextOnboardMsgSuccess       = "onboard.msg_success"
+	TextOnboardMsgErr           = "onboard.msg_err"
+	TextOnboardMsgCancel        = "onboard.msg_cancel"
 )
 
 // admin
@@ -147,4 +149,13 @@ const (
 	TextBookDetMsgCheckinSfx    = "book.det.msg_checkin_sfx"
 	TextBookDetMsgCheckinCb     = "book.det.msg_checkin_cb"
 	TextBookDetMsgGrabTitle     = "book.det.msg_grab_title"
+)
+
+// worker
+const (
+	TextWorkerReminderMsg    = "worker.reminder.msg"
+	TextWorkerReminderBtn    = "worker.reminder.btn"
+	TextWorkerCheckinFailMsg = "worker.checkin.fail_msg"
+	TextWorkerHotSpotMsg     = "worker.hotspot.msg"
+	TextWorkerHotSpotBtn     = "worker.hotspot.btn"
 )

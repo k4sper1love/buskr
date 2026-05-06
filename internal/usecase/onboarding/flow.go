@@ -2,12 +2,13 @@ package onboarding
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/domain/user"
-	"github.com/k4sper1love/buskr/internal/usecase/response"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
+	"github.com/k4sper1love/buskr/internal/usecase/response"
 )
 
 func (uc *Usecase) OnText(ctx context.Context, u *user.User, text string) (response.Reply, error) {
@@ -19,35 +20,46 @@ func (uc *Usecase) OnText(ctx context.Context, u *user.User, text string) (respo
 	switch st {
 	case keys.StateOnboardName:
 		_ = uc.state.SetData(ctx, u.TelegramID, keys.DataOnboardName, text, uc.ttl)
-		_ = uc.state.SetState(ctx, u.TelegramID, keys.StateOnboardFormat, uc.ttl)
+		_ = uc.state.SetState(ctx, u.TelegramID, keys.StateOnboardNoise, uc.ttl)
 
 		return response.Reply{
 			Kind: response.KindSend,
-			Text: response.Text{Key: keys.TextOnboardStep2PromptFormat},
+			Text: response.Text{Key: keys.TextOnboardStep2PromptNoise},
 			Keyboard: response.Keyboard{
-				ReplyRows: [][]response.Text{
+				InlineRows: [][]response.Button{
 					{
-						{Key: keys.TextOnboardBtnSolo},
-						{Key: keys.TextOnboardBtnGroup},
+						{
+							Text: response.Text{Key: keys.TextCommonLblNoiseLight},
+							Data: response.CallbackData{
+								Unique: keys.BtnOnboardNoiseSel,
+								Args:   []string{string(user.NoiseLight)},
+							},
+						},
+						{
+
+							Text: response.Text{Key: keys.TextCommonLblNoiseMedium},
+							Data: response.CallbackData{
+								Unique: keys.BtnOnboardNoiseSel,
+								Args:   []string{string(user.NoiseMedium)},
+							},
+						},
+						{
+							Text: response.Text{Key: keys.TextCommonLblNoiseHard},
+							Data: response.CallbackData{
+								Unique: keys.BtnOnboardNoiseSel,
+								Args:   []string{string(user.NoiseHard)},
+							},
+						},
+					},
+					{
+						{
+							Text: response.Text{Key: keys.TextCommonBtnCancel},
+							Data: response.CallbackData{
+								Unique: keys.BtnOnboardCancel,
+							},
+						},
 					},
 				},
-			},
-		}, nil
-
-	case keys.StateOnboardFormat:
-		category := user.NoiseLight
-		if strings.Contains(text, "Группа") {
-			category = user.NoiseHard
-		}
-
-		_ = uc.state.SetData(ctx, u.TelegramID, keys.DataOnboardCat, category, uc.ttl)
-		_ = uc.state.SetState(ctx, u.TelegramID, keys.StateOnboardMedia, uc.ttl)
-
-		return response.Reply{
-			Kind: response.KindSend,
-			Text: response.Text{Key: keys.TextOnboardStep3PromptMedia},
-			Keyboard: response.Keyboard{
-				Remove: true,
 			},
 		}, nil
 
@@ -70,6 +82,47 @@ func (uc *Usecase) OnVideo(ctx context.Context, u *user.User, fileID string) (re
 	}
 
 	return uc.finish(ctx, u, fileID, true)
+}
+
+func (uc *Usecase) NoiseSelected(ctx context.Context, u *user.User, noise user.NoiseLevel) (response.Reply, error) {
+	st, err := uc.state.GetState(ctx, u.TelegramID)
+	if err != nil {
+		return response.Reply{}, err
+	}
+
+	if st != keys.StateOnboardNoise {
+		return response.Reply{}, errors.New("invalid state")
+	}
+	_ = uc.state.SetData(ctx, u.TelegramID, keys.DataOnboardCat, noise, uc.ttl)
+	_ = uc.state.SetState(ctx, u.TelegramID, keys.StateOnboardMedia, uc.ttl)
+
+	return response.Reply{
+		Kind: response.KindSend,
+		Text: response.Text{Key: keys.TextOnboardStep3PromptMedia},
+		Keyboard: response.Keyboard{
+			InlineRows: [][]response.Button{
+				{
+					{
+						Text: response.Text{Key: keys.TextCommonBtnCancel},
+						Data: response.CallbackData{
+							Unique: keys.BtnOnboardCancel,
+						},
+					},
+				},
+			},
+		},
+	}, nil
+}
+
+func (uc *Usecase) CancelFlow(ctx context.Context, u *user.User) (response.Reply, error) {
+	_ = uc.state.ClearState(ctx, u.TelegramID)
+	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataOnboardCat)
+	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataOnboardName)
+
+	return response.Reply{
+		Kind: response.KindEdit,
+		Text: response.Text{Key: keys.TextOnboardMsgCancel},
+	}, nil
 }
 
 func (uc *Usecase) finish(ctx context.Context, u *user.User, mediaData string, isVideo bool) (response.Reply, error) {

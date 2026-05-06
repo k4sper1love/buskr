@@ -37,20 +37,22 @@ type Bot struct {
 }
 
 type Handlers struct {
-	auth      *callbacks.Auth
-	booking   *callbacks.Booking
-	admin     *callbacks.Admin
-	adminLoc  *callbacks.AdminLoc
-	adminUser *callbacks.AdminUser
-	profile   *callbacks.Profile
+	auth       *callbacks.Auth
+	onboarding *callbacks.Onboarding
+	booking    *callbacks.Booking
+	admin      *callbacks.Admin
+	adminLoc   *callbacks.AdminLoc
+	adminUser  *callbacks.AdminUser
+	profile    *callbacks.Profile
 }
 
 func NewBot(
 	cfg *config.TelegramConfig,
+	tr *i18n.Translator,
+	state *redis.StateStore,
 	users *user.Service,
 	bookings *booking.Service,
 	locs *location.Service,
-	state *redis.StateStore,
 	maxAdvanceDays int,
 ) (*Bot, error) {
 	// create bot instance
@@ -64,8 +66,7 @@ func NewBot(
 		return nil, err
 	}
 
-	// translator and renderer for bot responses
-	tr := i18n.NewTranslator()
+	// renderer for bot responses
 	renderer := render.NewRenderer(tr, cfg.DefaultLang)
 
 	// admin notifier
@@ -94,12 +95,13 @@ func NewBot(
 
 	// handlers
 	handlers := &Handlers{
-		auth:      callbacks.NewAuth(authUc, renderer),
-		booking:   callbacks.NewBooking(bookingUc, renderer),
-		admin:     callbacks.NewAdmin(adminUc, renderer),
-		adminLoc:  callbacks.NewAdminLoc(adminlocUc, renderer),
-		adminUser: callbacks.NewAdminUser(adminuserUc, renderer),
-		profile:   callbacks.NewProfile(profileUc, renderer),
+		auth:       callbacks.NewAuth(authUc, renderer),
+		onboarding: callbacks.NewOnboarding(onboardingUc, renderer),
+		booking:    callbacks.NewBooking(bookingUc, renderer),
+		admin:      callbacks.NewAdmin(adminUc, renderer),
+		adminLoc:   callbacks.NewAdminLoc(adminlocUc, renderer),
+		adminUser:  callbacks.NewAdminUser(adminuserUc, renderer),
+		profile:    callbacks.NewProfile(profileUc, renderer),
 	}
 
 	return &Bot{

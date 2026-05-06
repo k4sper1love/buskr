@@ -5,9 +5,9 @@ const (
 	StateAuthInvitedName = "st_au_inv_nm"
 
 	// onboarding
-	StateOnboardName   = "st_onb_name"
-	StateOnboardFormat = "st_onb_fmt"
-	StateOnboardMedia  = "st_onb_media"
+	StateOnboardName  = "st_onb_name"
+	StateOnboardNoise = "st_onb_noise"
+	StateOnboardMedia = "st_onb_media"
 
 	// booking
 	StateBookDate     = "st_bk_date"

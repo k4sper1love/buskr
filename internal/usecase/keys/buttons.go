@@ -8,6 +8,10 @@ const (
 	// auth
 	BtnAuthApply = "au_app"
 
+	// onboarding
+	BtnOnboardNoiseSel = "ob_n_sel"
+	BtnOnboardCancel   = "ob_cnl"
+
 	// profile
 	BtnProfileMain     = "pr_main"
 	BtnProfileEditName = "pr_enm"

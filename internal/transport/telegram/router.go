@@ -48,6 +48,10 @@ func (r *Router) RegisterRoutes() {
 	// auth / onboarding
 	r.b.bot.Handle("\f"+keys.BtnAuthApply, r.handlers.auth.HandleApplyButton)
 
+	// onboarding
+	r.b.bot.Handle("\f"+keys.BtnOnboardNoiseSel, r.handlers.onboarding.HandleNoiseSelected)
+	r.b.bot.Handle("\f"+keys.BtnOnboardCancel, r.handlers.onboarding.HandleCancelFlow)
+
 	// admin moderation (approve/reject apply + noise upgrade)
 	r.b.bot.Handle("\f"+keys.BtnAdminAppAppr, r.handlers.admin.HandleAdminApproveApplication)
 	r.b.bot.Handle("\f"+keys.BtnAdminAppRej, r.handlers.admin.HandleAdminRejectApplication)

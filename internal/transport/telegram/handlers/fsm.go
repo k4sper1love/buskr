@@ -45,9 +45,8 @@ func (h *FSM) HandleText(c telebot.Context) error {
 		keys.StateAuthInvitedName: h.Auth.OnText,
 
 		// onboarding
-		keys.StateOnboardName:   h.Onboarding.OnText,
-		keys.StateOnboardFormat: h.Onboarding.OnText,
-		keys.StateOnboardMedia:  h.Onboarding.OnText,
+		keys.StateOnboardName:  h.Onboarding.OnText,
+		keys.StateOnboardMedia: h.Onboarding.OnText,
 
 		// admin location
 		keys.StateAdminLocName: h.AdminLoc.OnText,
@@ -86,7 +85,7 @@ func (h *FSM) HandleVideo(c telebot.Context) error {
 
 	state, _ := h.State.GetState(ctx, c.Sender().ID)
 
-	if state == "onboarding.state_apply_media" {
+	if state == keys.StateOnboardMedia {
 		rep, err := h.Onboarding.OnVideo(ctx, u, c.Message().Video.FileID)
 		if err != nil {
 			return err
