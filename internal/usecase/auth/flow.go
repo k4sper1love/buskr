@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/domain/user"
-	"github.com/k4sper1love/buskr/internal/usecase/response"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
+	"github.com/k4sper1love/buskr/internal/usecase/response"
 )
 
 func (uc *Usecase) Start(ctx context.Context, u *user.User, payload string) (response.Reply, error) {
@@ -120,5 +120,17 @@ func (uc *Usecase) ApplyButton(ctx context.Context, u *user.User) (response.Repl
 	return response.Reply{
 		Kind: response.KindEdit,
 		Text: response.Text{Key: keys.TextOnboardStep1PromptName},
+		Keyboard: response.Keyboard{
+			InlineRows: [][]response.Button{
+				{
+					{
+						Text: response.Text{Key: keys.TextCommonBtnCancel},
+						Data: response.CallbackData{
+							Unique: keys.BtnOnboardCancel,
+						},
+					},
+				},
+			},
+		},
 	}, nil
 }
