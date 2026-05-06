@@ -69,7 +69,7 @@ func (uc *Usecase) GenerateInvite(ctx context.Context, actor *user.User, botUser
 	inviteLink := fmt.Sprintf("https://t.me/%s?start=%s", botUsername, invite.Token)
 
 	return response.Reply{
-		Kind: response.KindSend,
+		Kind: response.KindEdit,
 		Text: response.Text{Key: keys.TextAdminInvCreated, Args: map[string]any{
 			"noise": noise,
 			"link":  inviteLink,
