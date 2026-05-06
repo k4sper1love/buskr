@@ -26,7 +26,7 @@ func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
 		lang = s.LanguageCode
 	}
 
-	text := r.Translate(lang, r.resolveSubKeys(lang, rep.Text))
+	text := r.Translate(lang, rep.Text)
 
 	var opts []any
 
@@ -104,6 +104,8 @@ func (r *Renderer) Translate(lang string, text response.Text) string {
 		}
 		return text.Key
 	}
+
+	text = r.resolveSubKeys(lang, text)
 
 	s := r.tr.T(lang, text.Key, text.Args)
 	if s == "" && text.Fallback != "" {
