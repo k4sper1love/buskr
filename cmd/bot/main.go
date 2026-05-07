@@ -64,7 +64,12 @@ func main() {
 	// servives
 	userService := user.NewService(userRepo)
 	locService := location.NewService(locRepo)
-	bookingService := booking.NewService(bookingRepo, userService, locService, cfg.Booking.MaxActive, cfg.Booking.MaxPerLocationAtDay, cfg.Booking.MaxAdvanceDays)
+	bookingService := booking.NewService(bookingRepo, userService, locService, booking.Config{
+		MaxActiveBookings:      cfg.Booking.MaxActive,
+		MaxBookingsPerLocation: cfg.Booking.MaxPerLocationAtDay,
+		MaxAdvanceDays:         cfg.Booking.MaxAdvanceDays,
+		AdjacencyRadius:        cfg.Booking.AdjacencyRadius,
+	})
 
 	// bot
 	bot, err := telegram.NewBot(&cfg.Telegram, tr, stateStore, userService, bookingService, locService, cfg.Booking.MaxAdvanceDays)
