@@ -114,5 +114,26 @@
   "worker.reminder.btn": "📍 I'm here",
   "worker.checkin.fail_msg": "❌ *Your booking has been cancelled.*\n\nYou did not confirm your presence within 15 minutes after the slot started. Your rating has been lowered.",
   "worker.hotspot.msg": "🔥 *HOT SLOT!*\n\nA musician didn't show up, so this location is available right now!\n\n📍 *Location:* {{.loc}}\n⏰ *Time:* {{.start}}:00 - {{.end}}:00\n🔊 *Max noise:* {{.noise}}\n\n_First to click the button takes the slot._",
-  "worker.hotspot.btn": "⚡ Grab slot"
+  "worker.hotspot.btn": "⚡ Grab slot",
+  "admin.locs.btn_edit": "✏️ Edit",
+  "admin.locs.edit_title": "✏️ *Edit — {{.name}}*\n\nChoose what to change:",
+  "admin.locs.edit_btn_name": "✏️ Name",
+  "admin.locs.edit_btn_desc": "✏️ Description",
+  "admin.locs.edit_btn_geo": "📍 Location",
+  "admin.locs.edit_step_name": "✏️ Enter new name:",
+  "admin.locs.edit_step_desc": "✏️ Enter new description:",
+  "admin.locs.edit_step_geo": "📍 Share new location via Telegram attachments.",
+  "admin.locs.edit_msg_success": "✅ Changes saved!",
+  "admin.locs.edit_msg_err": "❌ Failed to save. Please try again.",
+  "admin.locs.btn_schedule": "📅 Schedule",
+  "admin.locs.btn_map": "🗺 All on map",
+  "admin.locs.nearby_warning": "⚠️ *Nearby (within {{.radius}}m) already exists:*\n{{.list}}\n\nCreate anyway?",
+  "admin.locs.nearby_confirm": "✅ Create anyway",
+  "book.err.slot_taken": "😔 This slot is already taken. Please choose another time.",
+  "book.err.noisy_neighbor": "🔇 A loud artist is already nearby. Choose a different location or time.",
+  "book.err.noise_exceeded": "🔊 Your noise level exceeds this location's limit.",
+  "book.err.max_active": "📋 You've reached the active bookings limit.",
+  "book.err.max_per_loc": "📋 You already have a booking at this location today.",
+  "book.err.too_far": "📅 You can't book that far in advance."
+
 }
