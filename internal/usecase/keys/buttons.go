@@ -39,16 +39,31 @@ const (
 	BtnAdminPanelSend = "ad_pnls"
 	BtnAdminInvites   = "ad_inv"
 	BtnAdminInvGen    = "ad_ign"
-	BtnAdminLocs      = "ad_loc"
-	BtnAdminLocDet    = "ad_ldt"
-	BtnAdminLocTog    = "ad_ltg"
-	BtnAdminLocAdd    = "ad_lad"
-	BtnAdminLocNoise  = "ad_lno"
-	BtnAdminLocCancel = "ad_lcn"
+
+	// admin loc
+	BtnAdminLocs          = "ad_loc"
+	BtnAdminLocDet        = "ad_ldt"
+	BtnAdminLocTog        = "ad_ltg"
+	BtnAdminLocAdd        = "ad_lad"
+	BtnAdminLocNoise      = "ad_lno"
+	BtnAdminLocCancel     = "ad_lcn"
+	BtnAdminLocEdit       = "ad_led"
+	BtnAdminLocEditName   = "ad_lena"
+	BtnAdminLocEditDesc   = "ad_leds"
+	BtnAdminLocEditNoise  = "ad_leno"
+	BtnAdminLocEditGeo    = "ad_lege"
+	BtnAdminLocEditCancel = "ad_lecn"
+	BtnAdminLocSchedule   = "ad_lsc"
+	BtnAdminLocConfirm    = "ad_lcnf"
+	BtnAdminLocsMap       = "ad_lmap"
+
+	// admin user
 	BtnAdminUsers     = "ad_usr"
 	BtnAdminUserBan   = "ad_ubn"
 	BtnAdminUserUnban = "ad_uub"
 	BtnAdminAppAppr   = "ad_aap"
+
+	// admin moderation
 	BtnAdminAppRej    = "ad_arj"
 	BtnAdminNoiseAppr = "ad_nap"
 	BtnAdminNoiseRej  = "ad_nrj"

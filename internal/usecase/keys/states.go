@@ -16,10 +16,14 @@ const (
 	StateBookDuration = "st_bk_dur"
 
 	// admin location
-	StateAdminLocName  = "st_ad_lnm"
-	StateAdminLocDesc  = "st_ad_lds"
-	StateAdminLocNoise = "st_ad_lno"
-	StateAdminLocGeo   = "st_ad_lge"
+	StateAdminLocName      = "st_ad_lnm"
+	StateAdminLocDesc      = "st_ad_lds"
+	StateAdminLocNoise     = "st_ad_lno"
+	StateAdminLocGeo       = "st_ad_lge"
+	StateAdminLocEditName  = "st_ad_le_nm"
+	StateAdminLocEditDesc  = "st_ad_le_ds"
+	StateAdminLocEditNoise = "st_ad_le_no"
+	StateAdminLocEditGeo   = "st_ad_le_ge"
 
 	// admin user
 	StateAdminUserSearch = "st_ad_usr"

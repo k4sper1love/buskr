@@ -85,6 +85,24 @@ const (
 	TextAdminLocsBtnEnable     = "admin.locs.btn_enable"
 	TextAdminLocsBtnDisable    = "admin.locs.btn_disable"
 
+	// Locations edit
+	TextAdminLocsBtnEdit        = "admin.locs.btn_edit"
+	TextAdminLocsEditTitle      = "admin.locs.edit_title"
+	TextAdminLocsEditBtnName    = "admin.locs.edit_btn_name"
+	TextAdminLocsEditBtnDesc    = "admin.locs.edit_btn_desc"
+	TextAdminLocsEditBtnGeo     = "admin.locs.edit_btn_geo"
+	TextAdminLocsEditStepName   = "admin.locs.edit_step_name"
+	TextAdminLocsEditStepDesc   = "admin.locs.edit_step_desc"
+	TextAdminLocsEditStepGeo    = "admin.locs.edit_step_geo"
+	TextAdminLocsEditMsgSuccess = "admin.locs.edit_msg_success"
+	TextAdminLocsEditMsgErr     = "admin.locs.edit_msg_err"
+
+	// Locations schedule & map
+	TextAdminLocsBtnSchedule   = "admin.locs.btn_schedule"
+	TextAdminLocsBtnMap        = "admin.locs.btn_map"
+	TextAdminLocsNearbyWarn    = "admin.locs.nearby_warning"
+	TextAdminLocsNearbyConfirm = "admin.locs.nearby_confirm"
+
 	// Users
 	TextAdminUsersPromptSearch    = "admin.users.prompt_search"
 	TextAdminUsersMsgInvalid      = "admin.users.msg_invalid"
@@ -149,6 +167,14 @@ const (
 	TextBookDetMsgCheckinSfx    = "book.det.msg_checkin_sfx"
 	TextBookDetMsgCheckinCb     = "book.det.msg_checkin_cb"
 	TextBookDetMsgGrabTitle     = "book.det.msg_grab_title"
+
+	// errors
+	TextBookErrSlotTaken      = "book.err.slot_taken"
+	TextBookErrNoisyNeighbor  = "book.err.noisy_neighbor"
+	TextBookErrNoiseExceeded  = "book.err.noise_exceeded"
+	TextBookErrMaxActive      = "book.err.max_active"
+	TextBookErrMaxPerLoc      = "book.err.max_per_loc"
+	TextBookErrTooFarInFuture = "book.err.too_far"
 )
 
 // worker
