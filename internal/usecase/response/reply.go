@@ -32,6 +32,7 @@ type Keyboard struct {
 type Button struct {
 	Text Text
 	Data CallbackData
+	URL  string
 }
 
 type CallbackData struct {

@@ -40,9 +40,12 @@ func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
 			var btns []telebot.Btn
 			for _, btn := range row {
 				text := r.Translate(lang, btn.Text)
-				if btn.Data.Unique != "" {
+				switch {
+				case btn.URL != "":
+					btns = append(btns, menu.URL(text, btn.URL))
+				case btn.Data.Unique != "":
 					btns = append(btns, menu.Data(text, btn.Data.Unique, btn.Data.Args...))
-				} else {
+				default:
 					btns = append(btns, menu.Text(text))
 				}
 			}
