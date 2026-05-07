@@ -15,4 +15,5 @@ var (
 	ErrMaxBookingsPerLocation = errors.New("max bookings per location at same day reached")
 	ErrTimeOverlap            = errors.New("time overlap with another booking")
 	ErrTooFarInFuture         = errors.New("booking is too far in future")
+	ErrNoisyNeighbor          = errors.New("adjacent location has a loud artist booked at this time")
 )

@@ -258,6 +258,32 @@ func (r *BookingRepository) CountByUserAndLocationAndDay(ctx context.Context, us
 	return count, nil
 }
 
+func (r *BookingRepository) HasNoisyNeighbor(ctx context.Context, locID string, start, end time.Time, radiusMeters float64) (bool, error) {
+	query := `
+		SELECT EXISTS(
+			SELECT 1
+			FROM bookings
+			JOIN locations nearby ON b.location_id = nearby.id
+			JOIN users u ON b.user_id = u.id
+			JOIN locations target ON target.id = $1
+			WHERE nearby.id != $1
+				AND b.status IN ('pending', 'active')
+				AND b.start_time < $3
+				AND b.end_time > $2
+				AND u.noise_level = 'hard'
+				AND ST_DWithin(
+					nearby.coords::geography,
+					target.coords::geography,
+					$4
+				)
+		)
+	`
+
+	var has bool
+	err := r.db.QueryRowContext(ctx, query, locID, start, end, radiusMeters).Scan(&has)
+	return has, err
+}
+
 func (r *BookingRepository) scanBookings(rows *sql.Rows) ([]*booking.Booking, error) {
 	var bookings []*booking.Booking
 

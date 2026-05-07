@@ -43,6 +43,7 @@ type BookingConfig struct {
 	MaxActive           int `env:"BOOKING_MAX_ACTIVE" env-default:"2"`
 	MaxPerLocationAtDay int `env:"BOOKING_MAX_PER_LOCATION_AT_DAY" env-default:"1"`
 	MaxAdvanceDays      int `env:"BOOKING_MAX_ADVANCE_DAYS" env-default:"5"`
+	AdjacencyRadius     int `env:"BOOKING_ADJACENCY_RADIUS" env-default:"100"`
 }
 
 // singleton pattern

@@ -16,17 +16,31 @@ type LocationProvider interface {
 	GetByID(ctx context.Context, id string) (*location.Location, error)
 }
 
-type Service struct {
-	repo                   Repository
-	users                  UserProvider
-	locs                   LocationProvider
-	maxActiveBookings      int
-	maxBookingsPerLocation int
-	maxAdvanceDays         int
+type Config struct {
+	MaxActiveBookings      int
+	MaxBookingsPerLocation int
+	MaxAdvanceDays         int
+	AdjacencyRadius        int
 }
 
-func NewService(repo Repository, users UserProvider, locs LocationProvider, maxActiveBookings int, maxBookingsPerLocation int, maxAdvanceDays int) *Service {
-	return &Service{repo: repo, users: users, locs: locs, maxActiveBookings: maxActiveBookings, maxBookingsPerLocation: maxBookingsPerLocation, maxAdvanceDays: maxAdvanceDays}
+type Service struct {
+	repo  Repository
+	users UserProvider
+	locs  LocationProvider
+	cfg   Config
+}
+
+func NewService(repo Repository,
+	users UserProvider,
+	locs LocationProvider,
+	config Config,
+) *Service {
+	return &Service{
+		repo:  repo,
+		users: users,
+		locs:  locs,
+		cfg:   config,
+	}
 }
 
 func (s *Service) GetScheduleForLocation(ctx context.Context, locID string, date time.Time) ([]*Booking, error) {
@@ -61,7 +75,7 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 		return nil, ErrNoiseExceeded
 	}
 
-	if start.After(time.Now().AddDate(0, 0, s.maxAdvanceDays)) {
+	if start.After(time.Now().AddDate(0, 0, s.cfg.MaxAdvanceDays)) {
 		return nil, ErrTooFarInFuture
 	}
 
@@ -70,7 +84,7 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 		return nil, err
 	}
 
-	if activeBookings >= s.maxActiveBookings {
+	if activeBookings >= s.cfg.MaxActiveBookings {
 		return nil, ErrMaxActiveBookings
 	}
 
@@ -79,7 +93,7 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 		return nil, err
 	}
 
-	if bookingsPerLocation >= s.maxBookingsPerLocation {
+	if bookingsPerLocation >= s.cfg.MaxBookingsPerLocation {
 		return nil, ErrMaxBookingsPerLocation
 	}
 
@@ -98,6 +112,16 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 	}
 	if locOverlap {
 		return nil, ErrSlotTaken
+	}
+
+	if u.NoiseLevel == user.NoiseHard {
+		noisyNeighbor, err := s.repo.HasNoisyNeighbor(ctx, locID, start, end, float64(s.cfg.AdjacencyRadius))
+		if err != nil {
+			return nil, err
+		}
+		if noisyNeighbor {
+			return nil, ErrNoisyNeighbor
+		}
 	}
 
 	booking := NewBooking(userID, locID, start, end)
