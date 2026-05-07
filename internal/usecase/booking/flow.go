@@ -424,6 +424,19 @@ func (uc *Usecase) DurationSelected(ctx context.Context, u *user.User, duration 
 
 	_, err = uc.bookings.BookSlot(ctx, u.ID, locID, startTime, endTime)
 	if err != nil {
+		if key := bookingErrKey(err); key != "" {
+			return BookingResult{Reply: response.Reply{
+				Kind: response.KindEdit,
+				Text: response.Text{Key: key},
+				Keyboard: response.Keyboard{
+					InlineRows: [][]response.Button{
+						{
+							{Text: response.Text{Key: keys.TextCommonBtnCancel}, Data: response.CallbackData{Unique: keys.BtnBookCancel}},
+						},
+					},
+				},
+			}}, nil
+		}
 		return BookingResult{}, err
 	}
 
@@ -524,4 +537,23 @@ func (uc *Usecase) BackToSlots(ctx context.Context, u *user.User) (response.Repl
 
 	// This will render the Slot Selection screen using the saved location
 	return uc.LocationSelected(ctx, u, locID)
+}
+
+func bookingErrKey(err error) string {
+	switch {
+	case errors.Is(err, booking.ErrSlotTaken):
+		return keys.TextBookErrSlotTaken
+	case errors.Is(err, booking.ErrNoisyNeighbor):
+		return keys.TextBookErrNoisyNeighbor
+	case errors.Is(err, booking.ErrNoiseExceeded):
+		return keys.TextBookErrNoiseExceeded
+	case errors.Is(err, booking.ErrMaxActiveBookings):
+		return keys.TextBookErrMaxActive
+	case errors.Is(err, booking.ErrMaxBookingsPerLocation):
+		return keys.TextBookErrMaxPerLoc
+	case errors.Is(err, booking.ErrTooFarInFuture):
+		return keys.TextBookErrTooFarInFuture
+	default:
+		return ""
+	}
 }
