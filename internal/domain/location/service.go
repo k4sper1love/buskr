@@ -61,3 +61,7 @@ func (s *Service) GetLocationsForMusicians(ctx context.Context) ([]*Location, er
 func (s *Service) GetByID(ctx context.Context, id string) (*Location, error) {
 	return s.repo.GetByID(ctx, id)
 }
+
+func (s *Service) FindNearby(ctx context.Context, lat, lon float64, radiusMeters float64) ([]*LocationWithDist, error) {
+	return s.repo.FindNearby(ctx, lat, lon, radiusMeters)
+}

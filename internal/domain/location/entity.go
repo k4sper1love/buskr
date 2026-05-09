@@ -37,6 +37,11 @@ type Location struct {
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
+type LocationWithDist struct {
+	*Location
+	DistMeters float64 `json:"dist_meters"`
+}
+
 func NewLocation(name, desc string, lat, lon float64, maxNoise NoiseLimit) *Location {
 	now := time.Now()
 	return &Location{

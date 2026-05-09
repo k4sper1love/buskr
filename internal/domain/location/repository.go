@@ -7,4 +7,5 @@ type Repository interface {
 	GetByID(ctx context.Context, id string) (*Location, error)
 	List(ctx context.Context, includeInactive bool) ([]*Location, error)
 	Update(ctx context.Context, loc *Location) error
+	FindNearby(ctx context.Context, lat, lon, radiusMeters float64) ([]*LocationWithDist, error)
 }
