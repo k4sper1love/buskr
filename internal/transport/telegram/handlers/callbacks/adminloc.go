@@ -115,7 +115,14 @@ func (h *AdminLoc) HandleAdminLocs(c telebot.Context) error {
 		return err
 	}
 
-	rep, err := h.uc.List(ctx, u)
+	page := 0
+	if args := c.Args(); len(args) > 0 {
+		if p, err := strconv.Atoi(args[0]); err == nil && p >= 0 {
+			page = p
+		}
+	}
+
+	rep, err := h.uc.List(ctx, u, page)
 	if err != nil {
 		return err
 	}
