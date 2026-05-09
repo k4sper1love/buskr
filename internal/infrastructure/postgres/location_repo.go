@@ -164,3 +164,64 @@ func (r *LocationRepository) Update(ctx context.Context, loc *location.Location)
 
 	return nil
 }
+
+func (r *LocationRepository) FindNearby(ctx context.Context, lat, lon, radiusMeters float64) ([]*location.LocationWithDist, error) {
+	query := `
+		SELECT id, name, description, 
+			ST_Y(coords::geometry) as lat, ST_X(coords::geometry) as lon, 
+			max_noise, status, created_at, updated_at,
+			ST_Distance(
+				coords::geometry, 
+				ST_SetSRID(ST_MakePoint($1, $2), 4326)::geometry
+			) as dist_meters
+		FROM locations
+		WHERE status = 'active'
+			AND ST_DWithin(
+				coords::geometry,
+				ST_SetSRID(ST_MakePoint($1, $2), 4326)::geometry,
+				$3
+			)
+		ORDER BY dist_meters ASC
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, lon, lat, radiusMeters)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var locations []*location.LocationWithDist
+	for rows.Next() {
+		var loc location.Location
+		var maxNoise, status string
+		var dist float64
+
+		if err := rows.Scan(
+			&loc.ID,
+			&loc.Name,
+			&loc.Description,
+			&loc.Coords.Lat,
+			&loc.Coords.Lon,
+			&maxNoise,
+			&status,
+			&loc.CreatedAt, &loc.UpdatedAt,
+			&dist,
+		); err != nil {
+			return nil, err
+		}
+
+		loc.MaxNoise = location.NoiseLimit(maxNoise)
+		loc.Status = location.Status(status)
+
+		locations = append(locations, &location.LocationWithDist{
+			Location:   &loc,
+			DistMeters: dist,
+		})
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return locations, nil
+}
