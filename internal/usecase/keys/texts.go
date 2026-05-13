@@ -85,7 +85,6 @@ const (
 	TextAdminLocsBtnEnable     = "admin.locs.btn_enable"
 	TextAdminLocsBtnDisable    = "admin.locs.btn_disable"
 
-	// Locations edit
 	TextAdminLocsBtnEdit        = "admin.locs.btn_edit"
 	TextAdminLocsEditTitle      = "admin.locs.edit_title"
 	TextAdminLocsEditBtnName    = "admin.locs.edit_btn_name"
@@ -97,11 +96,12 @@ const (
 	TextAdminLocsEditMsgSuccess = "admin.locs.edit_msg_success"
 	TextAdminLocsEditMsgErr     = "admin.locs.edit_msg_err"
 
-	// Locations schedule & map
 	TextAdminLocsBtnSchedule   = "admin.locs.btn_schedule"
+	TextAdminLocsScheduleEmpty = "admin.locs.schedule_empty"
 	TextAdminLocsBtnMap        = "admin.locs.btn_map"
 	TextAdminLocsNearbyWarn    = "admin.locs.nearby_warning"
 	TextAdminLocsNearbyConfirm = "admin.locs.nearby_confirm"
+	TextAdminLocsBtnOpenMap    = "admin.locs.btn_open_map"
 
 	// Users
 	TextAdminUsersPromptSearch    = "admin.users.prompt_search"

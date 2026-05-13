@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
+	"github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
@@ -12,7 +15,8 @@ import (
 )
 
 const (
-	pageSize = 5
+	pageSize   = 5
+	baseMapURL = "https://maps.google.com/"
 )
 
 func (uc *Usecase) List(ctx context.Context, actor *user.User, page int) (response.Reply, error) {
@@ -118,10 +122,12 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 		}, nil
 	}
 
-	actionKey := keys.TextAdminLocsBtnDisable
+	toogleKey := keys.TextAdminLocsBtnDisable
 	if loc.Status == location.StatusInactive {
-		actionKey = keys.TextAdminLocsBtnEnable
+		toogleKey = keys.TextAdminLocsBtnEnable
 	}
+
+	mapURL := fmt.Sprintf("%s?q=%f,%f", baseMapURL, loc.Coords.Lat, loc.Coords.Lon)
 
 	return response.Reply{
 		Kind: response.KindEdit,
@@ -132,15 +138,33 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 				"desc":      loc.Description,
 				"max_noise": loc.MaxNoise,
 				"status":    loc.Status,
+				"lat":       fmt.Sprint("%.6f", loc.Coords.Lat),
+				"lon":       fmt.Sprint("%.6f", loc.Coords.Lon),
 			},
 		},
 		Keyboard: response.Keyboard{
 			InlineRows: [][]response.Button{
 				{
 					{
-						Text: response.Text{Key: actionKey},
+						Text: response.Text{Key: toogleKey},
 						Data: response.CallbackData{Unique: keys.BtnAdminLocTog, Args: []string{loc.ID}},
 					},
+					{
+						Text: response.Text{Key: keys.TextAdminLocsBtnEdit},
+						Data: response.CallbackData{Unique: keys.BtnAdminLocEdit, Args: []string{loc.ID}},
+					},
+				},
+				{
+					{
+						Text: response.Text{Key: keys.TextAdminLocsBtnSchedule},
+						Data: response.CallbackData{Unique: keys.BtnAdminLocSchedule, Args: []string{loc.ID}},
+					},
+					{
+						Text: response.Text{Key: keys.TextAdminLocsBtnOpenMap},
+						URL:  mapURL,
+					},
+				},
+				{
 					{
 						Text: response.Text{Key: keys.TextAdminLocsBtnList},
 						Data: response.CallbackData{Unique: keys.BtnAdminLocs},
@@ -178,4 +202,123 @@ func (uc *Usecase) ToggleStatus(ctx context.Context, actor *user.User, locID str
 	}
 
 	return uc.Details(ctx, actor, locID)
+}
+
+func (uc *Usecase) EditMenu(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
+	if actor.Role != user.RoleAdmin {
+		return response.Reply{}, nil
+	}
+
+	loc, err := uc.locs.GetByID(ctx, locID)
+	if err != nil {
+		return response.Reply{
+			Kind: response.KindEdit,
+			Text: response.Text{Key: keys.TextCommonErrGeneral},
+		}, nil
+	}
+
+	return response.Reply{
+		Kind: response.KindEdit,
+		Text: response.Text{
+			Key:  keys.TextAdminLocsEditTitle,
+			Args: map[string]any{"name": loc.Name},
+		},
+		Keyboard: response.Keyboard{
+			InlineRows: [][]response.Button{
+				{
+					{Text: response.Text{Key: keys.TextAdminLocsEditBtnName}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditName, Args: []string{locID}}},
+					{Text: response.Text{Key: keys.TextAdminLocsEditBtnDesc}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditDesc, Args: []string{locID}}},
+				},
+				{
+					{Text: response.Text{Key: keys.TextCommonLblNoiseLight}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditNoise, Args: []string{locID, string(location.LimitLight)}}},
+					{Text: response.Text{Key: keys.TextCommonLblNoiseMedium}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditNoise, Args: []string{locID, string(location.LimitMedium)}}},
+					{Text: response.Text{Key: keys.TextCommonLblNoiseHard}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditNoise, Args: []string{locID, string(location.LimitHard)}}},
+				},
+				{
+					{Text: response.Text{Key: keys.TextAdminLocsEditBtnGeo}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditGeo, Args: []string{locID}}},
+				},
+				{
+					{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{locID}}},
+				},
+			},
+		},
+	}, nil
+}
+
+func (uc *Usecase) EditNoiseSelected(ctx context.Context, actor *user.User, locID, noise string) (response.Reply, error) {
+	if actor.Role != user.RoleAdmin {
+		return response.Reply{}, nil
+	}
+
+	loc, err := uc.locs.GetByID(ctx, locID)
+	if err != nil {
+		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+	}
+
+	if err := uc.locs.UpdateLocation(ctx, locID, loc.Name, loc.Description, loc.Coords.Lat, loc.Coords.Lon, location.NoiseLimit(noise)); err != nil {
+		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextAdminLocsEditMsgErr}}, nil
+	}
+
+	return uc.Details(ctx, actor, locID)
+}
+
+func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
+	if actor.Role != user.RoleAdmin {
+		return response.Reply{}, nil
+	}
+
+	loc, err := uc.locs.GetByID(ctx, locID)
+	if err != nil {
+		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+	}
+
+	locTz, _ := time.LoadLocation("Asia/Almaty")
+	now := time.Now().In(locTz)
+
+	bookings, err := uc.bookings.GetScheduleForLocation(ctx, locID, now)
+	if err != nil {
+		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+	}
+
+	backKeyboard := response.Keyboard{
+		InlineRows: [][]response.Button{{{
+			Text: response.Text{Key: keys.TextCommonBtnBack},
+			Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{locID}},
+		}}},
+	}
+
+	var active []*booking.Booking
+	for _, b := range bookings {
+		if b.Status == booking.StatusPending || b.Status == booking.StatusActive {
+			active = append(active, b)
+		}
+	}
+
+	if len(active) == 0 {
+		return response.Reply{
+			Kind:     response.KindEdit,
+			Text:     response.Text{Key: keys.TextAdminLocsScheduleEmpty},
+			Keyboard: backKeyboard,
+		}, nil
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("📅 *%s*\n%s\n\n", loc.Name, now.Format("02.01.2006")))
+	for _, b := range active {
+		icon := "⏳"
+		if b.Status == booking.StatusActive {
+			icon = "✅"
+		}
+		sb.WriteString(fmt.Sprintf("%s `%s – %s`\n",
+			icon,
+			b.StartTime.In(locTz).Format("15:04"),
+			b.EndTime.In(locTz).Format("15:04"),
+		))
+	}
+
+	return response.Reply{
+		Kind:     response.KindEdit,
+		Text:     response.Text{Fallback: sb.String()},
+		Keyboard: backKeyboard,
+	}, nil
 }
