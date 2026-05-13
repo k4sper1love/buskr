@@ -134,6 +134,6 @@
   "book.err.noise_exceeded": "🔊 Your noise level exceeds this location's limit.",
   "book.err.max_active": "📋 You've reached the active bookings limit.",
   "book.err.max_per_loc": "📋 You already have a booking at this location today.",
-  "book.err.too_far": "📅 You can't book that far in advance."
-
+  "book.err.too_far": "📅 You can't book that far in advance.",
+  "admin.locs.schedule_empty": "No bookings 🎵"
 }
