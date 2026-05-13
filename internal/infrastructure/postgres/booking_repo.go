@@ -262,7 +262,7 @@ func (r *BookingRepository) HasNoisyNeighbor(ctx context.Context, locID string, 
 	query := `
 		SELECT EXISTS(
 			SELECT 1
-			FROM bookings
+			FROM bookings b
 			JOIN locations nearby ON b.location_id = nearby.id
 			JOIN users u ON b.user_id = u.id
 			JOIN locations target ON target.id = $1
