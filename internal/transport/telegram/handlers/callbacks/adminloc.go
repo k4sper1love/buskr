@@ -209,3 +209,217 @@ func (h *AdminLoc) HandleAdminLocCancel(c telebot.Context) error {
 
 	return h.renderer.Render(c, rep)
 }
+
+func (h *AdminLoc) HandleAdminLocEdit(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.EditMenu(ctx, u, locID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminLoc) HandleAdminLocEditName(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.EditNameStart(ctx, u, locID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminLoc) HandleAdminLocEditDesc(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.EditDescStart(ctx, u, locID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminLoc) HandleAdminLocEditNoise(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) < 2 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+	noise := args[1]
+
+	rep, err := h.uc.EditNoiseSelected(ctx, u, locID, noise)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminLoc) HandleAdminLocEditGeo(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.EditGeoStart(ctx, u, locID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminLoc) HandleAdminLocEditCancel(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.CancelEditFlow(ctx, u, locID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminLoc) HandleAdminLocSchedule(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.Schedule(ctx, u, locID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminLoc) HandleAdminLocConfirm(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.ConfirmCreate(ctx, u, locID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+	return h.renderer.Render(c, rep)
+}

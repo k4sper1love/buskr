@@ -76,7 +76,7 @@ func NewBot(
 	authUc := auth.NewUsecase(state, users, 1*time.Hour)
 	bookingUc := bookingUsecase.NewUsecase(state, locs, bookings, 1*time.Hour, maxAdvanceDays)
 	adminUc := admin.NewUsecase(state, users, 1*time.Hour, 1)
-	adminlocUc := adminloc.NewUsecase(state, locs, 1*time.Hour)
+	adminlocUc := adminloc.NewUsecase(state, locs, bookings, 1*time.Hour)
 	adminuserUc := adminuser.NewUsecase(state, users, 1*time.Hour)
 	profileUc := profile.NewUsecase(state, users, notifier, 1*time.Hour)
 	onboardingUc := onboarding.NewUsecase(state, users, notifier, 1*time.Hour)

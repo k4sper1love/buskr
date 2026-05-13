@@ -52,6 +52,9 @@ func (h *FSM) HandleText(c telebot.Context) error {
 		keys.StateAdminLocName: h.AdminLoc.OnText,
 		keys.StateAdminLocDesc: h.AdminLoc.OnText,
 
+		keys.StateAdminLocEditName: h.AdminLoc.OnText,
+		keys.StateAdminLocEditDesc: h.AdminLoc.OnText,
+
 		// profile
 		keys.StateProfileEditName: h.Profile.OnText,
 

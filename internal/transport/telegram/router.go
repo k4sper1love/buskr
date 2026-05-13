@@ -79,6 +79,16 @@ func (r *Router) RegisterRoutes() {
 	r.b.bot.Handle("\f"+keys.BtnAdminLocAdd, r.handlers.adminLoc.HandleAdminAddLoc)
 	r.b.bot.Handle("\f"+keys.BtnAdminLocNoise, r.handlers.adminLoc.HandleAdminOnNoiseSelected)
 	r.b.bot.Handle("\f"+keys.BtnAdminLocCancel, r.handlers.adminLoc.HandleAdminLocCancel)
+	r.b.bot.Handle("\f"+keys.BtnAdminLocConfirm, r.handlers.adminLoc.HandleAdminLocConfirm)
+
+	r.b.bot.Handle("\f"+keys.BtnAdminLocEdit, r.handlers.adminLoc.HandleAdminLocEdit)
+	r.b.bot.Handle("\f"+keys.BtnAdminLocEditName, r.handlers.adminLoc.HandleAdminLocEditName)
+	r.b.bot.Handle("\f"+keys.BtnAdminLocEditDesc, r.handlers.adminLoc.HandleAdminLocEditDesc)
+	r.b.bot.Handle("\f"+keys.BtnAdminLocEditNoise, r.handlers.adminLoc.HandleAdminLocEditNoise)
+	r.b.bot.Handle("\f"+keys.BtnAdminLocEditGeo, r.handlers.adminLoc.HandleAdminLocEditGeo)
+	r.b.bot.Handle("\f"+keys.BtnAdminLocEditCancel, r.handlers.adminLoc.HandleAdminLocEditCancel)
+
+	r.b.bot.Handle("\f"+keys.BtnAdminLocSchedule, r.handlers.adminLoc.HandleAdminLocSchedule)
 
 	// admin users
 	r.b.bot.Handle("\f"+keys.BtnAdminUsers, r.handlers.adminUser.HandleAdminSearch)
