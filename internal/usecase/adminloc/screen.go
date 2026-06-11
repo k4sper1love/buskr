@@ -62,19 +62,6 @@ func (uc *Usecase) List(ctx context.Context, actor *user.User, page int) (respon
 		}
 	}
 
-	var mapBtn response.Button
-	if webAppURL != "" {
-		mapBtn = response.Button{
-			Text:      response.Text{Key: keys.TextAdminLocsBtnMap},
-			WebAppURL: webAppURL,
-		}
-	} else {
-		mapBtn = response.Button{
-			Text: response.Text{Key: keys.TextAdminLocsBtnMap},
-			Data: response.CallbackData{Unique: keys.BtnAdminLocsMap},
-		}
-	}
-
 	var rows [][]response.Button
 
 	rows = append(rows, []response.Button{
@@ -84,9 +71,14 @@ func (uc *Usecase) List(ctx context.Context, actor *user.User, page int) (respon
 		},
 	})
 
-	rows = append(rows, []response.Button{
-		mapBtn,
-	})
+	if webAppURL != "" {
+		rows = append(rows, []response.Button{
+			{
+				Text:      response.Text{Key: keys.TextAdminLocsBtnMap},
+				WebAppURL: webAppURL,
+			},
+		})
+	}
 
 	rows = append(rows, []response.Button{
 		{
@@ -319,34 +311,6 @@ func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string)
 		Kind:     response.KindEdit,
 		Text:     response.Text{Fallback: sb.String()},
 		Keyboard: backKeyboard,
-	}, nil
-}
-
-func (uc *Usecase) AllOnMap(ctx context.Context, actor *user.User) (response.Reply, error) {
-	if actor.Role != user.RoleAdmin {
-		return response.Reply{}, nil
-	}
-
-	locs, err := uc.locs.GetLocationsForAdmin(ctx)
-	if err != nil {
-		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
-	}
-
-	if len(locs) == 0 {
-		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextAdminLocsMapEmpty}}, nil
-	}
-
-	imgBytes, numberedList, err := uc.maps.Generate(locs)
-	if err != nil {
-		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
-	}
-
-	caption := fmt.Sprintf("📍 %d\n\n%s", len(locs), numberedList)
-
-	return response.Reply{
-		Kind:  response.KindSendImage,
-		Image: imgBytes,
-		Text:  response.Text{Fallback: caption},
 	}, nil
 }
 
