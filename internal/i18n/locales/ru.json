@@ -103,6 +103,8 @@
   "book.create.msg_success": "✅ *Бронь подтверждена!*\n\n📍 {{.name}}\n📅 {{.date}}\n🕐 {{.time}}",
   "book.create.msg_success_cb": "✅ Забронировано!",
   "book.create.msg_cancel": "❌ *Бронирование отменено*",
+  "book.create.btn_2gis": "🗺️ 2GIS",
+  "book.create.btn_yandex": "🗺️ Яндекс Карты",
   "book.list.title": "📋 *Ваши активные брони:*",
   "book.list.msg_empty": "📋 У вас пока нет активных броней.\n\nНажмите «Забронировать место» чтобы начать.",
   "book.det.title": "📍 *{{.name}}*\n📅 {{.date}}  🕐 {{.time}}\n\n📊 Статус: {{.status}}",

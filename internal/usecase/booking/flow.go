@@ -534,6 +534,16 @@ func (uc *Usecase) DurationSelected(ctx context.Context, u *user.User, duration 
 				InlineRows: [][]response.Button{
 					{
 						{
+							Text: response.Text{Key: keys.TextBookCreateBtn2GIS},
+							URL:  fmt.Sprintf("https://2gis.kz/geo/%f,%f", locData.Coords.Lon, locData.Coords.Lat),
+						},
+						{
+							Text: response.Text{Key: keys.TextBookCreateBtnYandex},
+							URL:  fmt.Sprintf("https://yandex.kz/maps/?text=%f,%f", locData.Coords.Lat, locData.Coords.Lon),
+						},
+					},
+					{
+						{
 							Text: response.Text{Key: keys.TextCommonBtnMenu},
 							Data: response.CallbackData{Unique: keys.BtnCommonMenuSend},
 						},

@@ -159,6 +159,8 @@ const (
 	TextBookCreateMsgSuccess   = "book.create.msg_success"
 	TextBookCreateMsgSuccessCb = "book.create.msg_success_cb"
 	TextBookCreateMsgCancel    = "book.create.msg_cancel"
+	TextBookCreateBtn2GIS      = "book.create.btn_2gis"
+	TextBookCreateBtnYandex    = "book.create.btn_yandex"
 
 	// list flow
 	TextBookListTitle    = "book.list.title"

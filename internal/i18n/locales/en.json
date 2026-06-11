@@ -102,6 +102,8 @@
   "book.create.msg_success": "✅ *Booking confirmed!*\n\n📍 {{.name}}\n📅 {{.date}}\n🕐 {{.time}}",
   "book.create.msg_success_cb": "✅ Booked!",
   "book.create.msg_cancel": "❌ *Booking Cancelled*",
+  "book.create.btn_2gis": "🗺️ 2GIS",
+  "book.create.btn_yandex": "🗺️ Yandex Maps",
   "book.list.title": "📋 *Your Active Bookings:*",
   "book.list.msg_empty": "📋 You currently have no active bookings.\n\nTap 'Book a location' to get started.",
   "book.det.title": "📍 *{{.name}}*\n📅 {{.date}}  🕐 {{.time}}\n\n📊 Status: {{.status}}",
