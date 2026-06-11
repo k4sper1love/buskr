@@ -13,6 +13,14 @@ const (
 	TextCommonLblNoiseNone    = "common.lbl.noise_none"
 	TextCommonLblRoleMusician = "common.lbl.role_musician"
 	TextCommonLblRoleAdmin    = "common.lbl.role_admin"
+
+	TextCommonWeekdaySun  = "common.weekday.sun"
+	TextCommonWeekdayMon  = "common.weekday.mon"
+	TextCommongWeekdayTue = "common.weekday.tue"
+	TextCommonWeekdayWed  = "common.weekday.wed"
+	TextCommonWeekdayThu  = "common.weekday.thu"
+	TextCommonWeekdayFri  = "common.weekday.fri"
+	TextCommonWeekdaySat  = "common.weekday.sat"
 )
 
 // auth

@@ -47,13 +47,31 @@ func (uc *Usecase) Book(ctx context.Context, u *user.User) (response.Reply, erro
 			key = keys.TextBookCreateLblTomorrow
 		}
 
+		args := map[string]any{
+			"date": dateHuman,
+		}
+		var subKeyArgs []string
+
+		if i >= 2 {
+			weekdayKeys := []string{
+				keys.TextCommonWeekdaySun,
+				keys.TextCommonWeekdayMon,
+				keys.TextCommongWeekdayTue,
+				keys.TextCommonWeekdayWed,
+				keys.TextCommonWeekdayThu,
+				keys.TextCommonWeekdayFri,
+				keys.TextCommonWeekdaySat,
+			}
+			args["weekday"] = weekdayKeys[targetDate.Weekday()]
+			subKeyArgs = []string{"weekday"}
+		}
+
 		rows = append(rows, []response.Button{
 			{
 				Text: response.Text{
-					Key: key,
-					Args: map[string]any{
-						"date": dateHuman,
-					},
+					Key:        key,
+					Args:       args,
+					SubKeyArgs: subKeyArgs,
 				},
 				Data: response.CallbackData{
 					Unique: keys.BtnBookDateSel,
