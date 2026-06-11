@@ -108,6 +108,19 @@ func (uc *Usecase) Details(ctx context.Context, u *user.User, bookingID string) 
 		}
 	}
 
+	if locData != nil && locData.Coords.Lat != 0 && locData.Coords.Lon != 0 {
+		rows = append(rows, []response.Button{
+			{
+				Text: response.Text{Key: keys.TextBookCreateBtn2GIS},
+				URL:  fmt.Sprintf("https://2gis.kz/geo/%f,%f", locData.Coords.Lon, locData.Coords.Lat),
+			},
+			{
+				Text: response.Text{Key: keys.TextBookCreateBtnYandex},
+				URL:  fmt.Sprintf("https://yandex.kz/maps/?text=%f,%f", locData.Coords.Lat, locData.Coords.Lon),
+			},
+		})
+	}
+
 	if now.Before(bk.StartTime.In(locTz)) && bk.Status == booking.StatusPending {
 		rows = append(rows, []response.Button{
 			{
