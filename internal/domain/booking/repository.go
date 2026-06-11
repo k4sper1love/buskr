@@ -19,5 +19,6 @@ type Repository interface {
 	CountActiveFuture(ctx context.Context, userID string) (int, error)
 	CountByUserAndLocationAndDay(ctx context.Context, userID, locID string, date time.Time) (int, error)
 	HasNoisyNeighbor(ctx context.Context, locID string, start, end time.Time, radiusMeters float64) (bool, error)
+	GetLastBookingByUser(ctx context.Context, userID string) (*Booking, error)
 }
 

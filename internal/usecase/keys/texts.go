@@ -81,6 +81,7 @@ const (
 	TextAdminLocsMsgCancel     = "admin.locs.msg_cancel"
 	TextAdminLocsMsgNotFound   = "admin.locs.msg_not_found"
 	TextAdminLocsBtnList       = "admin.locs.btn_list"
+	TextAdminLocsBtnDelete     = "admin.locs.btn_delete"
 	TextAdminLocsDetails       = "admin.locs.details"
 	TextAdminLocsBtnEnable     = "admin.locs.btn_enable"
 	TextAdminLocsBtnDisable    = "admin.locs.btn_disable"
@@ -102,6 +103,8 @@ const (
 	TextAdminLocsNearbyWarn    = "admin.locs.nearby_warning"
 	TextAdminLocsNearbyConfirm = "admin.locs.nearby_confirm"
 	TextAdminLocsBtnOpenMap    = "admin.locs.btn_open_map"
+	TextAdminLocsMapTitle      = "admin.locs.map_title"
+	TextAdminLocsMapEmpty      = "admin.locs.map_empty"
 
 	// Users
 	TextAdminUsersPromptSearch    = "admin.users.prompt_search"
@@ -138,6 +141,7 @@ const (
 	TextBookCreateMsgNoLocs    = "book.create.msg_no_locs"
 	TextBookCreateBtnDates     = "book.create.btn_dates"
 	TextBookCreatePromptLoc    = "book.create.prompt_loc"
+	TextBookCreateBtnOpenMap   = "book.create.btn_open_map"
 	TextBookCreateMsgNoSlots   = "book.create.msg_no_slots"
 	TextBookCreateBtnLocs      = "book.create.btn_locs"
 	TextBookCreatePromptSlot   = "book.create.prompt_slot"

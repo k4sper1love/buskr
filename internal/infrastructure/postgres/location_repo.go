@@ -225,3 +225,19 @@ func (r *LocationRepository) FindNearby(ctx context.Context, lat, lon, radiusMet
 
 	return locations, nil
 }
+
+func (r *LocationRepository) Delete(ctx context.Context, id string) error {
+	query := `DELETE FROM locations WHERE id = $1`
+	res, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return location.ErrLocationNotFound
+	}
+	return nil
+}

@@ -5,6 +5,7 @@ type Kind int
 const (
 	KindSend Kind = iota
 	KindEdit
+	KindSendImage
 )
 
 type Text struct {
@@ -15,11 +16,10 @@ type Text struct {
 }
 
 type Reply struct {
-	Kind Kind
-
-	Text Text
-
+	Kind     Kind
+	Text     Text // or caption for image
 	Keyboard Keyboard
+	Image    []byte // nil if no image
 }
 
 type Keyboard struct {
@@ -30,9 +30,10 @@ type Keyboard struct {
 }
 
 type Button struct {
-	Text Text
-	Data CallbackData
-	URL  string
+	Text      Text
+	Data      CallbackData
+	URL       string
+	WebAppURL string
 }
 
 type CallbackData struct {
@@ -42,6 +43,9 @@ type CallbackData struct {
 
 func (r *Reply) IsEmpty() bool {
 	if r.Text.Key != "" || r.Text.Fallback != "" {
+		return false
+	}
+	if len(r.Image) > 0 {
 		return false
 	}
 	if r.Keyboard.Remove {

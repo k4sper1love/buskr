@@ -2,8 +2,9 @@ package adminloc
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -19,6 +20,15 @@ const (
 	baseMapURL = "https://maps.google.com/"
 )
 
+type webAppLocation struct {
+	ID     string  `json:"id"`
+	Name   string  `json:"name"`
+	Desc   string  `json:"desc"`
+	Lat    float64 `json:"lat"`
+	Lon    float64 `json:"lon"`
+	Status string  `json:"status"`
+}
+
 func (uc *Usecase) List(ctx context.Context, actor *user.User, page int) (response.Reply, error) {
 	if actor.Role != user.RoleAdmin {
 		return response.Reply{}, nil
@@ -32,16 +42,37 @@ func (uc *Usecase) List(ctx context.Context, actor *user.User, page int) (respon
 		}, nil
 	}
 
-	total := len(locs)
-
-	start := page * pageSize
-	if start > total {
-		start = total
+	var webAppURL string
+	if uc.webAppURL != "" && len(locs) > 0 {
+		var webAppLocs []webAppLocation
+		for _, loc := range locs {
+			webAppLocs = append(webAppLocs, webAppLocation{
+				ID:     loc.ID,
+				Name:   loc.Name,
+				Desc:   loc.Description,
+				Lat:    loc.Coords.Lat,
+				Lon:    loc.Coords.Lon,
+				Status: string(loc.Status),
+			})
+		}
+		jsonData, err := json.Marshal(webAppLocs)
+		if err == nil {
+			encoded := base64.URLEncoding.EncodeToString(jsonData)
+			webAppURL = fmt.Sprintf("%s?v=%d#bot=%s&mode=admin&locs=%s", uc.webAppURL, time.Now().Unix(), uc.botUsername, encoded)
+		}
 	}
 
-	end := start + pageSize
-	if end > total {
-		end = total
+	var mapBtn response.Button
+	if webAppURL != "" {
+		mapBtn = response.Button{
+			Text:      response.Text{Key: keys.TextAdminLocsBtnMap},
+			WebAppURL: webAppURL,
+		}
+	} else {
+		mapBtn = response.Button{
+			Text: response.Text{Key: keys.TextAdminLocsBtnMap},
+			Data: response.CallbackData{Unique: keys.BtnAdminLocsMap},
+		}
 	}
 
 	var rows [][]response.Button
@@ -51,47 +82,11 @@ func (uc *Usecase) List(ctx context.Context, actor *user.User, page int) (respon
 			Text: response.Text{Key: keys.TextAdminLocsBtnAdd},
 			Data: response.CallbackData{Unique: keys.BtnAdminLocAdd},
 		},
-		{
-			Text: response.Text{Key: keys.TextAdminLocsBtnMap},
-			Data: response.CallbackData{Unique: keys.BtnAdminLocsMap},
-		},
 	})
 
-	for _, loc := range locs[start:end] {
-		icon := "🟢"
-		if loc.Status == location.StatusInactive {
-			icon = "🔴"
-		}
-		rows = append(rows, []response.Button{
-			{
-				Text: response.Text{Fallback: fmt.Sprintf("%s %s", icon, loc.Name)},
-				Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{loc.ID}},
-			},
-		})
-	}
-
-	if total > pageSize {
-		totalPages := (total + pageSize - 1) / pageSize
-		var nav []response.Button
-
-		if page > 0 {
-			nav = append(nav, response.Button{
-				Text: response.Text{Fallback: "◀️"},
-				Data: response.CallbackData{Unique: keys.BtnAdminLocs, Args: []string{strconv.Itoa(page - 1)}},
-			})
-		}
-		nav = append(nav, response.Button{
-			Text: response.Text{Fallback: fmt.Sprintf("%d / %d", page+1, totalPages)},
-			Data: response.CallbackData{Unique: keys.BtnAdminLocs, Args: []string{strconv.Itoa(page)}},
-		})
-		if end < total {
-			nav = append(nav, response.Button{
-				Text: response.Text{Fallback: "▶️"},
-				Data: response.CallbackData{Unique: keys.BtnAdminLocs, Args: []string{strconv.Itoa(page + 1)}},
-			})
-		}
-		rows = append(rows, nav)
-	}
+	rows = append(rows, []response.Button{
+		mapBtn,
+	})
 
 	rows = append(rows, []response.Button{
 		{
@@ -165,6 +160,10 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 					},
 				},
 				{
+					{
+						Text: response.Text{Key: keys.TextAdminLocsBtnDelete},
+						Data: response.CallbackData{Unique: keys.BtnAdminLocDel, Args: []string{loc.ID}},
+					},
 					{
 						Text: response.Text{Key: keys.TextAdminLocsBtnList},
 						Data: response.CallbackData{Unique: keys.BtnAdminLocs},
@@ -321,4 +320,54 @@ func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string)
 		Text:     response.Text{Fallback: sb.String()},
 		Keyboard: backKeyboard,
 	}, nil
+}
+
+func (uc *Usecase) AllOnMap(ctx context.Context, actor *user.User) (response.Reply, error) {
+	if actor.Role != user.RoleAdmin {
+		return response.Reply{}, nil
+	}
+
+	locs, err := uc.locs.GetLocationsForAdmin(ctx)
+	if err != nil {
+		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+	}
+
+	if len(locs) == 0 {
+		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextAdminLocsMapEmpty}}, nil
+	}
+
+	imgBytes, numberedList, err := uc.maps.Generate(locs)
+	if err != nil {
+		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+	}
+
+	caption := fmt.Sprintf("📍 %d\n\n%s", len(locs), numberedList)
+
+	return response.Reply{
+		Kind:  response.KindSendImage,
+		Image: imgBytes,
+		Text:  response.Text{Fallback: caption},
+	}, nil
+}
+
+func (uc *Usecase) Delete(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
+	if actor.Role != user.RoleAdmin {
+		return response.Reply{}, nil
+	}
+
+	err := uc.locs.DeleteLocation(ctx, locID)
+	if err != nil {
+		return response.Reply{
+			Kind: response.KindEdit,
+			Text: response.Text{Fallback: "❌ Невозможно удалить локацию, так как на неё уже есть бронирования. Вместо этого вы можете её отключить."},
+			Keyboard: response.Keyboard{
+				InlineRows: [][]response.Button{{{
+					Text: response.Text{Key: keys.TextCommonBtnBack},
+					Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{locID}},
+				}}},
+			},
+		}, nil
+	}
+
+	return uc.List(ctx, actor, 0)
 }

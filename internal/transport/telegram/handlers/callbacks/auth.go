@@ -2,23 +2,31 @@ package callbacks
 
 import (
 	"context"
+	"strings"
 
+	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/ctxkey"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/render"
+	"github.com/k4sper1love/buskr/internal/usecase/adminloc"
 	"github.com/k4sper1love/buskr/internal/usecase/auth"
+	"github.com/k4sper1love/buskr/internal/usecase/booking"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 	"gopkg.in/telebot.v3"
 )
 
 type Auth struct {
-	uc       *auth.Usecase
-	renderer *render.Renderer
+	uc         *auth.Usecase
+	bookingUc  *booking.Usecase
+	adminLocUc *adminloc.Usecase
+	renderer   *render.Renderer
 }
 
-func NewAuth(uc *auth.Usecase, renderer *render.Renderer) *Auth {
+func NewAuth(uc *auth.Usecase, bookingUc *booking.Usecase, adminLocUc *adminloc.Usecase, renderer *render.Renderer) *Auth {
 	return &Auth{
-		uc:       uc,
-		renderer: renderer,
+		uc:         uc,
+		bookingUc:  bookingUc,
+		adminLocUc: adminLocUc,
+		renderer:   renderer,
 	}
 }
 
@@ -31,7 +39,36 @@ func (h *Auth) HandleStart(c telebot.Context) error {
 		return err
 	}
 
-	rep, err := h.uc.Start(ctx, u, c.Message().Payload)
+	payload := c.Message().Payload
+	if strings.HasPrefix(payload, "admloc_") {
+		locID := strings.TrimPrefix(payload, "admloc_")
+		if u.Role == user.RoleAdmin {
+			rep, err := h.adminLocUc.Details(ctx, u, locID)
+			if err != nil {
+				return err
+			}
+			if rep.IsEmpty() {
+				return nil
+			}
+			rep.Kind = response.KindSend
+			return h.renderer.Render(c, rep)
+		}
+	}
+
+	if strings.HasPrefix(payload, "loc_") {
+		locID := strings.TrimPrefix(payload, "loc_")
+		rep, err := h.bookingUc.ProcessMapSelection(ctx, u, locID)
+		if err != nil {
+			return err
+		}
+		if rep.IsEmpty() {
+			return nil
+		}
+		rep.Kind = response.KindSend
+		return h.renderer.Render(c, rep)
+	}
+
+	rep, err := h.uc.Start(ctx, u, payload)
 	if err != nil {
 		return err
 	}

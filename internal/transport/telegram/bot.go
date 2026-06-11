@@ -14,6 +14,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/transport/telegram/handlers/callbacks"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/notifier"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/render"
+	"github.com/k4sper1love/buskr/internal/mapimg"
 	"github.com/k4sper1love/buskr/internal/usecase/admin"
 	"github.com/k4sper1love/buskr/internal/usecase/adminloc"
 	"github.com/k4sper1love/buskr/internal/usecase/adminuser"
@@ -54,6 +55,8 @@ func NewBot(
 	bookings *booking.Service,
 	locs *location.Service,
 	maxAdvanceDays int,
+	mapsAPIKey string,
+	webAppURL string,
 ) (*Bot, error) {
 	// create bot instance
 	pref := telebot.Settings{
@@ -74,9 +77,9 @@ func NewBot(
 
 	// usecases
 	authUc := auth.NewUsecase(state, users, 1*time.Hour)
-	bookingUc := bookingUsecase.NewUsecase(state, locs, bookings, 1*time.Hour, maxAdvanceDays)
+	bookingUc := bookingUsecase.NewUsecase(state, locs, bookings, 1*time.Hour, maxAdvanceDays, webAppURL, b.Me.Username)
 	adminUc := admin.NewUsecase(state, users, 1*time.Hour, 1)
-	adminlocUc := adminloc.NewUsecase(state, locs, bookings, 1*time.Hour)
+	adminlocUc := adminloc.NewUsecase(state, locs, bookings, mapimg.NewClient(mapsAPIKey), 1*time.Hour, webAppURL, b.Me.Username)
 	adminuserUc := adminuser.NewUsecase(state, users, 1*time.Hour)
 	profileUc := profile.NewUsecase(state, users, notifier, 1*time.Hour)
 	onboardingUc := onboarding.NewUsecase(state, users, notifier, 1*time.Hour)
@@ -95,7 +98,7 @@ func NewBot(
 
 	// handlers
 	handlers := &Handlers{
-		auth:       callbacks.NewAuth(authUc, renderer),
+		auth:       callbacks.NewAuth(authUc, bookingUc, adminlocUc, renderer),
 		onboarding: callbacks.NewOnboarding(onboardingUc, renderer),
 		booking:    callbacks.NewBooking(bookingUc, renderer),
 		admin:      callbacks.NewAdmin(adminUc, renderer),

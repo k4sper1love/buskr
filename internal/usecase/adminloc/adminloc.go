@@ -25,24 +25,35 @@ type Locations interface {
 	GetByID(ctx context.Context, id string) (*location.Location, error)
 	ChangeStatus(ctx context.Context, id string, status location.Status) error
 	FindNearby(ctx context.Context, lat, lon float64, radiusMeters float64) ([]*location.LocationWithDist, error)
+	DeleteLocation(ctx context.Context, id string) error
 }
 
 type Bookings interface {
 	GetScheduleForLocation(ctx context.Context, locID string, date time.Time) ([]*booking.Booking, error)
 }
 
-type Usecase struct {
-	state    StateStore
-	locs     Locations
-	bookings Bookings
-	ttl      time.Duration
+type MapGenerator interface {
+	Generate(locs []*location.Location) ([]byte, string, error)
 }
 
-func NewUsecase(state StateStore, locs Locations, bookings Bookings, ttl time.Duration) *Usecase {
+type Usecase struct {
+	state       StateStore
+	locs        Locations
+	bookings    Bookings
+	maps        MapGenerator
+	ttl         time.Duration
+	webAppURL   string
+	botUsername string
+}
+
+func NewUsecase(state StateStore, locs Locations, bookings Bookings, maps MapGenerator, ttl time.Duration, webAppURL string, botUsername string) *Usecase {
 	return &Usecase{
-		state:    state,
-		locs:     locs,
-		bookings: bookings,
-		ttl:      ttl,
+		state:       state,
+		locs:        locs,
+		bookings:    bookings,
+		maps:        maps,
+		ttl:         ttl,
+		webAppURL:   webAppURL,
+		botUsername: botUsername,
 	}
 }

@@ -56,6 +56,7 @@ const (
 	BtnAdminLocSchedule   = "ad_lsc"
 	BtnAdminLocConfirm    = "ad_lcnf"
 	BtnAdminLocsMap       = "ad_lmap"
+	BtnAdminLocDel        = "ad_ldel"
 
 	// admin user
 	BtnAdminUsers     = "ad_usr"

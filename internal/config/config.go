@@ -19,6 +19,7 @@ type Config struct {
 
 	// services
 	Booking BookingConfig
+	Maps    MapsConfig
 }
 
 type TelegramConfig struct {
@@ -44,6 +45,11 @@ type BookingConfig struct {
 	MaxPerLocationAtDay int `env:"BOOKING_MAX_PER_LOCATION_AT_DAY" env-default:"1"`
 	MaxAdvanceDays      int `env:"BOOKING_MAX_ADVANCE_DAYS" env-default:"5"`
 	AdjacencyRadius     int `env:"BOOKING_ADJACENCY_RADIUS" env-default:"100"`
+}
+
+type MapsConfig struct {
+	GoogleAPIKey string `env:"GOOGLE_MAPS_API_KEY"`
+	WebAppURL    string `env:"MAP_WEB_APP_URL" env-default:""`
 }
 
 // singleton pattern

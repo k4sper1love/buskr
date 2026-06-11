@@ -226,6 +226,10 @@ func (s *Service) GetByID(ctx context.Context, bookingID string) (*Booking, erro
 	return s.repo.GetByID(ctx, bookingID)
 }
 
+func (s *Service) GetLastBookingByUser(ctx context.Context, userID string) (*Booking, error) {
+	return s.repo.GetLastBookingByUser(ctx, userID)
+}
+
 func isNoiseAllowed(userNoise user.NoiseLevel, locLimit location.NoiseLimit) bool {
 	return userNoise.Weight() <= locLimit.Weight()
 }

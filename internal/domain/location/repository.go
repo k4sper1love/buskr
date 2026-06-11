@@ -8,4 +8,5 @@ type Repository interface {
 	List(ctx context.Context, includeInactive bool) ([]*Location, error)
 	Update(ctx context.Context, loc *Location) error
 	FindNearby(ctx context.Context, lat, lon, radiusMeters float64) ([]*LocationWithDist, error)
+	Delete(ctx context.Context, id string) error
 }

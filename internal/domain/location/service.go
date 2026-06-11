@@ -65,3 +65,7 @@ func (s *Service) GetByID(ctx context.Context, id string) (*Location, error) {
 func (s *Service) FindNearby(ctx context.Context, lat, lon float64, radiusMeters float64) ([]*LocationWithDist, error) {
 	return s.repo.FindNearby(ctx, lat, lon, radiusMeters)
 }
+
+func (s *Service) DeleteLocation(ctx context.Context, id string) error {
+	return s.repo.Delete(ctx, id)
+}

@@ -72,7 +72,7 @@ func main() {
 	})
 
 	// bot
-	bot, err := telegram.NewBot(&cfg.Telegram, tr, stateStore, userService, bookingService, locService, cfg.Booking.MaxAdvanceDays)
+	bot, err := telegram.NewBot(&cfg.Telegram, tr, stateStore, userService, bookingService, locService, cfg.Booking.MaxAdvanceDays, cfg.Maps.GoogleAPIKey, cfg.Maps.WebAppURL)
 	if err != nil {
 		log.Fatalf("Failed to initialize bot: %v", err)
 	}

@@ -31,6 +31,7 @@ type Bookings interface {
 	GetByID(ctx context.Context, id string) (*booking.Booking, error)
 	CancelBooking(ctx context.Context, id, userID string) error
 	CheckIn(ctx context.Context, id, userID string) error
+	GetLastBookingByUser(ctx context.Context, userID string) (*booking.Booking, error)
 }
 
 type SendLocation struct {
@@ -55,14 +56,18 @@ type Usecase struct {
 	bookings       Bookings
 	ttl            time.Duration
 	maxAdvanceDays int
+	webAppURL      string
+	botUsername    string
 }
 
-func NewUsecase(state StateStore, locs Locations, bookings Bookings, ttl time.Duration, maxAdvanceDays int) *Usecase {
+func NewUsecase(state StateStore, locs Locations, bookings Bookings, ttl time.Duration, maxAdvanceDays int, webAppURL string, botUsername string) *Usecase {
 	return &Usecase{
 		state:          state,
 		locs:           locs,
 		bookings:       bookings,
 		ttl:            ttl,
 		maxAdvanceDays: maxAdvanceDays,
+		webAppURL:      webAppURL,
+		botUsername:    botUsername,
 	}
 }

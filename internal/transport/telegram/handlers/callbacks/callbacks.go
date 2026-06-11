@@ -43,7 +43,16 @@ func sendReplyToUser(bot *telebot.Bot, r *render.Renderer, tgID int64, rep respo
 			var btns []telebot.Btn
 			for _, btn := range row {
 				t := r.Translate("", btn.Text)
-				btns = append(btns, menu.Data(t, btn.Data.Unique, btn.Data.Args...))
+				switch {
+				case btn.WebAppURL != "":
+					btns = append(btns, menu.WebApp(t, &telebot.WebApp{URL: btn.WebAppURL}))
+				case btn.URL != "":
+					btns = append(btns, menu.URL(t, btn.URL))
+				case btn.Data.Unique != "":
+					btns = append(btns, menu.Data(t, btn.Data.Unique, btn.Data.Args...))
+				default:
+					btns = append(btns, menu.Text(t))
+				}
 			}
 			if len(btns) > 0 {
 				rows = append(rows, menu.Row(btns...))
@@ -57,6 +66,7 @@ func sendReplyToUser(bot *telebot.Bot, r *render.Renderer, tgID int64, rep respo
 	} else if len(rep.Keyboard.ReplyRows) > 0 {
 		menu := &telebot.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
 		var rows []telebot.Row
+
 		for _, row := range rep.Keyboard.ReplyRows {
 			var btns []telebot.Btn
 			for _, t := range row {

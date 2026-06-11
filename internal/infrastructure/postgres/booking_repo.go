@@ -315,3 +315,34 @@ func (r *BookingRepository) scanBookings(rows *sql.Rows) ([]*booking.Booking, er
 
 	return bookings, nil
 }
+
+func (r *BookingRepository) GetLastBookingByUser(ctx context.Context, userID string) (*booking.Booking, error) {
+	query := `
+		SELECT id, user_id, location_id, start_time, end_time, status, created_at, updated_at
+		FROM bookings
+		WHERE user_id = $1
+		ORDER BY created_at DESC
+		LIMIT 1
+	`
+	var b booking.Booking
+	var status string
+
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(
+		&b.ID,
+		&b.UserID,
+		&b.LocationID,
+		&b.StartTime,
+		&b.EndTime,
+		&status,
+		&b.CreatedAt,
+		&b.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, booking.ErrBookingNotFound
+		}
+		return nil, err
+	}
+	b.Status = booking.Status(status)
+	return &b, nil
+}

@@ -2,11 +2,14 @@ package booking
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/domain/booking"
+	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
 
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
@@ -78,6 +81,14 @@ func (uc *Usecase) Book(ctx context.Context, u *user.User) (response.Reply, erro
 	}, nil
 }
 
+type webAppLocation struct {
+	ID   string  `json:"id"`
+	Name string  `json:"name"`
+	Desc string  `json:"desc"`
+	Lat  float64 `json:"lat"`
+	Lon  float64 `json:"lon"`
+}
+
 func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) (response.Reply, error) {
 	st, err := uc.state.GetState(ctx, u.TelegramID)
 	if err != nil {
@@ -103,24 +114,22 @@ func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) 
 		return response.Reply{}, err
 	}
 
-	var rows [][]response.Button
+	var webAppLocs []webAppLocation
 	for _, loc := range locations {
 		if u.NoiseLevel.Weight() > loc.MaxNoise.Weight() {
 			continue
 		}
 
-		rows = append(rows, []response.Button{
-			{
-				Text: response.Text{Fallback: loc.Name},
-				Data: response.CallbackData{
-					Unique: keys.BtnBookLocSel,
-					Args:   []string{loc.ID},
-				},
-			},
+		webAppLocs = append(webAppLocs, webAppLocation{
+			ID:   loc.ID,
+			Name: loc.Name,
+			Desc: loc.Description,
+			Lat:  loc.Coords.Lat,
+			Lon:  loc.Coords.Lon,
 		})
 	}
 
-	if len(rows) == 0 {
+	if len(webAppLocs) == 0 {
 		return response.Reply{
 			Kind: response.KindEdit,
 			Text: response.Text{Key: keys.TextBookCreateMsgNoLocs},
@@ -135,6 +144,51 @@ func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) 
 				},
 			},
 		}, nil
+	}
+
+	var webAppURL string
+	if uc.webAppURL != "" {
+		jsonData, err := json.Marshal(webAppLocs)
+		if err == nil {
+			encoded := base64.URLEncoding.EncodeToString(jsonData)
+			webAppURL = fmt.Sprintf("%s?v=%d#bot=%s&locs=%s", uc.webAppURL, time.Now().Unix(), uc.botUsername, encoded)
+		}
+	}
+
+	// Fetch user's last booked location for a quick shortcut
+	var lastLoc *location.Location
+	lastBooking, err := uc.bookings.GetLastBookingByUser(ctx, u.ID)
+	if err == nil && lastBooking != nil {
+		for _, loc := range locations {
+			if loc.ID == lastBooking.LocationID && u.NoiseLevel.Weight() <= loc.MaxNoise.Weight() {
+				lastLoc = loc
+				break
+			}
+		}
+	}
+
+	var rows [][]response.Button
+	if webAppURL != "" {
+		rows = append(rows, []response.Button{
+			{
+				Text:      response.Text{Key: keys.TextBookCreateBtnOpenMap},
+				WebAppURL: webAppURL,
+			},
+		})
+	}
+
+	if lastLoc != nil {
+		rows = append(rows, []response.Button{
+			{
+				Text: response.Text{
+					Fallback: fmt.Sprintf("🕒 Последнее место: %s", lastLoc.Name),
+				},
+				Data: response.CallbackData{
+					Unique: keys.BtnBookLocSel,
+					Args:   []string{lastLoc.ID},
+				},
+			},
+		})
 	}
 
 	rows = append(rows, []response.Button{
@@ -539,9 +593,52 @@ func (uc *Usecase) BackToSlots(ctx context.Context, u *user.User) (response.Repl
 	return uc.LocationSelected(ctx, u, locID)
 }
 
+func (uc *Usecase) ProcessMapSelection(ctx context.Context, u *user.User, locID string) (response.Reply, error) {
+	st, err := uc.state.GetState(ctx, u.TelegramID)
+	if err != nil {
+		return response.Reply{}, err
+	}
+
+	if st != keys.StateBookLoc {
+		return uc.Book(ctx, u)
+	}
+
+	locations, err := uc.locs.GetLocationsForMusicians(ctx)
+	if err != nil {
+		return response.Reply{}, err
+	}
+
+	var found bool
+	for _, loc := range locations {
+		if loc.ID == locID && u.NoiseLevel.Weight() <= loc.MaxNoise.Weight() {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		var selectedDateStr string
+		_ = uc.state.GetData(ctx, u.TelegramID, keys.DataBookingDate, &selectedDateStr)
+		if selectedDateStr == "" {
+			return uc.Book(ctx, u)
+		}
+
+		_ = uc.state.SetState(ctx, u.TelegramID, keys.StateBookDate, uc.ttl)
+
+		reply, err := uc.DateSelected(ctx, u, selectedDateStr)
+		if err != nil {
+			return response.Reply{}, err
+		}
+		reply.Text.Fallback = "⚠️ Please select a valid location.\n\n" + reply.Text.Fallback
+		return reply, nil
+	}
+
+	return uc.LocationSelected(ctx, u, locID)
+}
+
 func bookingErrKey(err error) string {
 	switch {
-	case errors.Is(err, booking.ErrSlotTaken):
+	case errors.Is(err, booking.ErrSlotTaken), errors.Is(err, booking.ErrTimeOverlap):
 		return keys.TextBookErrSlotTaken
 	case errors.Is(err, booking.ErrNoisyNeighbor):
 		return keys.TextBookErrNoisyNeighbor

@@ -423,3 +423,49 @@ func (h *AdminLoc) HandleAdminLocConfirm(c telebot.Context) error {
 	}
 	return h.renderer.Render(c, rep)
 }
+
+func (h *AdminLoc) HandleAdminLocsMap(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	rep, err := h.uc.AllOnMap(ctx, u)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminLoc) HandleAdminLocDelete(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.Delete(ctx, u, locID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+	return h.renderer.Render(c, rep)
+}

@@ -72,6 +72,9 @@ func (h *Booking) HandleBookDateSelected(c telebot.Context) error {
 		return nil
 	}
 
+	// Remove inline keyboard from the older message to prevent stale presses
+	_ = c.Edit(c.Message().Text, c.Message().Entities, &telebot.ReplyMarkup{})
+
 	return h.renderer.Render(c, rep)
 }
 
@@ -163,10 +166,15 @@ func (h *Booking) HandleBookDurationSelected(c telebot.Context) error {
 		return err
 	}
 
-	locationMsg := &telebot.Location{Lat: float32(rep.Location.Latitude), Lng: float32(rep.Location.Longitude)}
-	_, _ = c.Bot().Send(c.Recipient(), locationMsg)
+	if rep.Location.Latitude != 0 && rep.Location.Longitude != 0 {
+		locationMsg := &telebot.Location{Lat: float32(rep.Location.Latitude), Lng: float32(rep.Location.Longitude)}
+		_, _ = c.Bot().Send(c.Recipient(), locationMsg)
+	}
 
-	callbackText := h.renderer.Translate("", rep.Callback)
+	var callbackText string
+	if rep.Callback.Key != "" || rep.Callback.Fallback != "" {
+		callbackText = h.renderer.Translate("", rep.Callback)
+	}
 	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
 }
 

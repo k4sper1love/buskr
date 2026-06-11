@@ -89,6 +89,8 @@ func (r *Router) RegisterRoutes() {
 	r.b.bot.Handle("\f"+keys.BtnAdminLocEditCancel, r.handlers.adminLoc.HandleAdminLocEditCancel)
 
 	r.b.bot.Handle("\f"+keys.BtnAdminLocSchedule, r.handlers.adminLoc.HandleAdminLocSchedule)
+	r.b.bot.Handle("\f"+keys.BtnAdminLocsMap, r.handlers.adminLoc.HandleAdminLocsMap)
+	r.b.bot.Handle("\f"+keys.BtnAdminLocDel, r.handlers.adminLoc.HandleAdminLocDelete)
 
 	// admin users
 	r.b.bot.Handle("\f"+keys.BtnAdminUsers, r.handlers.adminUser.HandleAdminSearch)

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Select Spot - Buskr</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <style>
+    /* Premium Styling System */
+    :root {
+      --bg-color: #0b0c10;
+      --panel-bg: rgba(26, 29, 38, 0.75);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --accent-color: #4f46e5;
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      --text-color: #f3f4f6;
+      --text-muted: #9ca3af;
+      --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Map Container */
+    #map {
+      flex-grow: 1;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    
+    /* Loading Spinner */
+    #loader {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(99, 102, 241, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--accent-color);
+      animation: spin 1s ease-in-out infinite;
+      margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Glassmorphism Header */
+    .header {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      right: 15px;
+      padding: 12px 20px;
+      border-radius: 16px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      box-shadow: var(--shadow);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    
+    .header-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: linear-gradient(to right, #ffffff, #a5b4fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .header-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      background-color: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    
+    /* Glassmorphism Details Bottom Sheet */
+    .detail-card {
+      position: absolute;
+      bottom: -100%; /* Hidden off-screen initially */
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      max-width: 500px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      padding: 24px;
+      transition: bottom 0.40s cubic-bezier(0.25, 1, 0.5, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .detail-card.active {
+      bottom: 0;
+    }
+    
+    .detail-card-handle {
+      width: 40px;
+      height: 4px;
+      background-color: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      margin: -12px auto 8px auto;
+    }
+    
+    .spot-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    
+    .spot-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.3;
+    }
+    
+    .spot-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    
+    /* Buttons with gradients and scale animations */
+    .btn-select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      background: var(--accent-gradient);
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.4);
+      transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-select:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 6px 0 rgba(79, 70, 229, 0.2);
+    }
+    
+    /* Custom Marker Styling */
+    .custom-marker {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 32px;
+      height: 32px;
+      background: var(--accent-gradient);
+      border: 3px solid #ffffff;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.4);
+      animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .custom-marker-inner {
+      width: 10px;
+      height: 10px;
+      background: #ffffff;
+      border-radius: 50%;
+      transform: rotate(45deg);
+    }
+    
+    .custom-marker.selected {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
+      border-color: #ffffff;
+      transform: rotate(-45deg) scale(1.15);
+    }
+    
+    .custom-marker.inactive {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+    }
+    
+    @keyframes bounceIn {
+      0% { transform: scale(0.3) rotate(-45deg); opacity: 0; }
+      50% { transform: scale(1.05) rotate(-45deg); }
+      70% { transform: scale(0.9) rotate(-45deg); }
+      100% { transform: scale(1) rotate(-45deg); opacity: 1; }
+    }
+    
+    /* Empty State View */
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    
+    /* Permanent Tooltips and Zoom Controls offset */
+    .spot-tooltip {
+      background-color: rgba(26, 29, 38, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+    }
+    .leaflet-tooltip-top:before {
+      border-top-color: rgba(26, 29, 38, 0.95) !important;
+    }
+    .leaflet-top.leaflet-right {
+      margin-top: 80px !important;
+      margin-right: 15px !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading View -->
+  <div id="loader">
+    <div class="spinner"></div>
+    <div id="loader-text" style="font-weight: 600; letter-spacing: 0.5px;">Loading interactive map...</div>
+  </div>
+
+  <!-- Header Overlay -->
+  <div class="header">
+    <span class="header-title" id="header-title">MAP OF SPOTS</span>
+    <span class="header-badge" id="spots-count">0 spots</span>
+  </div>
+
+  <!-- Map -->
+  <div id="map"></div>
+
+  <!-- Spot Details Card (Sliding Bottom Sheet) -->
+  <div class="detail-card" id="detail-card">
+    <div class="detail-card-handle"></div>
+    <div class="spot-header">
+      <div class="spot-title" id="spot-title">Spot Name</div>
+      <span class="header-badge" id="spot-status-badge" style="display: none; font-size: 0.75rem; padding: 2px 10px; margin-left: 10px;"></span>
+    </div>
+    <div class="spot-desc" id="spot-desc">Spot detailed description will be rendered right here.</div>
+    <button class="btn-select" id="btn-select">
+      📍 Confirm Spot Selection
+    </button>
+  </div>
+
+  <!-- Telegram WebApp JS -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+          
+  <script>
+    let map;
+    let selectedMarker = null;
+    let selectedSpot = null;
+    let markersList = [];
+
+    // Initialize Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    // Determine language from Telegram WebApp
+    const userLang = (tg.initDataUnsafe?.user?.language_code || 'ru').toLowerCase();
+    
+    // Localization dictionary without hardcoded app branding
+    const locales = {
+      ru: {
+        title: "ВЫБОР ТОЧКИ",
+        spotsCount: (count) => `${count} мест`,
+        confirmBtn: "📍 Выбрать эту точку",
+        noSpots: "Нет доступных точек",
+        noSpotsDesc: "В данный момент нет доступных точек для выступления. Закройте карту и выберите другую дату.",
+        loading: "Загрузка интерактивной карты...",
+        noDesc: "Описание отсутствует.",
+        active: "Активна",
+        inactive: "Отключена"
+      },
+      en: {
+        title: "CHOOSE SPOT",
+        spotsCount: (count) => `${count} spots`,
+        confirmBtn: "📍 Confirm Spot Selection",
+        noSpots: "No spots available",
+        noSpotsDesc: "There are no available spots to display. Close the map and choose date again.",
+        loading: "Loading interactive map...",
+        noDesc: "No description provided.",
+        active: "Active",
+        inactive: "Disabled"
+      }
+    };
+
+    const t = userLang.startsWith('ru') || userLang.startsWith('kk') ? locales.ru : locales.en;
+
+    // Apply translation strings to static DOM
+    document.getElementById('loader-text').innerText = t.loading;
+    document.getElementById('header-title').innerText = t.title;
+    document.getElementById('btn-select').innerHTML = t.confirmBtn;
+
+    // Parse parameters from window.location.hash (e.g. #bot=Username&locs=Base64)
+    function getParamsFromHash() {
+      const params = {};
+      try {
+        const hash = window.location.hash;
+        if (!hash.startsWith('#')) return params;
+        const pairs = hash.substring(1).split('&');
+        for (const pair of pairs) {
+          const [key, value] = pair.split('=');
+          if (key && value) {
+            params[key] = decodeURIComponent(value);
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing hash:', e);
+      }
+      return params;
+    }
+
+    const hashParams = getParamsFromHash();
+    const botUsername = hashParams['bot'] || 'BuskrBot';
+    const mode = hashParams['mode'] || 'user';
+    const base64Str = hashParams['locs'] || '';
+
+    function getSpotsFromBase64(base64Str) {
+      if (!base64Str) return [];
+      try {
+        // Replace URLEncoding characters to standard Base64 characters
+        const standardBase64 = base64Str.replace(/-/g, '+').replace(/_/g, '/');
+        const binaryString = atob(standardBase64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const decodedStr = new TextDecoder('utf-8').decode(bytes);
+        return JSON.parse(decodedStr);
+      } catch (e) {
+        console.error('Error decoding spot coordinates from base64:', e);
+        return [];
+      }
+    }
+
+    const spots = getSpotsFromBase64(base64Str);
+    document.getElementById('spots-count').innerText = t.spotsCount(spots.length);
+
+    function initMap() {
+      // Default center: Almaty coordinates (or center of first spot)
+      let center = [43.238949, 76.889709];
+      if (spots.length > 0) {
+        center = [spots[0].lat, spots[0].lon];
+      }
+
+      // Initialize map
+      map = L.map('map', {
+        zoomControl: false,
+        attributionControl: false
+      }).setView(center, 13);
+
+      // Load free CartoDB Voyager tile layer for highly readable maps
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20
+      }).addTo(map);
+
+      // Add zoom control at top-right
+      L.control.zoom({
+        position: 'topright'
+      }).addTo(map);
+
+      // Render markers for all available spots
+      const bounds = [];
+      
+      spots.forEach(spot => {
+        // Create custom Leaflet DivIcon marker (red for inactive)
+        const markerClass = spot.status === 'inactive' ? 'custom-marker inactive' : 'custom-marker';
+        const icon = L.divIcon({
+          className: 'custom-leaflet-marker',
+          html: `<div class="${markerClass}"><div class="custom-marker-inner"></div></div>`,
+          iconSize: [30, 42],
+          iconAnchor: [15, 42]
+        });
+
+        const marker = L.marker([spot.lat, spot.lon], { icon }).addTo(map);
+        
+        // Add permanent spot name labels on the map
+        marker.bindTooltip(spot.name, {
+          permanent: true,
+          direction: 'top',
+          className: 'spot-tooltip',
+          offset: [0, -45]
+        });
+
+        marker.spotData = spot;
+        bounds.push([spot.lat, spot.lon]);
+        markersList.push(marker);
+
+        // Marker click event handler
+        marker.on('click', function(e) {
+          // Reset styling for previous selected marker
+          if (selectedMarker) {
+            const innerElement = selectedMarker.getElement().querySelector('.custom-marker');
+            if (innerElement) innerElement.classList.remove('selected');
+          }
+
+          // Select new marker
+          selectedMarker = marker;
+          selectedSpot = spot;
+          const innerElement = selectedMarker.getElement().querySelector('.custom-marker');
+          if (innerElement) innerElement.classList.add('selected');
+
+          // Pan map nicely to selected marker
+          map.panTo([spot.lat, spot.lon]);
+
+          // Trigger Telegram WebApp haptic impact
+          if (tg.HapticFeedback) {
+            tg.HapticFeedback.impactOccurred('medium');
+          }
+
+          // Show details sliding sheet
+          document.getElementById('spot-title').innerText = spot.name;
+          document.getElementById('spot-desc').innerText = spot.desc || t.noDesc;
+
+          const badge = document.getElementById('spot-status-badge');
+          if (spot.status) {
+            badge.innerText = spot.status === 'inactive' ? t.inactive : t.active;
+            badge.style.backgroundColor = spot.status === 'inactive' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)';
+            badge.style.borderColor = spot.status === 'inactive' ? 'rgba(239, 68, 68, 0.4)' : 'rgba(16, 185, 129, 0.4)';
+            badge.style.color = spot.status === 'inactive' ? '#f87171' : '#34d399';
+            badge.style.display = 'inline-block';
+          } else {
+            badge.style.display = 'none';
+          }
+
+          document.getElementById('detail-card').classList.add('active');
+        });
+      });
+
+      // Fit map viewport bounds to display all markers
+      if (bounds.length > 0) {
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+
+      // Dismiss details card when clicking on empty map space
+      map.on('click', function(e) {
+        // Don't close if clicking marker directly (handled in marker click)
+        if (e.originalEvent.target.closest('.custom-leaflet-marker')) return;
+        
+        document.getElementById('detail-card').classList.remove('active');
+        if (selectedMarker) {
+          const innerElement = selectedMarker.getElement().querySelector('.custom-marker');
+          if (innerElement) innerElement.classList.remove('selected');
+          selectedMarker = null;
+          selectedSpot = null;
+        }
+      });
+
+      // Hide loading spinner
+      setTimeout(() => {
+        const loader = document.getElementById('loader');
+        loader.style.opacity = 0;
+        setTimeout(() => loader.style.display = 'none', 400);
+      }, 300);
+    }
+
+    // Confirm spot selection and send data back to Telegram bot
+    document.getElementById('btn-select').addEventListener('click', function() {
+      if (!selectedSpot) return;
+
+      // Trigger final success haptic feedback
+      if (tg.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred('success');
+      }
+
+      // Redirect back using t.me link
+      const prefix = mode === 'admin' ? 'admloc_' : 'loc_';
+      tg.openTelegramLink("https://t.me/" + botUsername + "?start=" + prefix + selectedSpot.id);
+
+      // Close WebApp
+      setTimeout(() => {
+        tg.close();
+      }, 100);
+    });
+
+    // Handle empty state gracefully
+    if (spots.length === 0) {
+      document.getElementById('loader').innerHTML = `
+        <div class="empty-state">
+          <div style="font-size: 3rem; margin-bottom: 15px;">🗺️</div>
+          <div style="font-weight: 700; color: #ffffff; margin-bottom: 8px; font-size: 1.1rem;">${t.noSpots}</div>
+          <div>${t.noSpotsDesc}</div>
+        </div>
+      `;
+    } else {
+      window.onload = initMap;
+    }
+  </script>
+</body>
+</html>

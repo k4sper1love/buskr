@@ -1,6 +1,7 @@
 package render
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/k4sper1love/buskr/internal/usecase/response"
@@ -41,6 +42,8 @@ func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
 			for _, btn := range row {
 				text := r.Translate(lang, btn.Text)
 				switch {
+				case btn.WebAppURL != "":
+					btns = append(btns, menu.WebApp(text, &telebot.WebApp{URL: btn.WebAppURL}))
 				case btn.URL != "":
 					btns = append(btns, menu.URL(text, btn.URL))
 				case btn.Data.Unique != "":
@@ -61,6 +64,7 @@ func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
 		// ← Reply-клавиатура
 		menu := &telebot.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
 		var rows []telebot.Row
+
 		for _, row := range rep.Keyboard.ReplyRows {
 			var btns []telebot.Btn
 			for _, t := range row {
@@ -84,6 +88,12 @@ func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
 		return c.Send(text, opts...)
 	case response.KindEdit:
 		return c.Edit(text, opts...)
+	case response.KindSendImage:
+		photo := &telebot.Photo{
+			File:    telebot.FromReader(bytes.NewReader(rep.Image)),
+			Caption: text,
+		}
+		return c.Send(photo, opts...)
 	default:
 		return fmt.Errorf("unknown reply kind: %d", rep.Kind)
 	}

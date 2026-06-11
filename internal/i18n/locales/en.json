@@ -85,6 +85,7 @@
   "book.create.msg_no_locs": "😔 No available locations for your noise level on this date.",
   "book.create.btn_dates": "⬅️ Back to Dates",
   "book.create.prompt_loc": "📍 *Select Location:*",
+  "book.create.btn_open_map": "🗺️ Choose on Map",
   "book.create.msg_no_slots": "😔 No available slots at this location.",
   "book.create.btn_locs": "⬅️ Back to Locations",
   "book.create.prompt_slot": "🕐 *Select Start Time:*",
@@ -116,6 +117,7 @@
   "worker.hotspot.msg": "🔥 *HOT SLOT!*\n\nA musician didn't show up, so this location is available right now!\n\n📍 *Location:* {{.loc}}\n⏰ *Time:* {{.start}}:00 - {{.end}}:00\n🔊 *Max noise:* {{.noise}}\n\n_First to click the button takes the slot._",
   "worker.hotspot.btn": "⚡ Grab slot",
   "admin.locs.btn_edit": "✏️ Edit",
+  "admin.locs.btn_delete": "❌ Delete Spot",
   "admin.locs.edit_title": "✏️ *Edit — {{.name}}*\n\nChoose what to change:",
   "admin.locs.edit_btn_name": "✏️ Name",
   "admin.locs.edit_btn_desc": "✏️ Description",
@@ -135,5 +137,7 @@
   "book.err.max_active": "📋 You've reached the active bookings limit.",
   "book.err.max_per_loc": "📋 You already have a booking at this location today.",
   "book.err.too_far": "📅 You can't book that far in advance.",
-  "admin.locs.schedule_empty": "No bookings 🎵"
+  "admin.locs.schedule_empty": "No bookings 🎵",
+  "admin.locs.map_title": "📍 Active locations: {{.count}}",
+  "admin.locs.map_empty": "📍 No active locations."
 }
