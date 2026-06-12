@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/k4sper1love/buskr/internal/mdutil"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/onboarding"
 	"github.com/k4sper1love/buskr/internal/usecase/profile"
@@ -27,8 +28,8 @@ func (n *Notifier) NewApplication(ctx context.Context, payload onboarding.Applic
 
 	noiseTranslated := n.tr.T(n.adminLang, "common.lbl.noise_"+payload.NoiseLevel, nil)
 	caption := n.tr.T(n.adminLang, keys.TextAdminModAppTitle, map[string]any{
-		"username": username,
-		"name":     payload.Name,
+		"username": mdutil.Escape(username),
+		"name":     mdutil.Escape(payload.Name),
 		"noise":    noiseTranslated,
 	})
 
@@ -39,10 +40,15 @@ func (n *Notifier) NewApplication(ctx context.Context, payload onboarding.Applic
 			Caption: caption,
 		}
 		_, err = n.bot.Send(&telebot.Chat{ID: n.adminChatID}, video, menu, telebot.ModeMarkdown)
-	} else {
+	} else if payload.MediaData != "" {
 		textMsg := n.tr.T(n.adminLang, keys.TextAdminModAppLink, map[string]any{
 			"caption": caption,
 			"link":    payload.MediaData,
+		})
+		_, err = n.bot.Send(&telebot.Chat{ID: n.adminChatID}, textMsg, menu, telebot.ModeMarkdown)
+	} else {
+		textMsg := n.tr.T(n.adminLang, keys.TextAdminModAppNoMedia, map[string]any{
+			"caption": caption,
 		})
 		_, err = n.bot.Send(&telebot.Chat{ID: n.adminChatID}, textMsg, menu, telebot.ModeMarkdown)
 	}
@@ -66,8 +72,8 @@ func (n *Notifier) NewNoiseUpgrade(ctx context.Context, payload profile.NoiseUpg
 	}
 
 	caption := n.tr.T(n.adminLang, keys.TextAdminModNoiseTitle, map[string]any{
-		"username":        username,
-		"name":            payload.Name,
+		"username":        mdutil.Escape(username),
+		"name":            mdutil.Escape(payload.Name),
 		"current_noise":   n.tr.T(n.adminLang, "common.lbl.noise_"+string(payload.CurrentNoise), nil),
 		"requested_noise": n.tr.T(n.adminLang, "common.lbl.noise_"+string(payload.RequestedNoise), nil),
 		"karma":           payload.Karma,

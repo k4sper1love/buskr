@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/k4sper1love/buskr/internal/mdutil"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 	"gopkg.in/telebot.v3"
 )
@@ -129,8 +130,10 @@ func (r *Renderer) Translate(lang string, text response.Text) string {
 
 // resolveSubKeys translates any Args values that are themselves i18n keys,
 // as declared in text.SubKeyArgs. This enables nested translations.
+// All other string args are Markdown-escaped so user-provided data
+// (names, usernames, etc.) cannot break Telegram's Markdown parser.
 func (r *Renderer) resolveSubKeys(lang string, text response.Text) response.Text {
-	if len(text.SubKeyArgs) == 0 || len(text.Args) == 0 || r.tr == nil {
+	if len(text.Args) == 0 {
 		return text
 	}
 
@@ -139,9 +142,23 @@ func (r *Renderer) resolveSubKeys(lang string, text response.Text) response.Text
 		resolvedArgs[k] = v
 	}
 
+	// Build a set of sub-key arg names for fast lookup
+	subKeySet := make(map[string]struct{}, len(text.SubKeyArgs))
 	for _, argKey := range text.SubKeyArgs {
-		if val, ok := resolvedArgs[argKey].(string); ok && val != "" {
-			resolvedArgs[argKey] = r.tr.T(lang, val, nil)
+		subKeySet[argKey] = struct{}{}
+	}
+
+	for k, v := range resolvedArgs {
+		if _, isSubKey := subKeySet[k]; isSubKey {
+			// Translate i18n sub-key
+			if val, ok := v.(string); ok && val != "" && r.tr != nil {
+				resolvedArgs[k] = r.tr.T(lang, val, nil)
+			}
+		} else {
+			// Escape user-provided strings to prevent Markdown parse errors
+			if val, ok := v.(string); ok {
+				resolvedArgs[k] = mdutil.Escape(val)
+			}
 		}
 	}
 

@@ -126,8 +126,7 @@ func (h *Admin) HandleAdminApproveApplication(c telebot.Context) error {
 	}
 
 	suffix := h.renderer.Translate("", rep.AdminEditSuffix)
-	updatedText := c.Message().Text + "\n\n" + suffix
-	_, _ = c.Bot().Edit(c.Message(), updatedText, telebot.ModeMarkdown)
+	editMsgOrCaption(c, suffix)
 
 	if rep.NotifyUser != nil {
 		sendReplyToUser(c.Bot(), h.renderer, rep.NotifyUser.TelegramID, rep.NotifyUser.Reply)
@@ -155,8 +154,7 @@ func (h *Admin) HandleAdminRejectApplication(c telebot.Context) error {
 	}
 
 	suffix := h.renderer.Translate("", rep.AdminEditSuffix)
-	updatedText := c.Message().Text + "\n\n" + suffix
-	_, _ = c.Bot().Edit(c.Message(), updatedText, telebot.ModeMarkdown)
+	editMsgOrCaption(c, suffix)
 
 	if rep.NotifyUser != nil {
 		sendReplyToUser(c.Bot(), h.renderer, rep.NotifyUser.TelegramID, rep.NotifyUser.Reply)
@@ -185,8 +183,7 @@ func (h *Admin) HandleAdminApproveNoiseUpgrade(c telebot.Context) error {
 	}
 
 	suffix := h.renderer.Translate("", rep.AdminEditSuffix)
-	updatedText := c.Message().Text + "\n\n" + suffix
-	_, _ = c.Bot().Edit(c.Message(), updatedText, telebot.ModeMarkdown)
+	editMsgOrCaption(c, suffix)
 
 	if rep.NotifyUser != nil {
 		sendReplyToUser(c.Bot(), h.renderer, rep.NotifyUser.TelegramID, rep.NotifyUser.Reply)
@@ -214,8 +211,7 @@ func (h *Admin) HandleAdminRejectNoiseUpgrade(c telebot.Context) error {
 	}
 
 	suffix := h.renderer.Translate("", rep.AdminEditSuffix)
-	updatedText := c.Message().Text + "\n\n" + suffix
-	_, _ = c.Bot().Edit(c.Message(), updatedText, telebot.ModeMarkdown)
+	editMsgOrCaption(c, suffix)
 
 	if rep.NotifyUser != nil {
 		sendReplyToUser(c.Bot(), h.renderer, rep.NotifyUser.TelegramID, rep.NotifyUser.Reply)
@@ -223,4 +219,15 @@ func (h *Admin) HandleAdminRejectNoiseUpgrade(c telebot.Context) error {
 
 	callbackText := h.renderer.Translate("", rep.CallbackText)
 	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
+}
+
+func editMsgOrCaption(c telebot.Context, suffix string) {
+	msg := c.Message()
+	if msg.Caption != "" {
+		updatedCaption := msg.Caption + "\n\n" + suffix
+		_, _ = c.Bot().EditCaption(msg, updatedCaption, &telebot.ReplyMarkup{}, telebot.ModeMarkdown)
+	} else {
+		updatedText := msg.Text + "\n\n" + suffix
+		_, _ = c.Bot().Edit(msg, updatedText, &telebot.ReplyMarkup{}, telebot.ModeMarkdown)
+	}
 }

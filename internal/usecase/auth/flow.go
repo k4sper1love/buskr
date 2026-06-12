@@ -29,7 +29,12 @@ func (uc *Usecase) Start(ctx context.Context, u *user.User, payload string) (res
 	case user.StatusGuest:
 		return response.Reply{
 			Kind: response.KindSend,
-			Text: response.Text{Key: keys.TextAuthGuestTitle},
+			Text: response.Text{
+				Key: keys.TextAuthGuestTitle,
+				Args: map[string]any{
+					"bot_name": uc.botName,
+				},
+			},
 			Keyboard: response.Keyboard{
 				InlineRows: [][]response.Button{
 					{

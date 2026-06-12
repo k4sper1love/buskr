@@ -11,6 +11,7 @@ const (
 	// onboarding
 	BtnOnboardNoiseSel = "ob_n_sel"
 	BtnOnboardCancel   = "ob_cnl"
+	BtnOnboardSkip     = "onb_sk"
 
 	// profile
 	BtnProfileMain     = "pr_main"

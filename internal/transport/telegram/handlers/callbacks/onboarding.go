@@ -62,3 +62,22 @@ func (h *Onboarding) HandleCancelFlow(c telebot.Context) error {
 
 	return h.renderer.Render(c, rep)
 }
+
+func (h *Onboarding) HandleSkipStep(c telebot.Context) error {
+	cbCtx, err := extractCtx(c)
+	if err != nil {
+		return err
+	}
+
+	rep, err := h.uc.SkipMedia(cbCtx.ctx, cbCtx.user)
+	if err != nil {
+		return nil
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+
+	return h.renderer.Render(c, rep)
+}

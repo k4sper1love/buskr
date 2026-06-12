@@ -22,13 +22,13 @@ const (
 	TextCommonWeekdayFri  = "common.weekday.fri"
 	TextCommonWeekdaySat  = "common.weekday.sat"
 
-	TextCommonWeekdaySunFull  = "common.weekday_full.sun"
-	TextCommonWeekdayMonFull  = "common.weekday_full.mon"
-	TextCommonWeekdayTueFull  = "common.weekday_full.tue"
-	TextCommonWeekdayWedFull  = "common.weekday_full.wed"
-	TextCommonWeekdayThuFull  = "common.weekday_full.thu"
-	TextCommonWeekdayFriFull  = "common.weekday_full.fri"
-	TextCommonWeekdaySatFull  = "common.weekday_full.sat"
+	TextCommonWeekdaySunFull = "common.weekday_full.sun"
+	TextCommonWeekdayMonFull = "common.weekday_full.mon"
+	TextCommonWeekdayTueFull = "common.weekday_full.tue"
+	TextCommonWeekdayWedFull = "common.weekday_full.wed"
+	TextCommonWeekdayThuFull = "common.weekday_full.thu"
+	TextCommonWeekdayFriFull = "common.weekday_full.fri"
+	TextCommonWeekdaySatFull = "common.weekday_full.sat"
 
 	TextCommonMonthJan = "common.month.jan"
 	TextCommonMonthFeb = "common.month.feb"
@@ -68,6 +68,7 @@ const (
 	TextOnboardMsgSuccess       = "onboard.msg_success"
 	TextOnboardMsgErr           = "onboard.msg_err"
 	TextOnboardMsgCancel        = "onboard.msg_cancel"
+	TextOnboardBtnSkip          = "onboard.btn_skip"
 )
 
 // admin
@@ -97,6 +98,7 @@ const (
 	TextAdminModMsgUpgSfx     = "admin.mod.msg_upg_sfx"
 	TextAdminModMsgUpgCb      = "admin.mod.msg_upg_cb"
 	TextAdminModMsgUpgNotify  = "admin.mod.msg_upg_notify"
+	TextAdminModAppNoMedia    = "admin.mod.app_no_media"
 
 	// Locations
 	TextAdminLocsTitle         = "admin.locs.title"

@@ -24,15 +24,17 @@ type Users interface {
 }
 
 type Usecase struct {
-	state StateStore
-	users Users
-	ttl   time.Duration
+	state   StateStore
+	users   Users
+	ttl     time.Duration
+	botName string
 }
 
-func NewUsecase(state StateStore, users Users, ttl time.Duration) *Usecase {
+func NewUsecase(state StateStore, users Users, ttl time.Duration, botName string) *Usecase {
 	return &Usecase{
-		state: state,
-		users: users,
-		ttl:   ttl,
+		state:   state,
+		users:   users,
+		ttl:     ttl,
+		botName: botName,
 	}
 }

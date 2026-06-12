@@ -384,3 +384,90 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*u
 
 	return &u, nil
 }
+
+func (r *UserRepository) GetUsersPaginated(ctx context.Context, offset, limit int) ([]*user.User, int, error) {
+	var total int
+	err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM users").Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	query := `
+		SELECT id, telegram_id, username, name, role, status, noise_level, karma, created_at, updated_at
+		FROM users
+		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2
+	`
+	rows, err := r.db.QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var users []*user.User
+	for rows.Next() {
+		var u user.User
+		var role, status, noiseLevel string
+		var username sql.NullString
+
+		err := rows.Scan(
+			&u.ID, &u.TelegramID, &username, &u.Name, &role, &status, &noiseLevel, &u.Karma, &u.CreatedAt, &u.UpdatedAt,
+		)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		if username.Valid {
+			u.Username = username.String
+		}
+		u.Role = user.Role(role)
+		u.Status = user.Status(status)
+		u.NoiseLevel = user.NoiseLevel(noiseLevel)
+
+		users = append(users, &u)
+	}
+
+	return users, total, rows.Err()
+}
+
+func (r *UserRepository) FindByQuery(ctx context.Context, query string) ([]*user.User, error) {
+	sqlQuery := `
+		SELECT id, telegram_id, username, name, role, status, noise_level, karma, created_at, updated_at
+		FROM users
+		WHERE name ILIKE $1 
+		   OR username ILIKE $1 
+		   OR CAST(telegram_id AS TEXT) = $2
+		LIMIT 10
+	`
+	likePattern := "%" + query + "%"
+
+	rows, err := r.db.QueryContext(ctx, sqlQuery, likePattern, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*user.User
+	for rows.Next() {
+		var u user.User
+		var role, status, noiseLevel string
+		var username sql.NullString
+
+		err := rows.Scan(
+			&u.ID, &u.TelegramID, &username, &u.Name, &role, &status, &noiseLevel, &u.Karma, &u.CreatedAt, &u.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if username.Valid {
+			u.Username = username.String
+		}
+		u.Role = user.Role(role)
+		u.Status = user.Status(status)
+		u.NoiseLevel = user.NoiseLevel(noiseLevel)
+
+		users = append(users, &u)
+	}
+	return users, rows.Err()
+}

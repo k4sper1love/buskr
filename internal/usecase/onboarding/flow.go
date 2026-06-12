@@ -103,6 +103,14 @@ func (uc *Usecase) NoiseSelected(ctx context.Context, u *user.User, noise user.N
 			InlineRows: [][]response.Button{
 				{
 					{
+						Text: response.Text{Key: keys.TextOnboardBtnSkip},
+						Data: response.CallbackData{
+							Unique: keys.BtnOnboardSkip,
+						},
+					},
+				},
+				{
+					{
 						Text: response.Text{Key: keys.TextCommonBtnCancel},
 						Data: response.CallbackData{
 							Unique: keys.BtnOnboardCancel,
@@ -112,6 +120,19 @@ func (uc *Usecase) NoiseSelected(ctx context.Context, u *user.User, noise user.N
 			},
 		},
 	}, nil
+}
+
+func (uc *Usecase) SkipMedia(ctx context.Context, u *user.User) (response.Reply, error) {
+	st, err := uc.state.GetState(ctx, u.TelegramID)
+	if err != nil {
+		return response.Reply{}, err
+	}
+
+	if st != keys.StateOnboardMedia {
+		return response.Reply{}, errors.New("invalid state")
+	}
+
+	return uc.finish(ctx, u, "", false)
 }
 
 func (uc *Usecase) CancelFlow(ctx context.Context, u *user.User) (response.Reply, error) {
