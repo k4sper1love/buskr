@@ -88,7 +88,13 @@ func (h *Profile) HandleNoiseUpgradeSelect(c telebot.Context) error {
 		return nil
 	}
 
-	return h.renderer.Render(c, rep)
+	err = h.renderer.Render(c, rep)
+	if err != nil {
+		return err
+	}
+
+	_ = h.uc.SaveProfileMessageID(ctx, u.TelegramID, c.Message().ID)
+	return nil
 }
 
 func (h *Profile) HandleEditName(c telebot.Context) error {
@@ -109,7 +115,13 @@ func (h *Profile) HandleEditName(c telebot.Context) error {
 		return nil
 	}
 
-	return h.renderer.Render(c, rep)
+	err = h.renderer.Render(c, rep)
+	if err != nil {
+		return err
+	}
+
+	_ = h.uc.SaveProfileMessageID(ctx, u.TelegramID, c.Message().ID)
+	return nil
 }
 
 func (h *Profile) HandleNoiseUpgradeSkipReason(c telebot.Context) error {
@@ -129,6 +141,8 @@ func (h *Profile) HandleNoiseUpgradeSkipReason(c telebot.Context) error {
 	if rep.IsEmpty() {
 		return nil
 	}
+
+	_ = h.uc.ClearProfileMessageID(ctx, u.TelegramID)
 
 	return h.renderer.Render(c, rep)
 }

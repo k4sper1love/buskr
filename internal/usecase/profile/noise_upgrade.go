@@ -164,7 +164,7 @@ func (uc *Usecase) NoiseUpgradeSubmit(ctx context.Context, u *user.User, reason 
 	}
 
 	return response.Reply{
-		Kind: response.KindSend,
+		Kind: response.KindEdit,
 		Text: response.Text{Key: keys.TextProfileUpgMsgSuccess},
 		Keyboard: response.Keyboard{
 			InlineRows: [][]response.Button{

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/domain/user"
+	"github.com/k4sper1love/buskr/internal/usecase/keys"
 )
 
 type StateStore interface {
@@ -50,4 +51,18 @@ func NewUsecase(state StateStore, users Users, admin AdminNotifier, ttl time.Dur
 		admin: admin,
 		ttl:   ttl,
 	}
+}
+
+func (uc *Usecase) SaveProfileMessageID(ctx context.Context, tgID int64, msgID int) error {
+	return uc.state.SetData(ctx, tgID, keys.DataProfileMsgID, msgID, uc.ttl)
+}
+
+func (uc *Usecase) GetProfileMessageID(ctx context.Context, tgID int64) (int, error) {
+	var msgID int
+	err := uc.state.GetData(ctx, tgID, keys.DataProfileMsgID, &msgID)
+	return msgID, err
+}
+
+func (uc *Usecase) ClearProfileMessageID(ctx context.Context, tgID int64) error {
+	return uc.state.ClearData(ctx, tgID, keys.DataProfileMsgID)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
+	"github.com/k4sper1love/buskr/internal/usecase/keys"
 )
 
 type StateStore interface {
@@ -65,4 +66,18 @@ func NewUsecase(state StateStore, locs Locations, bookings Bookings, users Users
 		webAppURL:      webAppURL,
 		botUsername:    botUsername,
 	}
+}
+
+func (uc *Usecase) SaveAdminLocMessageID(ctx context.Context, tgID int64, msgID int) error {
+	return uc.state.SetData(ctx, tgID, keys.DataAdminLocMsgID, msgID, uc.ttl)
+}
+
+func (uc *Usecase) GetAdminLocMessageID(ctx context.Context, tgID int64) (int, error) {
+	var msgID int
+	err := uc.state.GetData(ctx, tgID, keys.DataAdminLocMsgID, &msgID)
+	return msgID, err
+}
+
+func (uc *Usecase) ClearAdminLocMessageID(ctx context.Context, tgID int64) error {
+	return uc.state.ClearData(ctx, tgID, keys.DataAdminLocMsgID)
 }

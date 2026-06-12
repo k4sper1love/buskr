@@ -42,7 +42,13 @@ func (h *AdminLoc) HandleAdminAddLoc(c telebot.Context) error {
 		return nil
 	}
 
-	return h.renderer.Render(c, rep)
+	err = h.renderer.Render(c, rep)
+	if err != nil {
+		return err
+	}
+
+	_ = h.uc.SaveAdminLocMessageID(ctx, u.TelegramID, c.Message().ID)
+	return nil
 }
 
 func (h *AdminLoc) HandleAdminOnNoiseSelected(c telebot.Context) error {
@@ -199,15 +205,26 @@ func (h *AdminLoc) HandleAdminLocCancel(c telebot.Context) error {
 		return err
 	}
 
-	rep, err := h.uc.CancelFlow(ctx, u)
+	_, err = h.uc.CancelFlow(ctx, u)
 	if err != nil {
 		return err
 	}
 
-	c.Respond(&telebot.CallbackResponse{})
-	if rep.IsEmpty() {
-		return nil
+	lang := ""
+	if s := c.Sender(); s != nil {
+		lang = s.LanguageCode
 	}
+
+	callbackText := h.renderer.Translate(lang, response.Text{Key: keys.TextAdminLocsMsgCancel})
+	c.Respond(&telebot.CallbackResponse{Text: callbackText})
+
+	_ = h.uc.ClearAdminLocMessageID(ctx, u.TelegramID)
+
+	rep, err := h.uc.List(ctx, u, 0)
+	if err != nil {
+		return err
+	}
+	rep.Kind = response.KindEdit
 
 	return h.renderer.Render(c, rep)
 }
@@ -414,13 +431,7 @@ func (h *AdminLoc) HandleAdminLocConfirm(c telebot.Context) error {
 		return err
 	}
 
-	args := c.Args()
-	if len(args) == 0 {
-		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
-	}
-	locID := args[0]
-
-	rep, err := h.uc.ConfirmCreate(ctx, u, locID)
+	rep, err := h.uc.ConfirmCreate(ctx, u, "")
 	if err != nil {
 		return err
 	}
@@ -429,6 +440,10 @@ func (h *AdminLoc) HandleAdminLocConfirm(c telebot.Context) error {
 	if rep.IsEmpty() {
 		return nil
 	}
+
+	// Remove inline keyboard from the warning message
+	_ = c.Edit(c.Message().Text, c.Message().Entities, &telebot.ReplyMarkup{})
+
 	return h.renderer.Render(c, rep)
 }
 

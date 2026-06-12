@@ -22,12 +22,7 @@ func NewRenderer(tr Translator, defaultLang string) *Renderer {
 	return &Renderer{tr: tr, defaultLang: defaultLang}
 }
 
-func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
-	lang := r.defaultLang
-	if s := c.Sender(); s != nil && s.LanguageCode != "" {
-		lang = s.LanguageCode
-	}
-
+func (r *Renderer) BuildOpts(lang string, rep response.Reply) (string, []any) {
 	text := r.Translate(lang, rep.Text)
 
 	var opts []any
@@ -35,7 +30,6 @@ func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
 	if rep.Keyboard.Remove {
 		opts = append(opts, telebot.RemoveKeyboard)
 	} else if len(rep.Keyboard.InlineRows) > 0 {
-		// ← Inline-клавиатура
 		menu := &telebot.ReplyMarkup{}
 		var rows []telebot.Row
 		for _, row := range rep.Keyboard.InlineRows {
@@ -62,7 +56,6 @@ func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
 			opts = append(opts, menu)
 		}
 	} else if len(rep.Keyboard.ReplyRows) > 0 {
-		// ← Reply-клавиатура
 		menu := &telebot.ReplyMarkup{ResizeKeyboard: true, OneTimeKeyboard: true}
 		var rows []telebot.Row
 
@@ -84,6 +77,17 @@ func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
 	// Always render with Markdown support
 	opts = append(opts, telebot.ModeMarkdown)
 
+	return text, opts
+}
+
+func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
+	lang := r.defaultLang
+	if s := c.Sender(); s != nil && s.LanguageCode != "" {
+		lang = s.LanguageCode
+	}
+
+	text, opts := r.BuildOpts(lang, rep)
+
 	switch rep.Kind {
 	case response.KindSend:
 		return c.Send(text, opts...)
@@ -98,6 +102,16 @@ func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
 	default:
 		return fmt.Errorf("unknown reply kind: %d", rep.Kind)
 	}
+}
+
+func (r *Renderer) RenderToMessage(bot *telebot.Bot, chatID int64, messageID int, lang string, rep response.Reply) error {
+	text, opts := r.BuildOpts(lang, rep)
+	target := &telebot.Message{
+		ID:   messageID,
+		Chat: &telebot.Chat{ID: chatID},
+	}
+	_, err := bot.Edit(target, text, opts...)
+	return err
 }
 
 func (r *Renderer) Translate(lang string, text response.Text) string {

@@ -78,11 +78,47 @@ func (h *FSM) HandleText(c telebot.Context) error {
 	}
 
 	if state == keys.StateProfileEditName {
+		_ = c.Delete()
+
+		if msgID, err := h.Profile.GetProfileMessageID(ctx, u.TelegramID); err == nil && msgID != 0 {
+			_ = c.Bot().Delete(&telebot.Message{
+				ID:   msgID,
+				Chat: &telebot.Chat{ID: u.TelegramID},
+			})
+			_ = h.Profile.ClearProfileMessageID(ctx, u.TelegramID)
+		}
+
 		success := response.Reply{
 			Kind: response.KindSend,
 			Text: response.Text{Key: keys.TextProfileEditNameMsgSuccess},
 		}
 		_ = h.Renderer.Render(c, success)
+	}
+
+	if state == keys.StateProfileNoiseReason {
+		_ = c.Delete()
+
+		if msgID, err := h.Profile.GetProfileMessageID(ctx, u.TelegramID); err == nil && msgID != 0 {
+			_ = c.Bot().Delete(&telebot.Message{
+				ID:   msgID,
+				Chat: &telebot.Chat{ID: u.TelegramID},
+			})
+			_ = h.Profile.ClearProfileMessageID(ctx, u.TelegramID)
+		}
+		rep.Kind = response.KindSend
+	}
+
+	if state == keys.StateAdminLocName || state == keys.StateAdminLocDesc {
+		_ = c.Delete()
+
+		msgID, err := h.AdminLoc.GetAdminLocMessageID(ctx, u.TelegramID)
+		if err == nil && msgID != 0 {
+			lang := ""
+			if s := c.Sender(); s != nil {
+				lang = s.LanguageCode
+			}
+			return h.Renderer.RenderToMessage(c.Bot(), u.TelegramID, msgID, lang, rep)
+		}
 	}
 
 	if state == keys.StateAdminLocEditName || state == keys.StateAdminLocEditDesc {
@@ -139,6 +175,20 @@ func (h *FSM) HandleLocationMsg(c telebot.Context) error {
 	}
 	if rep.IsEmpty() {
 		return nil
+	}
+
+	if state == keys.StateAdminLocGeo {
+		_ = c.Delete()
+
+		if msgID, err := h.AdminLoc.GetAdminLocMessageID(ctx, u.TelegramID); err == nil && msgID != 0 {
+			_ = c.Bot().Delete(&telebot.Message{
+				ID:   msgID,
+				Chat: &telebot.Chat{ID: u.TelegramID},
+			})
+			_ = h.AdminLoc.ClearAdminLocMessageID(ctx, u.TelegramID)
+		}
+
+		rep.Kind = response.KindSend
 	}
 
 	if state == keys.StateAdminLocEditGeo {

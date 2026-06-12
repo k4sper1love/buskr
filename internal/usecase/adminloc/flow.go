@@ -51,8 +51,11 @@ func (uc *Usecase) OnText(ctx context.Context, actor *user.User, text string) (r
 		_ = uc.state.SetState(ctx, actor.TelegramID, keys.StateAdminLocDesc, uc.ttl)
 
 		return response.Reply{
-			Kind: response.KindSend,
-			Text: response.Text{Key: keys.TextAdminLocsAddStep2},
+			Kind: response.KindEdit,
+			Text: response.Text{
+				Key:  keys.TextAdminLocsAddStep2,
+				Args: map[string]any{"name": text},
+			},
 			Keyboard: response.Keyboard{
 				InlineRows: [][]response.Button{
 					{
@@ -66,9 +69,18 @@ func (uc *Usecase) OnText(ctx context.Context, actor *user.User, text string) (r
 		_ = uc.state.SetData(ctx, actor.TelegramID, keys.DataAdminLocDesc, text, uc.ttl)
 		_ = uc.state.SetState(ctx, actor.TelegramID, keys.StateAdminLocNoise, uc.ttl)
 
+		var name string
+		_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataAdminLocName, &name)
+
 		return response.Reply{
-			Kind: response.KindSend,
-			Text: response.Text{Key: keys.TextAdminLocsAddStep3},
+			Kind: response.KindEdit,
+			Text: response.Text{
+				Key: keys.TextAdminLocsAddStep3,
+				Args: map[string]any{
+					"name": name,
+					"desc": text,
+				},
+			},
 			Keyboard: response.Keyboard{
 				InlineRows: [][]response.Button{
 					{
@@ -150,9 +162,23 @@ func (uc *Usecase) OnNoiseSelected(ctx context.Context, actor *user.User, noise 
 	_ = uc.state.SetData(ctx, actor.TelegramID, keys.DataAdminLocNoise, noise, uc.ttl)
 	_ = uc.state.SetState(ctx, actor.TelegramID, keys.StateAdminLocGeo, uc.ttl)
 
+	var name, desc string
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataAdminLocName, &name)
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataAdminLocDesc, &desc)
+
+	noiseKey := "common.lbl.noise_" + noise
+
 	return response.Reply{
 		Kind: response.KindEdit,
-		Text: response.Text{Key: keys.TextAdminLocsAddStep4},
+		Text: response.Text{
+			Key: keys.TextAdminLocsAddStep4,
+			Args: map[string]any{
+				"name":  name,
+				"desc":  desc,
+				"noise": noiseKey,
+			},
+			SubKeyArgs: []string{"noise"},
+		},
 		Keyboard: response.Keyboard{
 			InlineRows: [][]response.Button{
 				{
@@ -258,18 +284,9 @@ func (uc *Usecase) CancelFlow(ctx context.Context, actor *user.User) (response.R
 	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocName)
 	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocDesc)
 	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocNoise)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocMsgID)
 
-	return response.Reply{
-		Kind: response.KindEdit,
-		Text: response.Text{Key: keys.TextAdminLocsMsgCancel},
-		Keyboard: response.Keyboard{
-			InlineRows: [][]response.Button{
-				{
-					{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminLocs}},
-				},
-			},
-		},
-	}, nil
+	return response.Reply{}, nil
 }
 
 func (uc *Usecase) EditNameStart(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
@@ -365,6 +382,7 @@ func (uc *Usecase) doCreate(ctx context.Context, actor *user.User, name, desc, n
 	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocNoise)
 	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocLat)
 	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocLon)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocMsgID)
 
 	return response.Reply{
 		Kind: response.KindSend,
