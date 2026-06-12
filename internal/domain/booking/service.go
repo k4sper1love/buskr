@@ -71,7 +71,7 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 		return nil, ErrLocationInactive
 	}
 
-	if !isNoiseAllowed(u.NoiseLevel, loc.MaxNoise) {
+	if !IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise) {
 		return nil, ErrNoiseExceeded
 	}
 
@@ -230,6 +230,15 @@ func (s *Service) GetLastBookingByUser(ctx context.Context, userID string) (*Boo
 	return s.repo.GetLastBookingByUser(ctx, userID)
 }
 
-func isNoiseAllowed(userNoise user.NoiseLevel, locLimit location.NoiseLimit) bool {
-	return userNoise.Weight() <= locLimit.Weight()
+func IsNoiseCompatible(userNoise user.NoiseLevel, locLimit location.NoiseLimit) bool {
+	switch locLimit {
+	case location.LimitLight:
+		return userNoise == user.NoiseLight
+	case location.LimitMedium:
+		return userNoise == user.NoiseLight || userNoise == user.NoiseMedium
+	case location.LimitHard:
+		return userNoise == user.NoiseMedium || userNoise == user.NoiseHard
+	default:
+		return false
+	}
 }

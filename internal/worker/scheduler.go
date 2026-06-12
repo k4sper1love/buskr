@@ -172,7 +172,7 @@ func (s *Scheduler) broadcastHotSpot(ctx context.Context, b *booking.Booking) {
 			continue
 		}
 
-		if u.NoiseLevel.Weight() > loc.MaxNoise.Weight() {
+		if !booking.IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise) {
 			continue
 		}
 

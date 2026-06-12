@@ -100,11 +100,13 @@ func (uc *Usecase) Book(ctx context.Context, u *user.User) (response.Reply, erro
 }
 
 type webAppLocation struct {
-	ID   string  `json:"id"`
-	Name string  `json:"name"`
-	Desc string  `json:"desc"`
-	Lat  float64 `json:"lat"`
-	Lon  float64 `json:"lon"`
+	ID       string  `json:"id"`
+	Name     string  `json:"name"`
+	Desc     string  `json:"desc"`
+	Lat      float64 `json:"lat"`
+	Lon      float64 `json:"lon"`
+	MaxNoise string  `json:"max_noise,omitempty"`
+	Allowed  *bool   `json:"allowed,omitempty"`
 }
 
 func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) (response.Reply, error) {
@@ -134,16 +136,16 @@ func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) 
 
 	var webAppLocs []webAppLocation
 	for _, loc := range locations {
-		if u.NoiseLevel.Weight() > loc.MaxNoise.Weight() {
-			continue
-		}
+		allowed := booking.IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise)
 
 		webAppLocs = append(webAppLocs, webAppLocation{
-			ID:   loc.ID,
-			Name: loc.Name,
-			Desc: loc.Description,
-			Lat:  loc.Coords.Lat,
-			Lon:  loc.Coords.Lon,
+			ID:       loc.ID,
+			Name:     loc.Name,
+			Desc:     loc.Description,
+			Lat:      loc.Coords.Lat,
+			Lon:      loc.Coords.Lon,
+			MaxNoise: string(loc.MaxNoise),
+			Allowed:  &allowed,
 		})
 	}
 
@@ -178,7 +180,7 @@ func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) 
 	lastBooking, err := uc.bookings.GetLastBookingByUser(ctx, u.ID)
 	if err == nil && lastBooking != nil {
 		for _, loc := range locations {
-			if loc.ID == lastBooking.LocationID && u.NoiseLevel.Weight() <= loc.MaxNoise.Weight() {
+			if loc.ID == lastBooking.LocationID && booking.IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise) {
 				lastLoc = loc
 				break
 			}
@@ -635,7 +637,7 @@ func (uc *Usecase) ProcessMapSelection(ctx context.Context, u *user.User, locID 
 
 	var found bool
 	for _, loc := range locations {
-		if loc.ID == locID && u.NoiseLevel.Weight() <= loc.MaxNoise.Weight() {
+		if loc.ID == locID && booking.IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise) {
 			found = true
 			break
 		}
