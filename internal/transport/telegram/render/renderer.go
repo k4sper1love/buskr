@@ -148,12 +148,20 @@ func (r *Renderer) resolveSubKeys(lang string, text response.Text) response.Text
 		subKeySet[argKey] = struct{}{}
 	}
 
+	// Build a set of no-escape arg names for fast lookup
+	noEscapeSet := make(map[string]struct{}, len(text.NoEscapeArgs))
+	for _, argKey := range text.NoEscapeArgs {
+		noEscapeSet[argKey] = struct{}{}
+	}
+
 	for k, v := range resolvedArgs {
 		if _, isSubKey := subKeySet[k]; isSubKey {
 			// Translate i18n sub-key
 			if val, ok := v.(string); ok && val != "" && r.tr != nil {
 				resolvedArgs[k] = r.tr.T(lang, val, nil)
 			}
+		} else if _, isNoEscape := noEscapeSet[k]; isNoEscape {
+			// Do not escape user-provided string (e.g. inside backticks code spans)
 		} else {
 			// Escape user-provided strings to prevent Markdown parse errors
 			if val, ok := v.(string); ok {

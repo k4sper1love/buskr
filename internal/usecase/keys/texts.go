@@ -138,15 +138,21 @@ const (
 	TextAdminLocsMapEmpty      = "admin.locs.map_empty"
 
 	// Users
-	TextAdminUsersPromptSearch    = "admin.users.prompt_search"
-	TextAdminUsersMsgInvalid      = "admin.users.msg_invalid"
-	TextAdminUsersMsgNotFound     = "admin.users.msg_not_found"
-	TextAdminUsersSearchResult    = "admin.users.search_result"
-	TextAdminUsersBtnBan          = "admin.users.btn_ban"
-	TextAdminUsersBtnUnban        = "admin.users.btn_unban"
-	TextAdminUsersMsgIsAdmin      = "admin.users.msg_is_admin"
-	TextAdminUsersMsgBanSuccess   = "admin.users.msg_ban_success"
-	TextAdminUsersMsgUnbanSuccess = "admin.users.msg_unban_success"
+	TextAdminUsersListTitle          = "admin.users.list_title"
+	TextAdminUsersBtnSearch          = "admin.users.btn_search"
+	TextAdminUsersSearchQueryPrompt  = "admin.users.search_query_prompt"
+	TextAdminUsersSearchResultsTitle = "admin.users.search_results_title"
+	TextAdminUsersPromptSearch       = "admin.users.prompt_search"
+	TextAdminUsersMsgInvalid         = "admin.users.msg_invalid"
+	TextAdminUsersMsgNotFound        = "admin.users.msg_not_found"
+	TextAdminUsersSearchResult       = "admin.users.search_result"
+	TextAdminUsersBtnChangeNoise     = "admin.users.btn_change_noise"
+	TextAdminUsersNoiseMenuTitle     = "admin.users.noise_menu_title"
+	TextAdminUsersBtnBan             = "admin.users.btn_ban"
+	TextAdminUsersBtnUnban           = "admin.users.btn_unban"
+	TextAdminUsersMsgIsAdmin         = "admin.users.msg_is_admin"
+	TextAdminUsersMsgBanSuccess      = "admin.users.msg_ban_success"
+	TextAdminUsersMsgUnbanSuccess    = "admin.users.msg_unban_success"
 )
 
 // profile

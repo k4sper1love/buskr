@@ -9,10 +9,11 @@ const (
 )
 
 type Text struct {
-	Key        string
-	Args       map[string]any
-	Fallback   string
-	SubKeyArgs []string // keys in Args whose values are i18n keys and need translating
+	Key          string
+	Args         map[string]any
+	Fallback     string
+	SubKeyArgs   []string // keys in Args whose values are i18n keys and need translating
+	NoEscapeArgs []string // keys in Args that should NOT be escaped
 }
 
 type Reply struct {

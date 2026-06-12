@@ -30,7 +30,10 @@ func NewAuth(uc *auth.Usecase, bookingUc *booking.Usecase, adminLocUc *adminloc.
 	}
 }
 
-// HandleStart handles the /start command — no c.Respond() since it's not a callback.
+func (h *Auth) Uc() *auth.Usecase {
+	return h.uc
+}
+
 func (h *Auth) HandleStart(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
@@ -85,7 +88,6 @@ func (h *Auth) HandleStart(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-// HandleCallbackStart handles btn_start_over callback — edits the current message.
 func (h *Auth) HandleCallbackStart(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
@@ -104,13 +106,11 @@ func (h *Auth) HandleCallbackStart(c telebot.Context) error {
 		return nil
 	}
 
-	// Always edit the current message — this is a callback, not a fresh /start
 	rep.Kind = response.KindEdit
 
 	return h.renderer.Render(c, rep)
 }
 
-// HandleCallbackStartSend handles btn_common_menu_send callback — sends a new message instead of editing.
 func (h *Auth) HandleCallbackStartSend(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 
@@ -138,7 +138,6 @@ func (h *Auth) HandleCallbackStartSend(c telebot.Context) error {
 	return h.renderer.Render(c, rep)
 }
 
-// HandleApplyButton handles btn_apply callback.
 func (h *Auth) HandleApplyButton(c telebot.Context) error {
 	ctx := c.Get("ctx").(context.Context)
 

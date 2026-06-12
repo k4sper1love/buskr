@@ -291,3 +291,11 @@ func (s *Service) ForgiveFines(ctx context.Context, userID string) error {
 
 	return s.repo.Update(ctx, u)
 }
+
+func (s *Service) GetUsersPaginated(ctx context.Context, offset, limit int) ([]*User, int, error) {
+	return s.repo.GetUsersPaginated(ctx, offset, limit)
+}
+
+func (s *Service) FindByQuery(ctx context.Context, query string, offset, limit int) ([]*User, int, error) {
+	return s.repo.FindByQuery(ctx, query, offset, limit)
+}

@@ -19,6 +19,11 @@ func (uc *Usecase) Ban(ctx context.Context, actor *user.User, targetID string) (
 		return response.Reply{
 			Kind: response.KindEdit,
 			Text: response.Text{Key: keys.TextAdminUsersMsgNotFound},
+			Keyboard: response.Keyboard{
+				InlineRows: [][]response.Button{
+					{{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminUsers}}},
+				},
+			},
 		}, nil
 	}
 
@@ -26,6 +31,11 @@ func (uc *Usecase) Ban(ctx context.Context, actor *user.User, targetID string) (
 		return response.Reply{
 			Kind: response.KindEdit,
 			Text: response.Text{Key: keys.TextAdminUsersMsgIsAdmin},
+			Keyboard: response.Keyboard{
+				InlineRows: [][]response.Button{
+					{{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminUsers}}},
+				},
+			},
 		}, nil
 	}
 
@@ -40,10 +50,7 @@ func (uc *Usecase) Ban(ctx context.Context, actor *user.User, targetID string) (
 		}, nil
 	}
 
-	return response.Reply{
-		Kind: response.KindEdit,
-		Text: response.Text{Key: keys.TextAdminUsersMsgBanSuccess},
-	}, nil
+	return uc.UserDetail(ctx, actor, targetID)
 }
 
 func (uc *Usecase) Unban(ctx context.Context, actor *user.User, targetID string) (response.Reply, error) {
@@ -56,6 +63,11 @@ func (uc *Usecase) Unban(ctx context.Context, actor *user.User, targetID string)
 		return response.Reply{
 			Kind: response.KindEdit,
 			Text: response.Text{Key: keys.TextAdminUsersMsgNotFound},
+			Keyboard: response.Keyboard{
+				InlineRows: [][]response.Button{
+					{{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminUsers}}},
+				},
+			},
 		}, nil
 	}
 
@@ -63,6 +75,11 @@ func (uc *Usecase) Unban(ctx context.Context, actor *user.User, targetID string)
 		return response.Reply{
 			Kind: response.KindEdit,
 			Text: response.Text{Key: keys.TextAdminUsersMsgIsAdmin},
+			Keyboard: response.Keyboard{
+				InlineRows: [][]response.Button{
+					{{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminUsers}}},
+				},
+			},
 		}, nil
 	}
 
@@ -77,8 +94,5 @@ func (uc *Usecase) Unban(ctx context.Context, actor *user.User, targetID string)
 		}, nil
 	}
 
-	return response.Reply{
-		Kind: response.KindEdit,
-		Text: response.Text{Key: keys.TextAdminUsersMsgUnbanSuccess},
-	}, nil
+	return uc.UserDetail(ctx, actor, targetID)
 }

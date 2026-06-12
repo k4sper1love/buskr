@@ -14,7 +14,7 @@ func (uc *Usecase) EditNameStart(ctx context.Context, user *user.User) (response
 
 	return response.Reply{
 		Kind: response.KindEdit,
-		Text: response.Text{Key: keys.TextProfileMainBtnEditName},
+		Text: response.Text{Key: keys.TextProfileEditNamePrompt},
 	}, nil
 }
 
@@ -31,15 +31,7 @@ func (uc *Usecase) OnText(ctx context.Context, user *user.User, text string) (re
 
 	_ = uc.state.ClearState(ctx, user.TelegramID)
 
-	return response.Reply{
-		Kind: response.KindSend,
-		Text: response.Text{Key: keys.TextProfileEditNameMsgSuccess},
-		Keyboard: response.Keyboard{
-			InlineRows: [][]response.Button{
-				{
-					{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnProfileMain}},
-				},
-			},
-		},
-	}, nil
+	rep, err := uc.Profile(ctx, user)
+	rep.Kind = response.KindSend
+	return rep, err
 }

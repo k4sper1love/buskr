@@ -76,6 +76,14 @@ func (h *FSM) HandleText(c telebot.Context) error {
 		return nil
 	}
 
+	if state == keys.StateProfileEditName {
+		success := response.Reply{
+			Kind: response.KindSend,
+			Text: response.Text{Key: keys.TextProfileEditNameMsgSuccess},
+		}
+		_ = h.Renderer.Render(c, success)
+	}
+
 	return h.Renderer.Render(c, rep)
 }
 

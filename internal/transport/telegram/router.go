@@ -8,6 +8,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/transport/telegram/handlers"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/middleware"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
+	"github.com/k4sper1love/buskr/internal/usecase/response"
 	"gopkg.in/telebot.v3"
 )
 
@@ -93,9 +94,18 @@ func (r *Router) RegisterRoutes() {
 	r.b.bot.Handle("\f"+keys.BtnAdminLocDel, r.handlers.adminLoc.HandleAdminLocDelete)
 
 	// admin users
-	r.b.bot.Handle("\f"+keys.BtnAdminUsers, r.handlers.adminUser.HandleAdminSearch)
+	r.b.bot.Handle("\f"+keys.BtnAdminUsers, r.handlers.adminUser.HandleAdminUsersList)
+	r.b.bot.Handle("\f"+keys.BtnAdminUsersPage, r.handlers.adminUser.HandleAdminUsersList)
+	r.b.bot.Handle("\f"+keys.BtnAdminUserSearchPage, r.handlers.adminUser.HandleAdminUserSearchPage)
+	r.b.bot.Handle("\f"+keys.BtnAdminUserDetail, r.handlers.adminUser.HandleAdminUserDetail)
+	r.b.bot.Handle("\f"+keys.BtnAdminUserSearchPrompt, r.handlers.adminUser.HandleAdminUserSearchPrompt)
+	r.b.bot.Handle("\f"+keys.BtnAdminUserNoiseMenu, r.handlers.adminUser.HandleAdminUserNoiseMenu)
+	r.b.bot.Handle("\f"+keys.BtnAdminUserNoiseSet, r.handlers.adminUser.HandleAdminUserNoiseSet)
 	r.b.bot.Handle("\f"+keys.BtnAdminUserBan, r.handlers.adminUser.HandleAdminBan)
 	r.b.bot.Handle("\f"+keys.BtnAdminUserUnban, r.handlers.adminUser.HandleAdminUnban)
+	r.b.bot.Handle("\fnoop", func(c telebot.Context) error {
+		return c.Respond(&telebot.CallbackResponse{})
+	})
 
 	// bookings list / details / cancel
 	r.b.bot.Handle("\f"+keys.BtnBookList, r.handlers.booking.HandleBookingList)
@@ -130,11 +140,22 @@ func (r *Router) RegisterRoutes() {
 		if err != nil {
 			return err
 		}
-		rep, err := r.handlers.booking.Uc().CancelFlow(ctx, u)
+
+		cancelRep, _ := r.handlers.booking.Uc().CancelFlow(ctx, u)
+
+		cancelText := r.b.renderer.Translate("", cancelRep.Text)
+		_ = c.Respond(&telebot.CallbackResponse{Text: cancelText})
+
+		_ = c.Edit(cancelText, &telebot.ReplyMarkup{})
+
+		authRep, err := r.handlers.auth.Uc().Start(ctx, u, "")
 		if err != nil {
 			return err
 		}
-		c.Respond(&telebot.CallbackResponse{})
-		return r.b.renderer.Render(c, rep)
+		if authRep.IsEmpty() {
+			return nil
+		}
+		authRep.Kind = response.KindSend
+		return r.b.renderer.Render(c, authRep)
 	})
 }

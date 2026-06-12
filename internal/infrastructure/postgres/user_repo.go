@@ -430,20 +430,35 @@ func (r *UserRepository) GetUsersPaginated(ctx context.Context, offset, limit in
 	return users, total, rows.Err()
 }
 
-func (r *UserRepository) FindByQuery(ctx context.Context, query string) ([]*user.User, error) {
+func (r *UserRepository) FindByQuery(ctx context.Context, query string, offset, limit int) ([]*user.User, int, error) {
+	likePattern := "%" + query + "%"
+
+	countQuery := `
+		SELECT COUNT(*)
+		FROM users
+		WHERE name ILIKE $1 
+		   OR username ILIKE $1 
+		   OR CAST(telegram_id AS TEXT) = $2
+	`
+	var total int
+	err := r.db.QueryRowContext(ctx, countQuery, likePattern, query).Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	sqlQuery := `
 		SELECT id, telegram_id, username, name, role, status, noise_level, karma, created_at, updated_at
 		FROM users
 		WHERE name ILIKE $1 
 		   OR username ILIKE $1 
 		   OR CAST(telegram_id AS TEXT) = $2
-		LIMIT 10
+		ORDER BY created_at DESC
+		LIMIT $3 OFFSET $4
 	`
-	likePattern := "%" + query + "%"
 
-	rows, err := r.db.QueryContext(ctx, sqlQuery, likePattern, query)
+	rows, err := r.db.QueryContext(ctx, sqlQuery, likePattern, query, limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -457,7 +472,7 @@ func (r *UserRepository) FindByQuery(ctx context.Context, query string) ([]*user
 			&u.ID, &u.TelegramID, &username, &u.Name, &role, &status, &noiseLevel, &u.Karma, &u.CreatedAt, &u.UpdatedAt,
 		)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		if username.Valid {
@@ -469,5 +484,5 @@ func (r *UserRepository) FindByQuery(ctx context.Context, query string) ([]*user
 
 		users = append(users, &u)
 	}
-	return users, rows.Err()
+	return users, total, rows.Err()
 }

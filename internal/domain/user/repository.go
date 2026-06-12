@@ -16,4 +16,7 @@ type Repository interface {
 	CreateInvite(ctx context.Context, invite *Invite) error
 	GetInviteByToken(ctx context.Context, token string) (*Invite, error)
 	UpdateInvite(ctx context.Context, invite *Invite) error
+
+	GetUsersPaginated(ctx context.Context, offset, limit int) ([]*User, int, error)
+	FindByQuery(ctx context.Context, query string, offset, limit int) ([]*User, int, error)
 }

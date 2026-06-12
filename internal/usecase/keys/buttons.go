@@ -59,10 +59,16 @@ const (
 	BtnAdminLocDel        = "ad_ldel"
 
 	// admin user
-	BtnAdminUsers     = "ad_usr"
-	BtnAdminUserBan   = "ad_ubn"
-	BtnAdminUserUnban = "ad_uub"
-	BtnAdminAppAppr   = "ad_aap"
+	BtnAdminUsers            = "ad_usr"
+	BtnAdminUsersPage        = "ad_usrp"
+	BtnAdminUserSearchPage   = "ad_ussp"
+	BtnAdminUserDetail       = "ad_usrd"
+	BtnAdminUserSearchPrompt = "ad_usrs"
+	BtnAdminUserNoiseMenu    = "ad_usnm"
+	BtnAdminUserNoiseSet     = "ad_usns"
+	BtnAdminUserBan          = "ad_ubn"
+	BtnAdminUserUnban        = "ad_uub"
+	BtnAdminAppAppr          = "ad_aap"
 
 	// admin moderation
 	BtnAdminAppRej    = "ad_arj"

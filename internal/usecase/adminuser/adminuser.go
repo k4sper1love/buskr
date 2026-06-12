@@ -24,6 +24,8 @@ type Users interface {
 	GetByID(ctx context.Context, id string) (*user.User, error)
 	GetStats(ctx context.Context, userID string) (*user.UserStats, error)
 	Update(ctx context.Context, user *user.User) error
+	GetUsersPaginated(ctx context.Context, offset, limit int) ([]*user.User, int, error)
+	FindByQuery(ctx context.Context, query string, offset, limit int) ([]*user.User, int, error)
 }
 
 type Usecase struct {
