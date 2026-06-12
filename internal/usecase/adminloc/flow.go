@@ -103,15 +103,12 @@ func (uc *Usecase) OnText(ctx context.Context, actor *user.User, text string) (r
 		_ = uc.state.ClearState(ctx, actor.TelegramID)
 		_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocEditID)
 
-		return response.Reply{
-			Kind: response.KindSend,
-			Text: response.Text{Key: keys.TextAdminLocsEditMsgSuccess},
-			Keyboard: response.Keyboard{
-				InlineRows: [][]response.Button{
-					{{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{locID}}}},
-				},
-			},
-		}, nil
+		rep, err := uc.Details(ctx, actor, locID)
+		if err != nil {
+			return response.Reply{Kind: response.KindSend, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+		}
+		rep.Kind = response.KindSend
+		return rep, nil
 
 	case keys.StateAdminLocEditDesc:
 		var locID string
@@ -133,15 +130,12 @@ func (uc *Usecase) OnText(ctx context.Context, actor *user.User, text string) (r
 		_ = uc.state.ClearState(ctx, actor.TelegramID)
 		_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocEditID)
 
-		return response.Reply{
-			Kind: response.KindSend,
-			Text: response.Text{Key: keys.TextAdminLocsEditMsgSuccess},
-			Keyboard: response.Keyboard{
-				InlineRows: [][]response.Button{
-					{{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{locID}}}},
-				},
-			},
-		}, nil
+		rep, err := uc.Details(ctx, actor, locID)
+		if err != nil {
+			return response.Reply{Kind: response.KindSend, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+		}
+		rep.Kind = response.KindSend
+		return rep, nil
 
 	default:
 		return response.Reply{}, nil
@@ -248,15 +242,12 @@ func (uc *Usecase) OnLocation(ctx context.Context, actor *user.User, lat, lon fl
 		_ = uc.state.ClearState(ctx, actor.TelegramID)
 		_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataAdminLocEditID)
 
-		return response.Reply{
-			Kind: response.KindSend,
-			Text: response.Text{Key: keys.TextAdminLocsEditMsgSuccess},
-			Keyboard: response.Keyboard{
-				InlineRows: [][]response.Button{
-					{{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{locID}}}},
-				},
-			},
-		}, nil
+		rep, err := uc.Details(ctx, actor, locID)
+		if err != nil {
+			return response.Reply{Kind: response.KindSend, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+		}
+		rep.Kind = response.KindSend
+		return rep, nil
 	default:
 		return response.Reply{}, nil
 	}

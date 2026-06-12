@@ -85,6 +85,14 @@ func (h *FSM) HandleText(c telebot.Context) error {
 		_ = h.Renderer.Render(c, success)
 	}
 
+	if state == keys.StateAdminLocEditName || state == keys.StateAdminLocEditDesc {
+		success := response.Reply{
+			Kind: response.KindSend,
+			Text: response.Text{Key: keys.TextAdminLocsEditMsgSuccess},
+		}
+		_ = h.Renderer.Render(c, success)
+	}
+
 	return h.Renderer.Render(c, rep)
 }
 
@@ -123,12 +131,22 @@ func (h *FSM) HandleLocationMsg(c telebot.Context) error {
 		return nil
 	}
 
+	state, _ := h.State.GetState(ctx, c.Sender().ID)
+
 	rep, err := h.AdminLoc.OnLocation(ctx, u, msg.Location.Lat, msg.Location.Lng)
 	if err != nil {
 		return err
 	}
 	if rep.IsEmpty() {
 		return nil
+	}
+
+	if state == keys.StateAdminLocEditGeo {
+		success := response.Reply{
+			Kind: response.KindSend,
+			Text: response.Text{Key: keys.TextAdminLocsEditMsgSuccess},
+		}
+		_ = h.Renderer.Render(c, success)
 	}
 
 	return h.Renderer.Render(c, rep)
