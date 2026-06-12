@@ -99,8 +99,8 @@ func NewBot(
 	// handlers
 	handlers := &Handlers{
 		auth:       callbacks.NewAuth(authUc, bookingUc, adminlocUc, renderer),
-		onboarding: callbacks.NewOnboarding(onboardingUc, renderer),
-		booking:    callbacks.NewBooking(bookingUc, renderer),
+		onboarding: callbacks.NewOnboarding(onboardingUc, authUc, renderer),
+		booking:    callbacks.NewBooking(bookingUc, authUc, renderer),
 		admin:      callbacks.NewAdmin(adminUc, renderer),
 		adminLoc:   callbacks.NewAdminLoc(adminlocUc, renderer),
 		adminUser:  callbacks.NewAdminUser(adminuserUc, renderer),

@@ -157,17 +157,7 @@ func (uc *Usecase) CancelConfirm(ctx context.Context, u *user.User, bookingID st
 		return response.Reply{}, err
 	}
 
-	return response.Reply{
-		Kind: response.KindEdit,
-		Text: response.Text{Key: keys.TextBookDetMsgCancelSuccess},
-		Keyboard: response.Keyboard{
-			InlineRows: [][]response.Button{
-				{
-					{Text: response.Text{Key: keys.TextCommonBtnMenu}, Data: response.CallbackData{Unique: keys.BtnBookList}},
-				},
-			},
-		},
-	}, nil
+	return response.Reply{}, nil
 }
 
 func (uc *Usecase) CheckIn(ctx context.Context, u *user.User, bookingID string) (CheckInResult, error) {

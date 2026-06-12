@@ -6,6 +6,7 @@ const (
 	DataBookingDate = "d_bk_date"
 	DataBookingLoc  = "d_bk_loc"
 	DataBookingSlot = "d_bk_slt"
+	DataBookingMsgID = "d_bk_msg_id"
 
 	// onboarding
 	DataOnboardName       = "d_onb_nm"

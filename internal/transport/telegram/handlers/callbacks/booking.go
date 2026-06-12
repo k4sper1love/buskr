@@ -6,18 +6,23 @@ import (
 
 	"github.com/k4sper1love/buskr/internal/transport/telegram/ctxkey"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/render"
+	"github.com/k4sper1love/buskr/internal/usecase/auth"
 	"github.com/k4sper1love/buskr/internal/usecase/booking"
+	"github.com/k4sper1love/buskr/internal/usecase/keys"
+	"github.com/k4sper1love/buskr/internal/usecase/response"
 	"gopkg.in/telebot.v3"
 )
 
 type Booking struct {
 	uc       *booking.Usecase
+	authUc   *auth.Usecase
 	renderer *render.Renderer
 }
 
-func NewBooking(uc *booking.Usecase, renderer *render.Renderer) *Booking {
+func NewBooking(uc *booking.Usecase, authUc *auth.Usecase, renderer *render.Renderer) *Booking {
 	return &Booking{
 		uc:       uc,
+		authUc:   authUc,
 		renderer: renderer,
 	}
 }
@@ -72,10 +77,13 @@ func (h *Booking) HandleBookDateSelected(c telebot.Context) error {
 		return nil
 	}
 
-	// Remove inline keyboard from the older message to prevent stale presses
-	_ = c.Edit(c.Message().Text, c.Message().Entities, &telebot.ReplyMarkup{})
+	err = h.renderer.Render(c, rep)
+	if err != nil {
+		return err
+	}
 
-	return h.renderer.Render(c, rep)
+	_ = h.uc.SaveBookingMessageID(ctx, u.TelegramID, c.Message().ID)
+	return nil
 }
 
 func (h *Booking) HandleBookLocationSelected(c telebot.Context) error {
@@ -161,6 +169,11 @@ func (h *Booking) HandleBookDurationSelected(c telebot.Context) error {
 		return err
 	}
 
+	lang := ""
+	if s := c.Sender(); s != nil {
+		lang = s.LanguageCode
+	}
+
 	err = h.renderer.Render(c, rep.Reply)
 	if err != nil {
 		return err
@@ -173,7 +186,7 @@ func (h *Booking) HandleBookDurationSelected(c telebot.Context) error {
 
 	var callbackText string
 	if rep.Callback.Key != "" || rep.Callback.Fallback != "" {
-		callbackText = h.renderer.Translate("", rep.Callback)
+		callbackText = h.renderer.Translate(lang, rep.Callback)
 	}
 	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
 }
@@ -196,7 +209,13 @@ func (h *Booking) HandleBookingBackToLocs(c telebot.Context) error {
 		return nil
 	}
 
-	return h.renderer.Render(c, rep)
+	err = h.renderer.Render(c, rep)
+	if err != nil {
+		return err
+	}
+
+	_ = h.uc.SaveBookingMessageID(ctx, u.TelegramID, c.Message().ID)
+	return nil
 }
 
 func (h *Booking) HandleBookingBackToSlots(c telebot.Context) error {
@@ -282,17 +301,25 @@ func (h *Booking) HandleBookingCancelConfirm(c telebot.Context) error {
 	}
 	bookingID := args[0]
 
-	rep, err := h.uc.CancelConfirm(ctx, u, bookingID)
+	_, err = h.uc.CancelConfirm(ctx, u, bookingID)
 	if err != nil {
 		return err
 	}
 
-	c.Respond(&telebot.CallbackResponse{})
-	if rep.IsEmpty() {
-		return nil
+	lang := ""
+	if s := c.Sender(); s != nil {
+		lang = s.LanguageCode
 	}
+	toastText := h.renderer.Translate(lang, response.Text{Key: keys.TextBookDetMsgCancelSuccess})
+	_ = c.Respond(&telebot.CallbackResponse{Text: toastText})
 
-	return h.renderer.Render(c, rep)
+	listRep, err := h.uc.List(ctx, u)
+	if err != nil {
+		return err
+	}
+	listRep.Kind = response.KindEdit
+
+	return h.renderer.Render(c, listRep)
 }
 
 func (h *Booking) HandleBookingCheckIn(c telebot.Context) error {
@@ -360,7 +387,13 @@ func (h *Booking) HandleBookingGrabHotSlot(c telebot.Context) error {
 	if rep.IsEmpty() {
 		return nil
 	}
-	return h.renderer.Render(c, rep)
+
+	err = h.renderer.Render(c, rep)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (h *Booking) HandleBookingCancelFlow(c telebot.Context) error {
@@ -371,15 +404,23 @@ func (h *Booking) HandleBookingCancelFlow(c telebot.Context) error {
 		return err
 	}
 
-	rep, err := h.uc.CancelFlow(ctx, u)
+	_, err = h.uc.CancelFlow(ctx, u)
 	if err != nil {
 		return err
 	}
 
-	c.Respond(&telebot.CallbackResponse{})
-	if rep.IsEmpty() {
-		return nil
+	lang := ""
+	if s := c.Sender(); s != nil {
+		lang = s.LanguageCode
 	}
+	toastText := h.renderer.Translate(lang, response.Text{Key: keys.TextBookCreateMsgCancel})
+	_ = c.Respond(&telebot.CallbackResponse{Text: toastText})
 
-	return h.renderer.Render(c, rep)
+	startRep, err := h.authUc.Start(ctx, u, "")
+	if err != nil {
+		return err
+	}
+	startRep.Kind = response.KindEdit
+
+	return h.renderer.Render(c, startRep)
 }

@@ -65,6 +65,16 @@ func (h *Auth) HandleStart(c telebot.Context) error {
 
 	if strings.HasPrefix(payload, "loc_") {
 		locID := strings.TrimPrefix(payload, "loc_")
+
+		// Retrieve stored message ID of the location selection interface and delete it
+		if msgID, err := h.bookingUc.GetBookingMessageID(ctx, u.TelegramID); err == nil && msgID != 0 {
+			_ = c.Bot().Delete(&telebot.Message{
+				ID:   msgID,
+				Chat: &telebot.Chat{ID: u.TelegramID},
+			})
+			_ = h.bookingUc.ClearBookingMessageID(ctx, u.TelegramID)
+		}
+
 		rep, err := h.bookingUc.ProcessMapSelection(ctx, u, locID)
 		if err != nil {
 			return err

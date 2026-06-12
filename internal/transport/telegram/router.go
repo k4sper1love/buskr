@@ -146,10 +146,12 @@ func (r *Router) RegisterRoutes() {
 
 		cancelRep, _ := r.handlers.booking.Uc().CancelFlow(ctx, u)
 
-		cancelText := r.b.renderer.Translate("", cancelRep.Text)
+		lang := ""
+		if s := c.Sender(); s != nil {
+			lang = s.LanguageCode
+		}
+		cancelText := r.b.renderer.Translate(lang, cancelRep.Text)
 		_ = c.Respond(&telebot.CallbackResponse{Text: cancelText})
-
-		_ = c.Edit(cancelText, &telebot.ReplyMarkup{})
 
 		authRep, err := r.handlers.auth.Uc().Start(ctx, u, "")
 		if err != nil {
@@ -158,7 +160,7 @@ func (r *Router) RegisterRoutes() {
 		if authRep.IsEmpty() {
 			return nil
 		}
-		authRep.Kind = response.KindSend
+		authRep.Kind = response.KindEdit
 		return r.b.renderer.Render(c, authRep)
 	})
 }

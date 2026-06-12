@@ -30,6 +30,7 @@ func (uc *Usecase) Book(ctx context.Context, u *user.User) (response.Reply, erro
 	// clear any previous stale booking data just in case
 	uc.state.ClearData(ctx, u.TelegramID, keys.DataBookingDate)
 	uc.state.ClearData(ctx, u.TelegramID, keys.DataBookingLoc)
+	uc.state.ClearData(ctx, u.TelegramID, keys.DataBookingMsgID)
 
 	now := tz.Now()
 
@@ -565,6 +566,7 @@ func (uc *Usecase) CancelFlow(ctx context.Context, u *user.User) (response.Reply
 	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataBookingDate)
 	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataBookingLoc)
 	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataBookingSlot)
+	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataBookingMsgID)
 
 	return response.Reply{
 		Kind: response.KindEdit,

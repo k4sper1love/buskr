@@ -6,6 +6,7 @@ import (
 
 	"github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/domain/location"
+	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 )
 
@@ -70,4 +71,18 @@ func NewUsecase(state StateStore, locs Locations, bookings Bookings, ttl time.Du
 		webAppURL:      webAppURL,
 		botUsername:    botUsername,
 	}
+}
+
+func (uc *Usecase) SaveBookingMessageID(ctx context.Context, tgID int64, msgID int) error {
+	return uc.state.SetData(ctx, tgID, keys.DataBookingMsgID, msgID, uc.ttl)
+}
+
+func (uc *Usecase) GetBookingMessageID(ctx context.Context, tgID int64) (int, error) {
+	var msgID int
+	err := uc.state.GetData(ctx, tgID, keys.DataBookingMsgID, &msgID)
+	return msgID, err
+}
+
+func (uc *Usecase) ClearBookingMessageID(ctx context.Context, tgID int64) error {
+	return uc.state.ClearData(ctx, tgID, keys.DataBookingMsgID)
 }
