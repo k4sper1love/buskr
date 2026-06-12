@@ -21,10 +21,7 @@ func (n *Notifier) NewApplication(ctx context.Context, payload onboarding.Applic
 	btnReject := menu.Data(rejectText, keys.BtnAdminAppRej, payload.UserID)
 	menu.Inline(menu.Row(btnApprove, btnReject))
 
-	username := strings.TrimSpace(payload.TelegramUsername)
-	if username != "" && !strings.HasPrefix(username, "@") {
-		username = "@" + username
-	}
+	username := strings.TrimPrefix(strings.TrimSpace(payload.TelegramUsername), "@")
 
 	noiseTranslated := n.tr.T(n.adminLang, "common.lbl.noise_"+payload.NoiseLevel, nil)
 	caption := n.tr.T(n.adminLang, keys.TextAdminModAppTitle, map[string]any{
@@ -66,10 +63,8 @@ func (n *Notifier) NewNoiseUpgrade(ctx context.Context, payload profile.NoiseUpg
 	btnReject := menu.Data(rejectText, keys.BtnAdminNoiseRej, payload.UserID)
 	menu.Inline(menu.Row(btnApprove, btnReject))
 
-	username := strings.TrimSpace(payload.TelegramUsername)
-	if username != "" && !strings.HasPrefix(username, "@") {
-		username = "@" + username
-	}
+	// Strip @ if present — the locale template already has "@{{.username}}"
+	username := strings.TrimPrefix(strings.TrimSpace(payload.TelegramUsername), "@")
 
 	caption := n.tr.T(n.adminLang, keys.TextAdminModNoiseTitle, map[string]any{
 		"username":        mdutil.Escape(username),
