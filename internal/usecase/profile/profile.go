@@ -33,6 +33,7 @@ type NoiseUpgradePayload struct {
 	CurrentNoise     user.NoiseLevel
 	RequestedNoise   user.NoiseLevel
 	Karma            int
+	Reason           string
 }
 
 type Usecase struct {

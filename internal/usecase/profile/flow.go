@@ -19,6 +19,11 @@ func (uc *Usecase) EditNameStart(ctx context.Context, user *user.User) (response
 }
 
 func (uc *Usecase) OnText(ctx context.Context, user *user.User, text string) (response.Reply, error) {
+	state, _ := uc.state.GetState(ctx, user.TelegramID)
+	if state == keys.StateProfileNoiseReason {
+		return uc.NoiseUpgradeSubmit(ctx, user, text)
+	}
+
 	user.Name = text
 	user.UpdatedAt = time.Now()
 

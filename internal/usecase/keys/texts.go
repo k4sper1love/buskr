@@ -166,6 +166,9 @@ const (
 	TextProfileEditNameMsgSuccess = "profile.edit_name.msg_success"
 	TextProfileEditNameMsgErr     = "profile.edit_name.msg_err"
 	TextProfileUpgMsgSuccess      = "profile.upg.msg_success"
+	TextProfileUpgAlreadyPending = "profile.upg.msg_already_pending"
+	TextProfileUpgPromptReason    = "profile.upg.prompt_reason"
+	TextProfileUpgBtnSkip         = "profile.upg.btn_skip"
 )
 
 // booking

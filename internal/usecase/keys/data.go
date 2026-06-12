@@ -18,4 +18,7 @@ const (
 	DataAdminLocEditID = "d_adl_eid"
 	DataAdminLocLat    = "d_adl_lat"
 	DataAdminLocLon    = "d_adl_lon"
+
+	// profile
+	DataProfileRequestedNoise = "d_pr_rqn"
 )

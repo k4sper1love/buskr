@@ -14,10 +14,11 @@ const (
 	BtnOnboardSkip     = "onb_sk"
 
 	// profile
-	BtnProfileMain     = "pr_main"
-	BtnProfileEditName = "pr_enm"
-	BtnProfileNoiseUp  = "pr_n_up"
-	BtnProfileNoiseSel = "pr_n_sel"
+	BtnProfileMain            = "pr_main"
+	BtnProfileEditName        = "pr_enm"
+	BtnProfileNoiseUp         = "pr_n_up"
+	BtnProfileNoiseSel        = "pr_n_sel"
+	BtnProfileNoiseSkipReason = "pr_n_skip"
 
 	// booking
 	BtnBookStart      = "bk_st"

@@ -65,6 +65,7 @@ func (r *Router) RegisterRoutes() {
 	r.b.bot.Handle("\f"+keys.BtnProfileEditName, r.handlers.profile.HandleEditName)
 	r.b.bot.Handle("\f"+keys.BtnProfileNoiseUp, r.handlers.profile.HandleNoiseUpgrade)
 	r.b.bot.Handle("\f"+keys.BtnProfileNoiseSel, r.handlers.profile.HandleNoiseUpgradeSelect)
+	r.b.bot.Handle("\f"+keys.BtnProfileNoiseSkipReason, r.handlers.profile.HandleNoiseUpgradeSkipReason)
 
 	// admin panel
 	r.b.bot.Handle("\f"+keys.BtnAdminPanel, r.handlers.admin.HandleAdminPanel)

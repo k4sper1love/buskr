@@ -29,5 +29,6 @@ const (
 	StateAdminUserSearch = "st_ad_usr"
 
 	// profile
-	StateProfileEditName = "st_pr_enm"
+	StateProfileEditName    = "st_pr_enm"
+	StateProfileNoiseReason = "st_pr_nre"
 )

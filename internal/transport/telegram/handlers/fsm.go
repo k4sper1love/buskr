@@ -56,7 +56,8 @@ func (h *FSM) HandleText(c telebot.Context) error {
 		keys.StateAdminLocEditDesc: h.AdminLoc.OnText,
 
 		// profile
-		keys.StateProfileEditName: h.Profile.OnText,
+		keys.StateProfileEditName:    h.Profile.OnText,
+		keys.StateProfileNoiseReason: h.Profile.OnText,
 
 		// admin user
 		keys.StateAdminUserSearch: h.AdminUser.OnText,

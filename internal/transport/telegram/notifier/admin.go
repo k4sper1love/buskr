@@ -72,6 +72,7 @@ func (n *Notifier) NewNoiseUpgrade(ctx context.Context, payload profile.NoiseUpg
 		"current_noise":   n.tr.T(n.adminLang, "common.lbl.noise_"+string(payload.CurrentNoise), nil),
 		"requested_noise": n.tr.T(n.adminLang, "common.lbl.noise_"+string(payload.RequestedNoise), nil),
 		"karma":           payload.Karma,
+		"reason":          mdutil.Escape(payload.Reason),
 	})
 
 	_, err := n.bot.Send(&telebot.Chat{ID: n.adminChatID}, caption, menu, telebot.ModeMarkdown)

@@ -128,6 +128,8 @@ func (uc *Usecase) ApproveNoiseUpgrade(ctx context.Context, actor *user.User, ta
 		return ModerationResult{}, err // update failed
 	}
 
+	_ = uc.state.ClearData(ctx, targetUser.TelegramID, "noise_upgrade_pending")
+
 	res := ModerationResult{
 		AdminEditSuffix: response.Text{
 			Key: keys.TextAdminModMsgUpgSfx,
@@ -176,6 +178,8 @@ func (uc *Usecase) RejectNoiseUpgrade(ctx context.Context, actor *user.User, tar
 	if err != nil {
 		return ModerationResult{}, err // not found
 	}
+
+	_ = uc.state.ClearData(ctx, targetUser.TelegramID, "noise_upgrade_pending")
 
 	res := ModerationResult{
 		AdminEditSuffix: response.Text{
