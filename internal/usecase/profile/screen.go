@@ -24,22 +24,26 @@ func (uc *Usecase) Profile(ctx context.Context, u *user.User) (response.Reply, e
 		karmaText = keys.TextProfileMainLblKarmaBad
 	}
 
+	badgeKey := ""
+	if u.Role == user.RoleAdmin {
+		badgeKey = "profile.main.admin_badge"
+	}
+
 	// Map domain values to i18n keys for human-readable display
 	noiseKey := "common.lbl.noise_" + string(u.NoiseLevel) // e.g. "common.lbl.noise_light" → "🟢 Light"
-	roleKey := "common.lbl.role_" + string(u.Role)         // e.g. "common.lbl.role_musician" → "🎸 Музыкант"
 
 	return response.Reply{
 		Kind: response.KindEdit,
 		Text: response.Text{Key: keys.TextProfileMainTitle, Args: map[string]any{
 			"name":                name,
 			"noise":               noiseKey,
-			"role":                roleKey,
+			"badge":               badgeKey,
 			"total_bookings":      stats.TotalBookings,
 			"successful_checkins": stats.SuccessfulCheckins,
 			"no_shows":            stats.NoShows,
 			"karma":               karmaText,
 		},
-			SubKeyArgs: []string{"karma", "noise", "role"},
+			SubKeyArgs: []string{"karma", "noise", "badge"},
 		},
 		Keyboard: response.Keyboard{
 			InlineRows: [][]response.Button{

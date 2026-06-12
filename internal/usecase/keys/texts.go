@@ -21,6 +21,27 @@ const (
 	TextCommonWeekdayThu  = "common.weekday.thu"
 	TextCommonWeekdayFri  = "common.weekday.fri"
 	TextCommonWeekdaySat  = "common.weekday.sat"
+
+	TextCommonWeekdaySunFull  = "common.weekday_full.sun"
+	TextCommonWeekdayMonFull  = "common.weekday_full.mon"
+	TextCommonWeekdayTueFull  = "common.weekday_full.tue"
+	TextCommonWeekdayWedFull  = "common.weekday_full.wed"
+	TextCommonWeekdayThuFull  = "common.weekday_full.thu"
+	TextCommonWeekdayFriFull  = "common.weekday_full.fri"
+	TextCommonWeekdaySatFull  = "common.weekday_full.sat"
+
+	TextCommonMonthJan = "common.month.jan"
+	TextCommonMonthFeb = "common.month.feb"
+	TextCommonMonthMar = "common.month.mar"
+	TextCommonMonthApr = "common.month.apr"
+	TextCommonMonthMay = "common.month.may"
+	TextCommonMonthJun = "common.month.jun"
+	TextCommonMonthJul = "common.month.jul"
+	TextCommonMonthAug = "common.month.aug"
+	TextCommonMonthSep = "common.month.sep"
+	TextCommonMonthOct = "common.month.oct"
+	TextCommonMonthNov = "common.month.nov"
+	TextCommonMonthDec = "common.month.dec"
 )
 
 // auth

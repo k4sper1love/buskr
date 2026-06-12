@@ -84,9 +84,52 @@ func (uc *Usecase) Start(ctx context.Context, u *user.User, payload string) (res
 			})
 		}
 
+		loc, _ := time.LoadLocation("Asia/Almaty")
+		now := time.Now().In(loc)
+
+		weekdayKeys := []string{
+			keys.TextCommonWeekdaySunFull,
+			keys.TextCommonWeekdayMonFull,
+			keys.TextCommonWeekdayTueFull,
+			keys.TextCommonWeekdayWedFull,
+			keys.TextCommonWeekdayThuFull,
+			keys.TextCommonWeekdayFriFull,
+			keys.TextCommonWeekdaySatFull,
+		}
+
+		monthKeys := []string{
+			"",
+			keys.TextCommonMonthJan,
+			keys.TextCommonMonthFeb,
+			keys.TextCommonMonthMar,
+			keys.TextCommonMonthApr,
+			keys.TextCommonMonthMay,
+			keys.TextCommonMonthJun,
+			keys.TextCommonMonthJul,
+			keys.TextCommonMonthAug,
+			keys.TextCommonMonthSep,
+			keys.TextCommonMonthOct,
+			keys.TextCommonMonthNov,
+			keys.TextCommonMonthDec,
+		}
+
+		name := u.Username
+		if u.Name != "" {
+			name = u.Name
+		}
+
 		return response.Reply{
 			Kind: response.KindSend,
-			Text: response.Text{Key: keys.TextAuthActiveTitle},
+			Text: response.Text{
+				Key: keys.TextAuthActiveTitle,
+				Args: map[string]any{
+					"name":    name,
+					"day":     now.Day(),
+					"month":   monthKeys[now.Month()],
+					"weekday": weekdayKeys[now.Weekday()],
+				},
+				SubKeyArgs: []string{"month", "weekday"},
+			},
 			Keyboard: response.Keyboard{
 				InlineRows: rows,
 			},
