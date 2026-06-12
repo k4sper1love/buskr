@@ -8,8 +8,8 @@ const (
 	DataBookingSlot = "d_bk_slt"
 
 	// onboarding
-	DataOnboardName = "d_onb_nm"
-	DataOnboardCat  = "d_onb_cat"
+	DataOnboardName       = "d_onb_nm"
+	DataOnboardNoiseLevel = "d_onb_nlvl"
 
 	// admin location
 	DataAdminLocName   = "d_adl_nm"

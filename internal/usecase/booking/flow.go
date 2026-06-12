@@ -11,6 +11,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
+	"github.com/k4sper1love/buskr/internal/tz"
 
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
@@ -30,8 +31,7 @@ func (uc *Usecase) Book(ctx context.Context, u *user.User) (response.Reply, erro
 	uc.state.ClearData(ctx, u.TelegramID, keys.DataBookingDate)
 	uc.state.ClearData(ctx, u.TelegramID, keys.DataBookingLoc)
 
-	loc, _ := time.LoadLocation("Asia/Almaty")
-	now := time.Now().In(loc)
+	now := tz.Now()
 
 	var rows [][]response.Button
 	for i := 0; i < uc.maxAdvanceDays; i++ {
@@ -255,8 +255,7 @@ func (uc *Usecase) LocationSelected(ctx context.Context, u *user.User, locID str
 		return response.Reply{}, err
 	}
 
-	locTz, _ := time.LoadLocation("Asia/Almaty")
-	targetDate, err := time.ParseInLocation("2006-01-02", selectedDateStr, locTz)
+	targetDate, err := time.ParseInLocation("2006-01-02", selectedDateStr, tz.Location())
 	if err != nil {
 		return response.Reply{}, err
 	}
@@ -274,7 +273,7 @@ func (uc *Usecase) LocationSelected(ctx context.Context, u *user.User, locID str
 		endHour = 23
 	}
 
-	now := time.Now().In(locTz)
+	now := tz.Now()
 	isToday := targetDate.YearDay() == now.YearDay() && targetDate.Year() == now.Year()
 
 	for hour := 10; hour < endHour; hour++ {
@@ -282,7 +281,7 @@ func (uc *Usecase) LocationSelected(ctx context.Context, u *user.User, locID str
 			continue // skip already passed hours on today
 		}
 
-		slotStart := time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(), hour, 0, 0, 0, locTz)
+		slotStart := time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(), hour, 0, 0, 0, tz.Location())
 		slotEnd := slotStart.Add(1 * time.Hour)
 
 		isOccupied := false
@@ -383,8 +382,7 @@ func (uc *Usecase) SlotSelected(ctx context.Context, u *user.User, hour int) (re
 		return response.Reply{}, err
 	}
 
-	locTz, _ := time.LoadLocation("Asia/Almaty")
-	targetDate, _ := time.ParseInLocation("2006-01-02", selectedDateStr, locTz)
+	targetDate, _ := time.ParseInLocation("2006-01-02", selectedDateStr, tz.Location())
 
 	schedule, _ := uc.bookings.GetScheduleForLocation(ctx, locID, targetDate)
 
@@ -400,7 +398,7 @@ func (uc *Usecase) SlotSelected(ctx context.Context, u *user.User, hour int) (re
 			break
 		}
 
-		slotStart := time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(), checkHour, 0, 0, 0, locTz)
+		slotStart := time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(), checkHour, 0, 0, 0, tz.Location())
 		slotEnd := slotStart.Add(1 * time.Hour)
 
 		isOccupied := false
@@ -488,10 +486,9 @@ func (uc *Usecase) DurationSelected(ctx context.Context, u *user.User, duration 
 		return BookingResult{}, errors.New("no selected hour")
 	}
 
-	locTz, _ := time.LoadLocation("Asia/Almaty")
-	targetDate, _ := time.ParseInLocation("2006-01-02", dateStr, locTz)
+	targetDate, _ := time.ParseInLocation("2006-01-02", dateStr, tz.Location())
 
-	startTime := time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(), startHour, 0, 0, 0, locTz)
+	startTime := time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(), startHour, 0, 0, 0, tz.Location())
 	endTime := startTime.Add(time.Duration(duration) * time.Hour)
 
 	_, err = uc.bookings.BookSlot(ctx, u.ID, locID, startTime, endTime)

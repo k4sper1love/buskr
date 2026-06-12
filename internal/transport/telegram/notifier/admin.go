@@ -16,7 +16,7 @@ func (n *Notifier) NewApplication(ctx context.Context, payload onboarding.Applic
 	approveText := n.tr.T(n.adminLang, keys.TextAdminModBtnApprove, nil)
 	rejectText := n.tr.T(n.adminLang, keys.TextAdminModBtnReject, nil)
 
-	btnApprove := menu.Data(approveText, keys.BtnAdminAppAppr, payload.UserID, payload.Category)
+	btnApprove := menu.Data(approveText, keys.BtnAdminAppAppr, payload.UserID, payload.NoiseLevel)
 	btnReject := menu.Data(rejectText, keys.BtnAdminAppRej, payload.UserID)
 	menu.Inline(menu.Row(btnApprove, btnReject))
 
@@ -25,10 +25,11 @@ func (n *Notifier) NewApplication(ctx context.Context, payload onboarding.Applic
 		username = "@" + username
 	}
 
+	noiseTranslated := n.tr.T(n.adminLang, "common.lbl.noise_"+payload.NoiseLevel, nil)
 	caption := n.tr.T(n.adminLang, keys.TextAdminModAppTitle, map[string]any{
 		"username": username,
 		"name":     payload.Name,
-		"category": payload.Category,
+		"noise":    noiseTranslated,
 	})
 
 	var err error
@@ -67,8 +68,8 @@ func (n *Notifier) NewNoiseUpgrade(ctx context.Context, payload profile.NoiseUpg
 	caption := n.tr.T(n.adminLang, keys.TextAdminModNoiseTitle, map[string]any{
 		"username":        username,
 		"name":            payload.Name,
-		"current_noise":   payload.CurrentNoise,
-		"requested_noise": payload.RequestedNoise,
+		"current_noise":   n.tr.T(n.adminLang, "common.lbl.noise_"+string(payload.CurrentNoise), nil),
+		"requested_noise": n.tr.T(n.adminLang, "common.lbl.noise_"+string(payload.RequestedNoise), nil),
 		"karma":           payload.Karma,
 	})
 

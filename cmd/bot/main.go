@@ -16,6 +16,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/infrastructure/postgres"
 	redisInfra "github.com/k4sper1love/buskr/internal/infrastructure/redis"
 	"github.com/k4sper1love/buskr/internal/transport/telegram"
+	"github.com/k4sper1love/buskr/internal/tz"
 	"github.com/k4sper1love/buskr/internal/worker"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
@@ -25,6 +26,11 @@ func main() {
 	cfg := config.MustLoad()
 
 	log.Print("Starting bot in env:", cfg.Env)
+
+	// timezone
+	if err := tz.Init(cfg.Timezone); err != nil {
+		log.Fatalf("Failed to initialize timezone: %v", err)
+	}
 
 	// database
 	db, err := sql.Open("postgres", cfg.Database.DSN)

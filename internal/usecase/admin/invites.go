@@ -70,10 +70,14 @@ func (uc *Usecase) GenerateInvite(ctx context.Context, actor *user.User, botUser
 
 	return response.Reply{
 		Kind: response.KindEdit,
-		Text: response.Text{Key: keys.TextAdminInvCreated, Args: map[string]any{
-			"noise": noise,
-			"link":  inviteLink,
-		}},
+		Text: response.Text{
+			Key: keys.TextAdminInvCreated,
+			Args: map[string]any{
+				"noise": "common.lbl.noise_" + noise,
+				"link":  inviteLink,
+			},
+			SubKeyArgs: []string{"noise"},
+		},
 		Keyboard: response.Keyboard{
 			InlineRows: [][]response.Button{
 				{

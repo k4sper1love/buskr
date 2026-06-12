@@ -8,7 +8,8 @@ import (
 )
 
 type Config struct {
-	Env string `env:"ENV" env-default:"local"`
+	Env      string `env:"ENV" env-default:"local"`
+	Timezone string `env:"TIMEZONE" env-default:"Asia/Almaty"`
 
 	// transport
 	Telegram TelegramConfig

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/domain/user"
+	"github.com/k4sper1love/buskr/internal/tz"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 )
@@ -84,8 +85,7 @@ func (uc *Usecase) Start(ctx context.Context, u *user.User, payload string) (res
 			})
 		}
 
-		loc, _ := time.LoadLocation("Asia/Almaty")
-		now := time.Now().In(loc)
+		now := tz.Now()
 
 		weekdayKeys := []string{
 			keys.TextCommonWeekdaySunFull,

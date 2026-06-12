@@ -61,7 +61,7 @@
   "admin.inv.created": "**Invite Created**\n\nVolume: `{{.noise}}`\nLink: `{{.link}}`",
   "admin.mod.btn_approve": "✅ Approve",
   "admin.mod.btn_reject": "❌ Reject",
-  "admin.mod.app_title": "**New Application**\n\nTelegram: `@{{.username}}`\nName: `{{.name}}`\nVolume: `{{.category}}`",
+  "admin.mod.app_title": "**New Application**\n\nTelegram: `@{{.username}}`\nName: `{{.name}}`\nVolume: `{{.noise}}`",
   "admin.mod.app_link": "{{.caption}}\n\nMedia: {{.link}}",
   "admin.mod.noise_title": "**Noise Level Request**\n\nTelegram: `@{{.username}}`\nName: `{{.name}}`\n\nCurrent: `{{.current_noise}}`\nRequested: `{{.requested_noise}}`\nKarma: `{{.karma}}`",
   "admin.mod.msg_appr_sfx": "Approved by: @{{.actor}}",

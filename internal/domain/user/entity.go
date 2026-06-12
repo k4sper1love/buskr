@@ -29,7 +29,7 @@ type NoiseLevel string
 
 const (
 	NoiseNone   NoiseLevel = "none"   // for guest/pending
-	NoiseLight  NoiseLevel = "low"    // acoustics, violin
+	NoiseLight  NoiseLevel = "light"    // acoustics, violin
 	NoiseMedium NoiseLevel = "medium" // lightweight combo amplifiers
 	NoiseHard   NoiseLevel = "hard"   // drums, powerful speakers
 )

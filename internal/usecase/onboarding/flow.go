@@ -93,7 +93,7 @@ func (uc *Usecase) NoiseSelected(ctx context.Context, u *user.User, noise user.N
 	if st != keys.StateOnboardNoise {
 		return response.Reply{}, errors.New("invalid state")
 	}
-	_ = uc.state.SetData(ctx, u.TelegramID, keys.DataOnboardCat, noise, uc.ttl)
+	_ = uc.state.SetData(ctx, u.TelegramID, keys.DataOnboardNoiseLevel, noise, uc.ttl)
 	_ = uc.state.SetState(ctx, u.TelegramID, keys.StateOnboardMedia, uc.ttl)
 
 	return response.Reply{
@@ -116,7 +116,7 @@ func (uc *Usecase) NoiseSelected(ctx context.Context, u *user.User, noise user.N
 
 func (uc *Usecase) CancelFlow(ctx context.Context, u *user.User) (response.Reply, error) {
 	_ = uc.state.ClearState(ctx, u.TelegramID)
-	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataOnboardCat)
+	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataOnboardNoiseLevel)
 	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataOnboardName)
 
 	return response.Reply{
@@ -126,9 +126,9 @@ func (uc *Usecase) CancelFlow(ctx context.Context, u *user.User) (response.Reply
 }
 
 func (uc *Usecase) finish(ctx context.Context, u *user.User, mediaData string, isVideo bool) (response.Reply, error) {
-	var name, category string
+	var name, noiseLevel string
 	_ = uc.state.GetData(ctx, u.TelegramID, keys.DataOnboardName, &name)
-	_ = uc.state.GetData(ctx, u.TelegramID, keys.DataOnboardCat, &category)
+	_ = uc.state.GetData(ctx, u.TelegramID, keys.DataOnboardNoiseLevel, &noiseLevel)
 
 	u.Name = name
 	u.UpdatedAt = time.Now()
@@ -149,13 +149,13 @@ func (uc *Usecase) finish(ctx context.Context, u *user.User, mediaData string, i
 
 	_ = uc.state.ClearState(ctx, u.TelegramID)
 	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataOnboardName)
-	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataOnboardCat)
+	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataOnboardNoiseLevel)
 
 	_ = uc.admin.NewApplication(ctx, ApplicationPayload{
 		TelegramUsername: strings.TrimSpace(u.Username),
 		UserID:           u.ID,
 		Name:             name,
-		Category:         category,
+		NoiseLevel:       noiseLevel,
 		MediaData:        mediaData,
 		IsVideo:          isVideo,
 	})

@@ -133,8 +133,9 @@ func (uc *Usecase) ApproveNoiseUpgrade(ctx context.Context, actor *user.User, ta
 			Key: keys.TextAdminModMsgUpgSfx,
 			Args: map[string]any{
 				"actor":    actor.Username,
-				"category": category,
+				"category": "common.lbl.noise_" + string(category),
 			},
+			SubKeyArgs: []string{"category"},
 		},
 		CallbackText: response.Text{
 			Key: keys.TextAdminModMsgUpgCb,
@@ -147,8 +148,9 @@ func (uc *Usecase) ApproveNoiseUpgrade(ctx context.Context, actor *user.User, ta
 					Key: keys.TextAdminModMsgUpgNotify,
 					Args: map[string]any{
 						"actor":    actor.Username,
-						"category": category,
+						"category": "common.lbl.noise_" + string(category),
 					},
+					SubKeyArgs: []string{"category"},
 				},
 				Keyboard: response.Keyboard{
 					InlineRows: [][]response.Button{

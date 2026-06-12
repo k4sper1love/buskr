@@ -30,7 +30,7 @@ type ApplicationPayload struct {
 	TelegramUsername string
 	UserID           string
 	Name             string
-	Category         string
+	NoiseLevel       string
 	MediaData        string
 	IsVideo          bool
 }

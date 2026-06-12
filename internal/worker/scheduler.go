@@ -11,6 +11,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/infrastructure/redis"
+	"github.com/k4sper1love/buskr/internal/tz"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"gopkg.in/telebot.v3"
 )
@@ -86,7 +87,7 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 		menu.Inline(menu.Row(btnCheckIn))
 
 		msg := s.tr.T("ru", keys.TextWorkerReminderMsg, map[string]any{
-			"time": b.StartTime.Format("15:04"),
+			"time": tz.In(b.StartTime).Format("15:04"),
 		})
 
 		_, err = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, menu, telebot.ModeMarkdown)
@@ -149,9 +150,8 @@ func (s *Scheduler) broadcastHotSpot(ctx context.Context, b *booking.Booking) {
 		return
 	}
 
-	locTz, _ := time.LoadLocation("Asia/Almaty")
-	startHour := b.StartTime.In(locTz).Hour()
-	endHour := b.EndTime.In(locTz).Hour()
+	startHour := tz.In(b.StartTime).Hour()
+	endHour := tz.In(b.EndTime).Hour()
 	duration := endHour - startHour
 
 	noiseText := s.tr.T("ru", keys.TextCommonLblNoise+"_"+string(loc.MaxNoise), nil)

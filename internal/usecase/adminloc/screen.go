@@ -11,6 +11,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
+	"github.com/k4sper1love/buskr/internal/tz"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 )
@@ -125,8 +126,8 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 				"desc":      loc.Description,
 				"max_noise": loc.MaxNoise,
 				"status":    loc.Status,
-				"lat":       fmt.Sprint("%.6f", loc.Coords.Lat),
-				"lon":       fmt.Sprint("%.6f", loc.Coords.Lon),
+				"lat":       fmt.Sprintf("%.6f", loc.Coords.Lat),
+				"lon":       fmt.Sprintf("%.6f", loc.Coords.Lon),
 			},
 		},
 		Keyboard: response.Keyboard{
@@ -263,8 +264,7 @@ func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string)
 		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
 	}
 
-	locTz, _ := time.LoadLocation("Asia/Almaty")
-	now := time.Now().In(locTz)
+	now := tz.Now()
 
 	bookings, err := uc.bookings.GetScheduleForLocation(ctx, locID, now)
 	if err != nil {
@@ -302,8 +302,8 @@ func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string)
 		}
 		sb.WriteString(fmt.Sprintf("%s `%s – %s`\n",
 			icon,
-			b.StartTime.In(locTz).Format("15:04"),
-			b.EndTime.In(locTz).Format("15:04"),
+			tz.In(b.StartTime).Format("15:04"),
+			tz.In(b.EndTime).Format("15:04"),
 		))
 	}
 

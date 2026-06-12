@@ -61,7 +61,7 @@
   "admin.inv.created": "✅ **Ссылка создана**\n\n• Шум: `{{.noise}}`\n• Ссылка: `{{.link}}`",
   "admin.mod.btn_approve": "✅ Одобрить",
   "admin.mod.btn_reject": "❌ Отклонить",
-  "admin.mod.app_title": "📥 **Новая заявка**\n\n• Профиль: @{{.username}}\n• Имя: `{{.name}}`\n• Уровень шума: `{{.category}}`",
+  "admin.mod.app_title": "📥 **Новая заявка**\n\n• Профиль: @{{.username}}\n• Имя: `{{.name}}`\n• Уровень шума: `{{.noise}}`",
   "admin.mod.app_link": "{{.caption}}\n\n📹 Медиа: {{.link}}",
   "admin.mod.noise_title": "🔄 **Запрос уровня шума**\n\n• Пользователь: @{{.username}}\n• Имя: `{{.name}}`\n\n• Текущий: `{{.current_noise}}`\n• Новый: `{{.requested_noise}}`\n• Карма: `{{.karma}}`",
   "admin.mod.msg_appr_sfx": "Одобрено: @{{.actor}}",
