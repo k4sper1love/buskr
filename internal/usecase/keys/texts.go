@@ -113,6 +113,8 @@ const (
 	TextAdminLocsMsgNotFound   = "admin.locs.msg_not_found"
 	TextAdminLocsBtnList       = "admin.locs.btn_list"
 	TextAdminLocsBtnDelete     = "admin.locs.btn_delete"
+	TextAdminLocsDelConfirmTitle = "admin.locs.del_confirm_title"
+	TextAdminLocsDelConfirmBtn   = "admin.locs.del_confirm_btn"
 	TextAdminLocsDetails       = "admin.locs.details"
 	TextAdminLocsBtnEnable     = "admin.locs.btn_enable"
 	TextAdminLocsBtnDisable    = "admin.locs.btn_disable"
@@ -127,6 +129,8 @@ const (
 	TextAdminLocsEditStepGeo    = "admin.locs.edit_step_geo"
 	TextAdminLocsEditMsgSuccess = "admin.locs.edit_msg_success"
 	TextAdminLocsEditMsgErr     = "admin.locs.edit_msg_err"
+	TextAdminLocsEditBtnNoise   = "admin.locs.edit.btn_noise"
+	TextAdminLocsEditNoiseTitle = "admin.locs.edit.noise_title"
 
 	TextAdminLocsBtnSchedule   = "admin.locs.btn_schedule"
 	TextAdminLocsScheduleEmpty = "admin.locs.schedule_empty"

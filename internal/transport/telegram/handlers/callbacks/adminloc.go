@@ -7,6 +7,8 @@ import (
 	"github.com/k4sper1love/buskr/internal/transport/telegram/ctxkey"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/render"
 	"github.com/k4sper1love/buskr/internal/usecase/adminloc"
+	"github.com/k4sper1love/buskr/internal/usecase/keys"
+	"github.com/k4sper1love/buskr/internal/usecase/response"
 	"gopkg.in/telebot.v3"
 )
 
@@ -311,7 +313,8 @@ func (h *AdminLoc) HandleAdminLocEditNoise(c telebot.Context) error {
 		return err
 	}
 
-	c.Respond(&telebot.CallbackResponse{})
+	callbackText := h.renderer.Translate("", response.Text{Key: keys.TextAdminLocsEditMsgSuccess})
+	c.Respond(&telebot.CallbackResponse{Text: callbackText})
 	if rep.IsEmpty() {
 		return nil
 	}
@@ -438,7 +441,59 @@ func (h *AdminLoc) HandleAdminLocDelete(c telebot.Context) error {
 	}
 	locID := args[0]
 
-	rep, err := h.uc.Delete(ctx, u, locID)
+	rep, err := h.uc.DeleteConfirm(ctx, u, locID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminLoc) HandleAdminLocDeleteConfirm(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.DeleteExecuted(ctx, u, locID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminLoc) HandleAdminLocEditNoiseMenu(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.EditNoiseMenu(ctx, u, locID)
 	if err != nil {
 		return err
 	}

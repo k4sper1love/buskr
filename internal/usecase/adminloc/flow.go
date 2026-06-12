@@ -137,7 +137,9 @@ func (uc *Usecase) OnText(ctx context.Context, actor *user.User, text string) (r
 			Kind: response.KindSend,
 			Text: response.Text{Key: keys.TextAdminLocsEditMsgSuccess},
 			Keyboard: response.Keyboard{
-				InlineRows: [][]response.Button{},
+				InlineRows: [][]response.Button{
+					{{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{locID}}}},
+				},
 			},
 		}, nil
 
@@ -176,7 +178,7 @@ func (uc *Usecase) OnLocation(ctx context.Context, actor *user.User, lat, lon fl
 	if err != nil {
 		return response.Reply{}, err
 	}
-	if st != keys.StateAdminLocGeo {
+	if st != keys.StateAdminLocGeo && st != keys.StateAdminLocEditGeo {
 		return response.Reply{}, nil
 	}
 
@@ -227,7 +229,7 @@ func (uc *Usecase) OnLocation(ctx context.Context, actor *user.User, lat, lon fl
 
 		return uc.doCreate(ctx, actor, name, desc, noise, float64(lat), float64(lon))
 
-	case keys.BtnAdminLocEditGeo:
+	case keys.StateAdminLocEditGeo:
 		var locID string
 		_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataAdminLocEditID, &locID)
 		if locID == "" {

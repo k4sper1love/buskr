@@ -115,7 +115,8 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 		toogleKey = keys.TextAdminLocsBtnEnable
 	}
 
-	mapURL := fmt.Sprintf("%s?q=%f,%f", baseMapURL, loc.Coords.Lat, loc.Coords.Lon)
+	map2GISURL := fmt.Sprintf("https://2gis.kz/geo/%f,%f", loc.Coords.Lon, loc.Coords.Lat)
+	mapYandexURL := fmt.Sprintf("https://yandex.kz/maps/?text=%f,%f", loc.Coords.Lat, loc.Coords.Lon)
 
 	return response.Reply{
 		Kind: response.KindEdit,
@@ -124,11 +125,12 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 			Args: map[string]any{
 				"name":      loc.Name,
 				"desc":      loc.Description,
-				"max_noise": loc.MaxNoise,
-				"status":    loc.Status,
+				"max_noise": "common.lbl.noise_" + string(loc.MaxNoise),
+				"status":    "common.lbl.loc_status_" + string(loc.Status),
 				"lat":       fmt.Sprintf("%.6f", loc.Coords.Lat),
 				"lon":       fmt.Sprintf("%.6f", loc.Coords.Lon),
 			},
+			SubKeyArgs: []string{"max_noise", "status"},
 		},
 		Keyboard: response.Keyboard{
 			InlineRows: [][]response.Button{
@@ -147,9 +149,15 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 						Text: response.Text{Key: keys.TextAdminLocsBtnSchedule},
 						Data: response.CallbackData{Unique: keys.BtnAdminLocSchedule, Args: []string{loc.ID}},
 					},
+				},
+				{
 					{
-						Text: response.Text{Key: keys.TextAdminLocsBtnOpenMap},
-						URL:  mapURL,
+						Text: response.Text{Key: keys.TextBookCreateBtn2GIS},
+						URL:  map2GISURL,
+					},
+					{
+						Text: response.Text{Key: keys.TextBookCreateBtnYandex},
+						URL:  mapYandexURL,
 					},
 				},
 				{
@@ -157,6 +165,8 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 						Text: response.Text{Key: keys.TextAdminLocsBtnDelete},
 						Data: response.CallbackData{Unique: keys.BtnAdminLocDel, Args: []string{loc.ID}},
 					},
+				},
+				{
 					{
 						Text: response.Text{Key: keys.TextAdminLocsBtnList},
 						Data: response.CallbackData{Unique: keys.BtnAdminLocs},
@@ -165,7 +175,6 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 			},
 		},
 	}, nil
-
 }
 
 func (uc *Usecase) ToggleStatus(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
@@ -222,15 +231,47 @@ func (uc *Usecase) EditMenu(ctx context.Context, actor *user.User, locID string)
 					{Text: response.Text{Key: keys.TextAdminLocsEditBtnDesc}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditDesc, Args: []string{locID}}},
 				},
 				{
-					{Text: response.Text{Key: keys.TextCommonLblNoiseLight}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditNoise, Args: []string{locID, string(location.LimitLight)}}},
-					{Text: response.Text{Key: keys.TextCommonLblNoiseMedium}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditNoise, Args: []string{locID, string(location.LimitMedium)}}},
-					{Text: response.Text{Key: keys.TextCommonLblNoiseHard}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditNoise, Args: []string{locID, string(location.LimitHard)}}},
-				},
-				{
+					{Text: response.Text{Key: keys.TextAdminLocsEditBtnNoise}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditNoiseMenu, Args: []string{locID}}},
 					{Text: response.Text{Key: keys.TextAdminLocsEditBtnGeo}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditGeo, Args: []string{locID}}},
 				},
 				{
 					{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{locID}}},
+				},
+			},
+		},
+	}, nil
+}
+
+func (uc *Usecase) EditNoiseMenu(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
+	if actor.Role != user.RoleAdmin {
+		return response.Reply{}, nil
+	}
+
+	loc, err := uc.locs.GetByID(ctx, locID)
+	if err != nil {
+		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+	}
+
+	return response.Reply{
+		Kind: response.KindEdit,
+		Text: response.Text{
+			Key:  keys.TextAdminLocsEditNoiseTitle,
+			Args: map[string]any{"name": loc.Name, "current": "common.lbl.noise_" + string(loc.MaxNoise)},
+			SubKeyArgs: []string{"current"},
+		},
+		Keyboard: response.Keyboard{
+			InlineRows: [][]response.Button{
+				{
+					{Text: response.Text{Key: keys.TextCommonLblNoiseLight}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditNoise, Args: []string{locID, string(location.LimitLight)}}},
+				},
+				{
+					{Text: response.Text{Key: keys.TextCommonLblNoiseMedium}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditNoise, Args: []string{locID, string(location.LimitMedium)}}},
+				},
+				{
+					{Text: response.Text{Key: keys.TextCommonLblNoiseHard}, Data: response.CallbackData{Unique: keys.BtnAdminLocEditNoise, Args: []string{locID, string(location.LimitHard)}}},
+				},
+				{
+					{Text: response.Text{Key: keys.TextCommonBtnBack}, Data: response.CallbackData{Unique: keys.BtnAdminLocEdit, Args: []string{locID}}},
 				},
 			},
 		},
@@ -314,7 +355,47 @@ func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string)
 	}, nil
 }
 
-func (uc *Usecase) Delete(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
+func (uc *Usecase) DeleteConfirm(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
+	if actor.Role != user.RoleAdmin {
+		return response.Reply{}, nil
+	}
+
+	loc, err := uc.locs.GetByID(ctx, locID)
+	if err != nil {
+		return response.Reply{
+			Kind: response.KindEdit,
+			Text: response.Text{Key: keys.TextAdminLocsMsgNotFound},
+		}, nil
+	}
+
+	return response.Reply{
+		Kind: response.KindEdit,
+		Text: response.Text{
+			Key: keys.TextAdminLocsDelConfirmTitle,
+			Args: map[string]any{
+				"name": loc.Name,
+			},
+		},
+		Keyboard: response.Keyboard{
+			InlineRows: [][]response.Button{
+				{
+					{
+						Text: response.Text{Key: keys.TextAdminLocsDelConfirmBtn},
+						Data: response.CallbackData{Unique: keys.BtnAdminLocDelConf, Args: []string{loc.ID}},
+					},
+				},
+				{
+					{
+						Text: response.Text{Key: keys.TextCommonBtnCancel},
+						Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{loc.ID}},
+					},
+				},
+			},
+		},
+	}, nil
+}
+
+func (uc *Usecase) DeleteExecuted(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
 	if actor.Role != user.RoleAdmin {
 		return response.Reply{}, nil
 	}
