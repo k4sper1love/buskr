@@ -190,6 +190,10 @@
   "book.err.max_per_loc": "This spot is already reserved today. One session per location per day.",
   "book.err.too_far": "Booking isn't open for this date yet. Try again later.",
   "admin.locs.schedule_empty": "No bookings for today.",
+  "admin.locs.schedule.lbl_today_active": "👉 Today ({{.date}}) 👈",
+  "admin.locs.schedule.lbl_tomorrow_active": "👉 Tomorrow ({{.date}}) 👈",
+  "admin.locs.schedule.lbl_other_active": "👉 {{.weekday}} • {{.date}} 👈",
+  "admin.locs.schedule_empty_for_day": "📅 **{{.name}}**\n{{.date}}\n\nNo bookings for this day.",
   "admin.locs.map_title": "Active locations: {{.count}}",
   "admin.locs.map_empty": "No active locations."
 }

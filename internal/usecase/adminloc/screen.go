@@ -11,6 +11,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
+	"github.com/k4sper1love/buskr/internal/mdutil"
 	"github.com/k4sper1love/buskr/internal/tz"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
@@ -295,7 +296,7 @@ func (uc *Usecase) EditNoiseSelected(ctx context.Context, actor *user.User, locI
 	return uc.Details(ctx, actor, locID)
 }
 
-func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
+func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string, dateStr string) (response.Reply, error) {
 	if actor.Role != user.RoleAdmin {
 		return response.Reply{}, nil
 	}
@@ -305,18 +306,92 @@ func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string)
 		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
 	}
 
-	now := tz.Now()
+	var targetDate time.Time
+	if dateStr != "" {
+		if t, err := time.ParseInLocation("2006-01-02", dateStr, tz.Location()); err == nil {
+			targetDate = t
+		} else {
+			targetDate = tz.Now()
+		}
+	} else {
+		targetDate = tz.Now()
+	}
 
-	bookings, err := uc.bookings.GetScheduleForLocation(ctx, locID, now)
+	bookings, err := uc.bookings.GetScheduleForLocation(ctx, locID, targetDate)
 	if err != nil {
 		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
 	}
 
-	backKeyboard := response.Keyboard{
-		InlineRows: [][]response.Button{{{
-			Text: response.Text{Key: keys.TextCommonBtnBack},
-			Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{locID}},
-		}}},
+	// Generate keyboard with dates
+	now := tz.Now()
+	var inlineRows [][]response.Button
+
+	for i := 0; i < uc.maxAdvanceDays; i++ {
+		tDate := now.AddDate(0, 0, i)
+		dateValue := tDate.Format("2006-01-02")
+		dateHuman := tDate.Format("02.01")
+
+		isActive := tDate.Year() == targetDate.Year() && tDate.YearDay() == targetDate.YearDay()
+
+		var key string
+		args := map[string]any{"date": dateHuman}
+		var subKeyArgs []string
+
+		switch i {
+		case 0:
+			if isActive {
+				key = keys.TextAdminLocsScheduleLblTodayActive
+			} else {
+				key = keys.TextBookCreateLblToday
+			}
+		case 1:
+			if isActive {
+				key = keys.TextAdminLocsScheduleLblTomorrowActive
+			} else {
+				key = keys.TextBookCreateLblTomorrow
+			}
+		default:
+			weekdayKeys := []string{
+				keys.TextCommonWeekdaySun,
+				keys.TextCommonWeekdayMon,
+				keys.TextCommongWeekdayTue,
+				keys.TextCommonWeekdayWed,
+				keys.TextCommonWeekdayThu,
+				keys.TextCommonWeekdayFri,
+				keys.TextCommonWeekdaySat,
+			}
+			args["weekday"] = weekdayKeys[tDate.Weekday()]
+			subKeyArgs = []string{"weekday"}
+			if isActive {
+				key = keys.TextAdminLocsScheduleLblOtherActive
+			} else {
+				key = keys.TextBookCreateLblOther
+			}
+		}
+
+		inlineRows = append(inlineRows, []response.Button{
+			{
+				Text: response.Text{
+					Key:        key,
+					Args:       args,
+					SubKeyArgs: subKeyArgs,
+				},
+				Data: response.CallbackData{
+					Unique: keys.BtnAdminLocSchedule,
+					Args:   []string{locID, dateValue},
+				},
+			},
+		})
+	}
+
+	// Add Back button at the bottom
+	inlineRows = append(inlineRows, []response.Button{{
+		Text: response.Text{Key: keys.TextCommonBtnBack},
+		Data: response.CallbackData{Unique: keys.BtnAdminLocDet, Args: []string{locID}},
+	}})
+
+	keyboard := response.Keyboard{
+		InlineRows: inlineRows,
 	}
 
 	var active []*booking.Booking
@@ -329,29 +404,52 @@ func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string)
 	if len(active) == 0 {
 		return response.Reply{
 			Kind:     response.KindEdit,
-			Text:     response.Text{Key: keys.TextAdminLocsScheduleEmpty},
-			Keyboard: backKeyboard,
+			Text:     response.Text{
+				Key:  keys.TextAdminLocsScheduleEmptyForDay,
+				Args: map[string]any{
+					"name": loc.Name,
+					"date": targetDate.Format("02.01.2006"),
+				},
+			},
+			Keyboard: keyboard,
 		}, nil
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("📅 *%s*\n%s\n\n", loc.Name, now.Format("02.01.2006")))
+	sb.WriteString(fmt.Sprintf("📅 **%s**\n%s\n\n", loc.Name, targetDate.Format("02.01.2006")))
 	for _, b := range active {
 		icon := "⏳"
 		if b.Status == booking.StatusActive {
 			icon = "✅"
 		}
-		sb.WriteString(fmt.Sprintf("%s `%s – %s`\n",
+
+		var userPart string
+		u, err := uc.users.GetByID(ctx, b.UserID)
+		if err == nil && u != nil {
+			var displayName string
+			if u.Name != "" {
+				displayName = u.Name
+			} else {
+				displayName = "User"
+			}
+			if u.Username != "" {
+				displayName += fmt.Sprintf(" (@%s)", u.Username)
+			}
+			userPart = " — " + mdutil.Escape(displayName)
+		}
+
+		sb.WriteString(fmt.Sprintf("%s `%s – %s` %s\n",
 			icon,
 			tz.In(b.StartTime).Format("15:04"),
 			tz.In(b.EndTime).Format("15:04"),
+			userPart,
 		))
 	}
 
 	return response.Reply{
 		Kind:     response.KindEdit,
 		Text:     response.Text{Fallback: sb.String()},
-		Keyboard: backKeyboard,
+		Keyboard: keyboard,
 	}, nil
 }
 

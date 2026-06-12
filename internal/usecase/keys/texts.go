@@ -134,6 +134,10 @@ const (
 
 	TextAdminLocsBtnSchedule   = "admin.locs.btn_schedule"
 	TextAdminLocsScheduleEmpty = "admin.locs.schedule_empty"
+	TextAdminLocsScheduleLblTodayActive    = "admin.locs.schedule.lbl_today_active"
+	TextAdminLocsScheduleLblTomorrowActive = "admin.locs.schedule.lbl_tomorrow_active"
+	TextAdminLocsScheduleLblOtherActive    = "admin.locs.schedule.lbl_other_active"
+	TextAdminLocsScheduleEmptyForDay       = "admin.locs.schedule_empty_for_day"
 	TextAdminLocsBtnMap        = "admin.locs.btn_map"
 	TextAdminLocsNearbyWarn    = "admin.locs.nearby_warning"
 	TextAdminLocsNearbyConfirm = "admin.locs.nearby_confirm"

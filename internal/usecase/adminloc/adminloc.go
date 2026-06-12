@@ -6,6 +6,7 @@ import (
 
 	"github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/domain/location"
+	"github.com/k4sper1love/buskr/internal/domain/user"
 )
 
 type StateStore interface {
@@ -32,28 +33,36 @@ type Bookings interface {
 	GetScheduleForLocation(ctx context.Context, locID string, date time.Time) ([]*booking.Booking, error)
 }
 
+type Users interface {
+	GetByID(ctx context.Context, id string) (*user.User, error)
+}
+
 type MapGenerator interface {
 	Generate(locs []*location.Location) ([]byte, string, error)
 }
 
 type Usecase struct {
-	state       StateStore
-	locs        Locations
-	bookings    Bookings
-	maps        MapGenerator
-	ttl         time.Duration
-	webAppURL   string
-	botUsername string
+	state          StateStore
+	locs           Locations
+	bookings       Bookings
+	users          Users
+	maps           MapGenerator
+	ttl            time.Duration
+	maxAdvanceDays int
+	webAppURL      string
+	botUsername    string
 }
 
-func NewUsecase(state StateStore, locs Locations, bookings Bookings, maps MapGenerator, ttl time.Duration, webAppURL string, botUsername string) *Usecase {
+func NewUsecase(state StateStore, locs Locations, bookings Bookings, users Users, maps MapGenerator, ttl time.Duration, maxAdvanceDays int, webAppURL string, botUsername string) *Usecase {
 	return &Usecase{
-		state:       state,
-		locs:        locs,
-		bookings:    bookings,
-		maps:        maps,
-		ttl:         ttl,
-		webAppURL:   webAppURL,
-		botUsername: botUsername,
+		state:          state,
+		locs:           locs,
+		bookings:       bookings,
+		users:          users,
+		maps:           maps,
+		ttl:            ttl,
+		maxAdvanceDays: maxAdvanceDays,
+		webAppURL:      webAppURL,
+		botUsername:    botUsername,
 	}
 }

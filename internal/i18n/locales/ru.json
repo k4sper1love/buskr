@@ -190,6 +190,10 @@
   "book.err.max_per_loc": "⚠️ Нельзя бронировать более одного слота на одной точке в день.",
   "book.err.too_far": "⚠️ Бронирование на эту дату еще закрыто.",
   "admin.locs.schedule_empty": "📅 На сегодня бронирований нет.",
+  "admin.locs.schedule.lbl_today_active": "👉 Сегодня ({{.date}}) 👈",
+  "admin.locs.schedule.lbl_tomorrow_active": "👉 Завтра ({{.date}}) 👈",
+  "admin.locs.schedule.lbl_other_active": "👉 {{.weekday}} · {{.date}} 👈",
+  "admin.locs.schedule_empty_for_day": "📅 **{{.name}}**\n{{.date}}\n\nНа этот день бронирований нет.",
   "admin.locs.map_title": "Карта площадок · Всего точек: {{.count}}",
   "admin.locs.map_empty": "🗺️ На карте пока нет активных локаций."
 }

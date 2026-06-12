@@ -389,7 +389,12 @@ func (h *AdminLoc) HandleAdminLocSchedule(c telebot.Context) error {
 	}
 	locID := args[0]
 
-	rep, err := h.uc.Schedule(ctx, u, locID)
+	var dateStr string
+	if len(args) >= 2 {
+		dateStr = args[1]
+	}
+
+	rep, err := h.uc.Schedule(ctx, u, locID, dateStr)
 	if err != nil {
 		return err
 	}
