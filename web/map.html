@@ -234,6 +234,12 @@
       box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
     }
     
+    .custom-marker.locked {
+      background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%);
+      box-shadow: 0 4px 10px rgba(75, 85, 99, 0.4);
+      border-color: #9ca3af;
+    }
+    
     @keyframes bounceIn {
       0% { transform: scale(0.3) rotate(-45deg); opacity: 0; }
       50% { transform: scale(1.05) rotate(-45deg); }
@@ -426,8 +432,14 @@
       const bounds = [];
       
       spots.forEach(spot => {
-        // Create custom Leaflet DivIcon marker (red for inactive)
-        const markerClass = spot.status === 'inactive' ? 'custom-marker inactive' : 'custom-marker';
+        // Create custom Leaflet DivIcon marker (grey/locked for unavailable)
+        let markerClass = 'custom-marker';
+        if (spot.status === 'inactive') {
+          markerClass = 'custom-marker inactive';
+        } else if (spot.allowed === false) {
+          markerClass = 'custom-marker locked';
+        }
+
         const icon = L.divIcon({
           className: 'custom-leaflet-marker',
           html: `<div class="${markerClass}"><div class="custom-marker-inner"></div></div>`,
@@ -473,7 +485,18 @@
 
           // Show details sliding sheet
           document.getElementById('spot-title').innerText = spot.name;
-          document.getElementById('spot-desc').innerText = spot.desc || t.noDesc;
+          
+          let descHtml = spot.desc || t.noDesc;
+          if (spot.max_noise) {
+            const noiseLabels = {
+              ru: { light: "🟢 Тихий", medium: "🟡 Средний", hard: "🔴 Громкий", none: "—" },
+              en: { light: "🟢 Light", medium: "🟡 Medium", hard: "🔴 Hard", none: "—" }
+            };
+            const label = (noiseLabels[userLang.startsWith('ru') || userLang.startsWith('kk') ? 'ru' : 'en'])[spot.max_noise] || spot.max_noise;
+            const noiseLabelText = userLang.startsWith('ru') || userLang.startsWith('kk') ? `Макс. уровень шума: ${label}` : `Max Noise Level: ${label}`;
+            descHtml = `**${noiseLabelText}**\n\n${descHtml}`;
+          }
+          document.getElementById('spot-desc').innerHTML = descHtml.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
           const badge = document.getElementById('spot-status-badge');
           if (spot.status) {
@@ -484,6 +507,21 @@
             badge.style.display = 'inline-block';
           } else {
             badge.style.display = 'none';
+          }
+
+          const btnSelect = document.getElementById('btn-select');
+          if (spot.allowed === false) {
+            btnSelect.disabled = true;
+            btnSelect.style.background = 'linear-gradient(135deg, #374151 0%, #1f2937 100%)';
+            btnSelect.style.boxShadow = 'none';
+            btnSelect.style.cursor = 'not-allowed';
+            btnSelect.innerHTML = userLang.startsWith('ru') || userLang.startsWith('kk') ? '🔒 Недоступно по уровню шума' : '🔒 Restricted by noise level';
+          } else {
+            btnSelect.disabled = false;
+            btnSelect.style.background = '';
+            btnSelect.style.boxShadow = '';
+            btnSelect.style.cursor = '';
+            btnSelect.innerHTML = t.confirmBtn;
           }
 
           document.getElementById('detail-card').classList.add('active');
