@@ -97,7 +97,7 @@ func (uc *Usecase) NoiseSelected(ctx context.Context, u *user.User, noise user.N
 	_ = uc.state.SetState(ctx, u.TelegramID, keys.StateOnboardMedia, uc.ttl)
 
 	return response.Reply{
-		Kind: response.KindSend,
+		Kind: response.KindEdit,
 		Text: response.Text{Key: keys.TextOnboardStep3PromptMedia},
 		Keyboard: response.Keyboard{
 			InlineRows: [][]response.Button{

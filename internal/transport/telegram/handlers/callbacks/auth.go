@@ -40,6 +40,11 @@ func (h *Auth) HandleStart(c telebot.Context) error {
 	}
 
 	payload := c.Message().Payload
+	if strings.HasPrefix(payload, "admloc_") || strings.HasPrefix(payload, "loc_") {
+		_ = c.Delete()
+
+	}
+
 	if strings.HasPrefix(payload, "admloc_") {
 		locID := strings.TrimPrefix(payload, "admloc_")
 		if u.Role == user.RoleAdmin {
