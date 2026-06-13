@@ -83,7 +83,7 @@ func main() {
 		log.Fatalf("Failed to initialize bot: %v", err)
 	}
 	// workers
-	scheduler := worker.NewScheduler(bot.GetTelebot(), tr, bookingService, userService, locService, stateStore)
+	scheduler := worker.NewScheduler(bot.GetTelebot(), tr, bookingService, userService, locService, stateStore, cfg.Booking.EnableHotSlots, cfg.Booking.EnableNoShowCancel)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

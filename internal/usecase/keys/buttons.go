@@ -32,6 +32,7 @@ const (
 	BtnBookCancelConf = "bk_ccf"
 	BtnBookCheckin    = "bk_chk"
 	BtnBookGrabHot    = "bk_hot"
+	BtnBookDismissHot = "bk_dmh"
 
 	BtnBookBackToLocs  = "bk_b_loc"
 	BtnBookBackToSlots = "bk_b_slt"

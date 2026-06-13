@@ -229,13 +229,17 @@ const (
 	TextBookErrMaxActive      = "book.err.max_active"
 	TextBookErrMaxPerLoc      = "book.err.max_per_loc"
 	TextBookErrTooFarInFuture = "book.err.too_far"
+	TextBookErrTimeOverlap    = "book.err.time_overlap"
+	TextBookErrInvalidTime    = "book.err.invalid_time"
 )
 
 // worker
 const (
-	TextWorkerReminderMsg    = "worker.reminder.msg"
-	TextWorkerReminderBtn    = "worker.reminder.btn"
-	TextWorkerCheckinFailMsg = "worker.checkin.fail_msg"
-	TextWorkerHotSpotMsg     = "worker.hotspot.msg"
-	TextWorkerHotSpotBtn     = "worker.hotspot.btn"
+	TextWorkerReminderMsg        = "worker.reminder.msg"
+	TextWorkerReminderBtn        = "worker.reminder.btn"
+	TextWorkerCheckinFailMsg     = "worker.checkin.fail_msg"
+	TextWorkerCheckinFailSoftMsg = "worker.checkin.fail_soft_msg"
+	TextWorkerHotSpotMsg         = "worker.hotspot.msg"
+	TextWorkerHotSpotBtn         = "worker.hotspot.btn"
+	TextWorkerHotSpotDismissBtn  = "worker.hotspot.dismiss_btn"
 )

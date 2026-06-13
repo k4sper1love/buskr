@@ -128,6 +128,10 @@ func (r *Router) RegisterRoutes() {
 
 	// hot slots
 	r.b.bot.Handle("\f"+keys.BtnBookGrabHot, r.handlers.booking.HandleBookingGrabHotSlot)
+	r.b.bot.Handle("\f"+keys.BtnBookDismissHot, func(c telebot.Context) error {
+		_ = c.Respond(&telebot.CallbackResponse{})
+		return c.Delete()
+	})
 
 	// check-in
 	r.b.bot.Handle("\f"+keys.BtnBookCheckin, r.handlers.booking.HandleBookingCheckIn)

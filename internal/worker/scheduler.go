@@ -21,22 +21,26 @@ type Translator interface {
 }
 
 type Scheduler struct {
-	bot      *telebot.Bot
-	tr       Translator
-	bookings *booking.Service
-	users    *user.Service
-	locs     *location.Service
-	state    *redis.StateStore
+	bot                *telebot.Bot
+	tr                 Translator
+	bookings           *booking.Service
+	users              *user.Service
+	locs               *location.Service
+	state              *redis.StateStore
+	enableHotSlots     bool
+	enableNoShowCancel bool
 }
 
-func NewScheduler(bot *telebot.Bot, tr Translator, bookings *booking.Service, users *user.Service, locs *location.Service, state *redis.StateStore) *Scheduler {
+func NewScheduler(bot *telebot.Bot, tr Translator, bookings *booking.Service, users *user.Service, locs *location.Service, state *redis.StateStore, enableHotSlots bool, enableNoShowCancel bool) *Scheduler {
 	return &Scheduler{
-		bot:      bot,
-		tr:       tr,
-		bookings: bookings,
-		users:    users,
-		locs:     locs,
-		state:    state,
+		bot:                bot,
+		tr:                 tr,
+		bookings:           bookings,
+		users:              users,
+		locs:               locs,
+		state:              state,
+		enableHotSlots:     enableHotSlots,
+		enableNoShowCancel: enableNoShowCancel,
 	}
 }
 
@@ -80,6 +84,16 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 			continue
 		}
 
+		loc, _ := s.locs.GetByID(ctx, b.LocationID)
+		locName := ""
+		if loc != nil {
+			locName = loc.Name
+		}
+
+		startTimeStr := tz.In(b.StartTime).Format("15:04")
+		endTimeStr := tz.In(b.EndTime).Format("15:04")
+		deadlineStr := tz.In(b.StartTime).Add(15 * time.Minute).Format("15:04")
+
 		menu := &telebot.ReplyMarkup{}
 
 		btnText := s.tr.T("ru", keys.TextWorkerReminderBtn, nil)
@@ -87,7 +101,10 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 		menu.Inline(menu.Row(btnCheckIn))
 
 		msg := s.tr.T("ru", keys.TextWorkerReminderMsg, map[string]any{
-			"time": tz.In(b.StartTime).Format("15:04"),
+			"name":     locName,
+			"start":    startTimeStr,
+			"end":      endTimeStr,
+			"deadline": deadlineStr,
 		})
 
 		_, err = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, menu, telebot.ModeMarkdown)
@@ -105,21 +122,58 @@ func (s *Scheduler) processCheckins(ctx context.Context) {
 	}
 
 	for _, b := range expired {
-		err := s.bookings.MarkNoShow(ctx, b.ID)
-		if err != nil {
-			log.Printf("Failed to mark no-show for booking %s: %v", b.ID, err)
-			continue
+		loc, _ := s.locs.GetByID(ctx, b.LocationID)
+		locName := ""
+		if loc != nil {
+			locName = loc.Name
 		}
 
-		_ = s.users.RecordNoShow(ctx, b.UserID)
+		if s.enableNoShowCancel {
+			err := s.bookings.MarkNoShow(ctx, b.ID)
+			if err != nil {
+				log.Printf("Failed to mark no-show for booking %s: %v", b.ID, err)
+				continue
+			}
 
-		targetUser, _ := s.users.GetByID(ctx, b.UserID)
-		if targetUser != nil {
-			msg := s.tr.T("ru", keys.TextWorkerCheckinFailMsg, nil)
-			_, _ = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, telebot.ModeMarkdown)
+			_ = s.users.RecordNoShow(ctx, b.UserID)
+
+			targetUser, _ := s.users.GetByID(ctx, b.UserID)
+			if targetUser != nil {
+				msg := s.tr.T("ru", keys.TextWorkerCheckinFailMsg, map[string]any{
+					"name":    locName,
+					"start":   tz.In(b.StartTime).Format("15:04"),
+					"end":     tz.In(b.EndTime).Format("15:04"),
+					"penalty": 20,
+					"karma":   targetUser.Karma,
+				})
+				_, _ = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, telebot.ModeMarkdown)
+			}
+
+			if s.enableHotSlots {
+				s.broadcastHotSpot(ctx, b)
+			}
+		} else {
+			// Auto check-in to confirm the booking so it remains active (and later completed)
+			err := s.bookings.CheckIn(ctx, b.ID, b.UserID)
+			if err != nil {
+				log.Printf("Failed to auto check-in booking %s: %v", b.ID, err)
+				continue
+			}
+
+			_ = s.users.RecordNoShow(ctx, b.UserID)
+
+			targetUser, _ := s.users.GetByID(ctx, b.UserID)
+			if targetUser != nil {
+				msg := s.tr.T("ru", keys.TextWorkerCheckinFailSoftMsg, map[string]any{
+					"name":    locName,
+					"start":   tz.In(b.StartTime).Format("15:04"),
+					"end":     tz.In(b.EndTime).Format("15:04"),
+					"penalty": 20,
+					"karma":   targetUser.Karma,
+				})
+				_, _ = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, telebot.ModeMarkdown)
+			}
 		}
-
-		s.broadcastHotSpot(ctx, b)
 	}
 }
 
@@ -165,12 +219,19 @@ func (s *Scheduler) broadcastHotSpot(ctx context.Context, b *booking.Booking) {
 	menu := &telebot.ReplyMarkup{}
 	btnText := s.tr.T("ru", keys.TextWorkerHotSpotBtn, nil)
 	btnGrab := menu.Data(btnText, keys.BtnBookGrabHot, loc.ID, strconv.Itoa(startHour), strconv.Itoa(duration))
-	menu.Inline(menu.Row(btnGrab))
+
+	dismissText := s.tr.T("ru", keys.TextWorkerHotSpotDismissBtn, nil)
+	btnDismiss := menu.Data(dismissText, keys.BtnBookDismissHot)
+
+	menu.Inline(
+		menu.Row(btnGrab),
+		menu.Row(btnDismiss),
+	)
 
 	for _, u := range activeUsers {
-		if u.ID == b.UserID {
-			continue
-		}
+		// if u.ID == b.UserID {
+		// 	continue
+		// }
 
 		if !booking.IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise) {
 			continue

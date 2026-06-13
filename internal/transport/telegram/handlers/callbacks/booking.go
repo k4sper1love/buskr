@@ -2,8 +2,11 @@ package callbacks
 
 import (
 	"context"
+	"errors"
 	"strconv"
 
+	bookingDomain "github.com/k4sper1love/buskr/internal/domain/booking"
+	"github.com/k4sper1love/buskr/internal/config"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/ctxkey"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/render"
 	"github.com/k4sper1love/buskr/internal/usecase/auth"
@@ -338,13 +341,34 @@ func (h *Booking) HandleBookingCheckIn(c telebot.Context) error {
 
 	rep, err := h.uc.CheckIn(ctx, u, bookingID)
 	if err != nil {
-		return err
+		lang := ""
+		if s := c.Sender(); s != nil {
+			lang = s.LanguageCode
+		}
+		var alertText string
+		if errors.Is(err, bookingDomain.ErrInvalidStatus) {
+			alertText = h.renderer.Translate(lang, response.Text{
+				Key:      "book.err.invalid_status",
+				Fallback: "Чек-ин недоступен: время вышло или бронь отменена",
+			})
+			_ = c.Respond(&telebot.CallbackResponse{Text: alertText, ShowAlert: true})
+			// Append error text and remove keyboard
+			updatedText := c.Message().Text + "\n\n" + alertText
+			_, _ = c.Bot().Edit(c.Message(), updatedText, telebot.ModeMarkdown, &telebot.ReplyMarkup{})
+			return nil
+		} else {
+			alertText = h.renderer.Translate(lang, response.Text{
+				Key:      keys.TextCommonErrGeneral,
+				Fallback: "Что-то пошло не так. Повторите попытку.",
+			})
+		}
+		return c.Respond(&telebot.CallbackResponse{Text: alertText, ShowAlert: true})
 	}
 
 	suffix := h.renderer.Translate("", rep.SuccessSuffix)
 	updatedText := c.Message().Text + "\n\n" + suffix
 
-	_, err = c.Bot().Edit(c.Message(), updatedText, telebot.ModeMarkdown)
+	_, err = c.Bot().Edit(c.Message(), updatedText, telebot.ModeMarkdown, &telebot.ReplyMarkup{})
 	if err != nil {
 		return err
 	}
@@ -359,6 +383,18 @@ func (h *Booking) HandleBookingGrabHotSlot(c telebot.Context) error {
 	u, err := ctxkey.GetUser(c)
 	if err != nil {
 		return err
+	}
+
+	if !config.MustLoad().Booking.EnableHotSlots {
+		lang := ""
+		if s := c.Sender(); s != nil {
+			lang = s.LanguageCode
+		}
+		alertText := h.renderer.Translate(lang, response.Text{
+			Key:      "book.err.hot_slots_disabled",
+			Fallback: "Горящие слоты временно отключены / Hot slots are temporarily disabled",
+		})
+		return c.Respond(&telebot.CallbackResponse{Text: alertText, ShowAlert: true})
 	}
 
 	args := c.Args()
@@ -380,7 +416,40 @@ func (h *Booking) HandleBookingGrabHotSlot(c telebot.Context) error {
 
 	rep, err := h.uc.GrabHotSlot(ctx, u, locID, startHour, durationHours)
 	if err != nil {
-		return err
+		lang := ""
+		if s := c.Sender(); s != nil {
+			lang = s.LanguageCode
+		}
+		var alertKey string
+		var fallbackText string
+		switch {
+		case errors.Is(err, bookingDomain.ErrSlotTaken):
+			alertKey = keys.TextBookErrSlotTaken
+			fallbackText = "Временной слот уже занят."
+		case errors.Is(err, bookingDomain.ErrTimeOverlap):
+			alertKey = keys.TextBookErrTimeOverlap
+			fallbackText = "У вас уже есть бронирование на это время."
+		case errors.Is(err, bookingDomain.ErrMaxActiveBookings):
+			alertKey = keys.TextBookErrMaxActive
+			fallbackText = "Достигнут лимит активных бронирований."
+		case errors.Is(err, bookingDomain.ErrMaxBookingsPerLocation):
+			alertKey = keys.TextBookErrMaxPerLoc
+			fallbackText = "Лимит бронирований на этой точке исчерпан."
+		case errors.Is(err, bookingDomain.ErrNoiseExceeded):
+			alertKey = keys.TextBookErrNoiseExceeded
+			fallbackText = "Превышен лимит шума для этой точки."
+		case errors.Is(err, bookingDomain.ErrNoisyNeighbor):
+			alertKey = keys.TextBookErrNoisyNeighbor
+			fallbackText = "Рядом запланировано другое громкое выступление."
+		case errors.Is(err, bookingDomain.ErrInvalidTime):
+			alertKey = keys.TextBookErrInvalidTime
+			fallbackText = "Неверное время выступления."
+		default:
+			alertKey = keys.TextCommonErrGeneral
+			fallbackText = "Не удалось занять слот. Попробуйте еще раз."
+		}
+		alertText := h.renderer.Translate(lang, response.Text{Key: alertKey, Fallback: fallbackText})
+		return c.Respond(&telebot.CallbackResponse{Text: alertText, ShowAlert: true})
 	}
 
 	c.Respond(&telebot.CallbackResponse{})
