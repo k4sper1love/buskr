@@ -72,6 +72,7 @@ func main() {
 	locService := location.NewService(locRepo)
 	bookingService := booking.NewService(bookingRepo, userService, locService, booking.Config{
 		MaxActiveBookings:      cfg.Booking.MaxActive,
+		AdminMaxActiveBookings: cfg.Booking.AdminMaxActive,
 		MaxBookingsPerLocation: cfg.Booking.MaxPerLocationAtDay,
 		MaxAdvanceDays:         cfg.Booking.MaxAdvanceDays,
 		AdjacencyRadius:        cfg.Booking.AdjacencyRadius,

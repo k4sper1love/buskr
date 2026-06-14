@@ -8,6 +8,8 @@ import (
 	"github.com/k4sper1love/buskr/internal/domain/user"
 )
 
+const UnlimitedBookings = -1
+
 type UserProvider interface {
 	GetByID(ctx context.Context, id string) (*user.User, error)
 }
@@ -18,6 +20,7 @@ type LocationProvider interface {
 
 type Config struct {
 	MaxActiveBookings      int
+	AdminMaxActiveBookings int
 	MaxBookingsPerLocation int
 	MaxAdvanceDays         int
 	AdjacencyRadius        int
@@ -84,7 +87,12 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 		return nil, err
 	}
 
-	if activeBookings >= s.cfg.MaxActiveBookings {
+	maxLimit := s.cfg.MaxActiveBookings
+	if u.Role == user.RoleAdmin {
+		maxLimit = s.cfg.AdminMaxActiveBookings
+	}
+
+	if maxLimit != UnlimitedBookings && activeBookings >= maxLimit {
 		return nil, ErrMaxActiveBookings
 	}
 
