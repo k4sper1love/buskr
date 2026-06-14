@@ -354,7 +354,7 @@ func (h *Booking) HandleBookingCheckIn(c telebot.Context) error {
 			_ = c.Respond(&telebot.CallbackResponse{Text: alertText, ShowAlert: true})
 			// Append error text and remove keyboard
 			updatedText := c.Message().Text + "\n\n" + alertText
-			_, _ = c.Bot().Edit(c.Message(), updatedText, telebot.ModeMarkdown, &telebot.ReplyMarkup{})
+			_, _ = c.Bot().Edit(c.Message(), updatedText, telebot.ModeHTML, &telebot.ReplyMarkup{})
 			return nil
 		} else {
 			alertText = h.renderer.Translate(lang, response.Text{
@@ -368,7 +368,7 @@ func (h *Booking) HandleBookingCheckIn(c telebot.Context) error {
 	suffix := h.renderer.Translate("", rep.SuccessSuffix)
 	updatedText := c.Message().Text + "\n\n" + suffix
 
-	_, err = c.Bot().Edit(c.Message(), updatedText, telebot.ModeMarkdown, &telebot.ReplyMarkup{})
+	_, err = c.Bot().Edit(c.Message(), updatedText, telebot.ModeHTML, &telebot.ReplyMarkup{})
 	if err != nil {
 		return err
 	}

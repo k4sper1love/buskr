@@ -74,8 +74,8 @@ func (r *Renderer) BuildOpts(lang string, rep response.Reply) (string, []any) {
 		}
 	}
 
-	// Always render with Markdown support
-	opts = append(opts, telebot.ModeMarkdown)
+	// Always render with HTML support
+	opts = append(opts, telebot.ModeHTML)
 
 	return text, opts
 }

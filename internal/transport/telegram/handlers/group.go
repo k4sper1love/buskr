@@ -73,7 +73,7 @@ func (h *GroupHandler) HandleUserJoined(c telebot.Context) error {
 	}
 
 	escapedName := mdutil.Escape(name)
-	mention := fmt.Sprintf("[%s](tg://user?id=%d)", escapedName, targetUser.ID)
+	mention := fmt.Sprintf(`<a href="tg://user?id=%d">%s</a>`, targetUser.ID, escapedName)
 
 	welcomeText := response.Text{
 		Key: keys.TextGroupWelcomeUser,
@@ -85,5 +85,5 @@ func (h *GroupHandler) HandleUserJoined(c telebot.Context) error {
 	}
 
 	msg := h.renderer.Translate(h.cfg.DefaultLang, welcomeText)
-	return c.Send(msg, telebot.ModeMarkdown)
+	return c.Send(msg, telebot.ModeHTML)
 }

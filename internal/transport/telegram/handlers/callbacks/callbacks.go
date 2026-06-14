@@ -82,6 +82,6 @@ func sendReplyToUser(bot *telebot.Bot, r *render.Renderer, tgID int64, rep respo
 		}
 	}
 
-	opts = append(opts, telebot.ModeMarkdown)
+	opts = append(opts, telebot.ModeHTML)
 	_, _ = bot.Send(&telebot.User{ID: tgID}, text, opts...)
 }

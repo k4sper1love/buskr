@@ -116,7 +116,7 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 			"deadline": deadlineStr,
 		})
 
-		_, err = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, menu, telebot.ModeMarkdown)
+		_, err = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, menu, telebot.ModeHTML)
 		if err == nil {
 			_ = s.state.SetData(ctx, 0, cacheKey, true, 2*time.Hour)
 		}
@@ -155,7 +155,7 @@ func (s *Scheduler) processCheckins(ctx context.Context) {
 					"penalty": 20,
 					"karma":   targetUser.Karma,
 				})
-				_, _ = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, telebot.ModeMarkdown)
+				_, _ = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, telebot.ModeHTML)
 			}
 
 			if s.enableHotSlots {
@@ -180,7 +180,7 @@ func (s *Scheduler) processCheckins(ctx context.Context) {
 					"penalty": 20,
 					"karma":   targetUser.Karma,
 				})
-				_, _ = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, telebot.ModeMarkdown)
+				_, _ = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, telebot.ModeHTML)
 			}
 		}
 	}
@@ -246,7 +246,7 @@ func (s *Scheduler) broadcastHotSpot(ctx context.Context, b *booking.Booking) {
 			continue
 		}
 
-		_, err := s.bot.Send(&telebot.User{ID: u.TelegramID}, msg, menu, telebot.ModeMarkdown)
+		_, err := s.bot.Send(&telebot.User{ID: u.TelegramID}, msg, menu, telebot.ModeHTML)
 		if err != nil {
 			log.Printf("Failed to send hot spot to %d: %v", u.TelegramID, err)
 		}

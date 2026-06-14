@@ -31,7 +31,7 @@ func (n *Notifier) NewApplication(ctx context.Context, payload onboarding.Applic
 	})
 
 	opts := &telebot.SendOptions{
-		ParseMode:   telebot.ModeMarkdown,
+		ParseMode:   telebot.ModeHTML,
 		ReplyMarkup: menu,
 	}
 	if n.adminThreadApplications > 0 {
@@ -84,7 +84,7 @@ func (n *Notifier) NewNoiseUpgrade(ctx context.Context, payload profile.NoiseUpg
 	})
 
 	opts := &telebot.SendOptions{
-		ParseMode:   telebot.ModeMarkdown,
+		ParseMode:   telebot.ModeHTML,
 		ReplyMarkup: menu,
 	}
 	if n.adminThreadUpgrades > 0 {

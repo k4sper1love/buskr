@@ -225,9 +225,9 @@ func editMsgOrCaption(c telebot.Context, suffix string) {
 	msg := c.Message()
 	if msg.Caption != "" {
 		updatedCaption := msg.Caption + "\n\n" + suffix
-		_, _ = c.Bot().EditCaption(msg, updatedCaption, &telebot.ReplyMarkup{}, telebot.ModeMarkdown)
+		_, _ = c.Bot().EditCaption(msg, updatedCaption, &telebot.ReplyMarkup{}, telebot.ModeHTML)
 	} else {
 		updatedText := msg.Text + "\n\n" + suffix
-		_, _ = c.Bot().Edit(msg, updatedText, &telebot.ReplyMarkup{}, telebot.ModeMarkdown)
+		_, _ = c.Bot().Edit(msg, updatedText, &telebot.ReplyMarkup{}, telebot.ModeHTML)
 	}
 }

@@ -416,7 +416,7 @@ func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string,
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("📅 **%s**\n%s\n\n", loc.Name, targetDate.Format("02.01.2006")))
+	sb.WriteString(fmt.Sprintf("📅 <b>%s</b>\n%s\n\n", loc.Name, targetDate.Format("02.01.2006")))
 	for _, b := range active {
 		icon := "⏳"
 		if b.Status == booking.StatusActive {
@@ -438,7 +438,7 @@ func (uc *Usecase) Schedule(ctx context.Context, actor *user.User, locID string,
 			userPart = " — " + mdutil.Escape(displayName)
 		}
 
-		sb.WriteString(fmt.Sprintf("%s `%s – %s` %s\n",
+		sb.WriteString(fmt.Sprintf("%s <code>%s – %s</code> %s\n",
 			icon,
 			tz.In(b.StartTime).Format("15:04"),
 			tz.In(b.EndTime).Format("15:04"),
