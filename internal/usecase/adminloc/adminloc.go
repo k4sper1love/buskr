@@ -38,29 +38,23 @@ type Users interface {
 	GetByID(ctx context.Context, id string) (*user.User, error)
 }
 
-type MapGenerator interface {
-	Generate(locs []*location.Location) ([]byte, string, error)
-}
-
 type Usecase struct {
 	state          StateStore
 	locs           Locations
 	bookings       Bookings
 	users          Users
-	maps           MapGenerator
 	ttl            time.Duration
 	maxAdvanceDays int
 	webAppURL      string
 	botUsername    string
 }
 
-func NewUsecase(state StateStore, locs Locations, bookings Bookings, users Users, maps MapGenerator, ttl time.Duration, maxAdvanceDays int, webAppURL string, botUsername string) *Usecase {
+func NewUsecase(state StateStore, locs Locations, bookings Bookings, users Users, ttl time.Duration, maxAdvanceDays int, webAppURL string, botUsername string) *Usecase {
 	return &Usecase{
 		state:          state,
 		locs:           locs,
 		bookings:       bookings,
 		users:          users,
-		maps:           maps,
 		ttl:            ttl,
 		maxAdvanceDays: maxAdvanceDays,
 		webAppURL:      webAppURL,

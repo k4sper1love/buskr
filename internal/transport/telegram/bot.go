@@ -10,7 +10,6 @@ import (
 	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/i18n"
 	"github.com/k4sper1love/buskr/internal/infrastructure/redis"
-	"github.com/k4sper1love/buskr/internal/mapimg"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/handlers"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/handlers/callbacks"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/notifier"
@@ -56,7 +55,6 @@ func NewBot(
 	bookings *booking.Service,
 	locs *location.Service,
 	maxAdvanceDays int,
-	mapsAPIKey string,
 	webAppURL string,
 	minHour int,
 	maxHourWeekday int,
@@ -107,7 +105,7 @@ func NewBot(
 		adminMaxDurationHours,
 	)
 	adminUc := admin.NewUsecase(state, users, locs, 1*time.Hour, cfg.InviteTTLHours)
-	adminlocUc := adminloc.NewUsecase(state, locs, bookings, users, mapimg.NewClient(mapsAPIKey), 1*time.Hour, maxAdvanceDays, webAppURL, b.Me.Username)
+	adminlocUc := adminloc.NewUsecase(state, locs, bookings, users, 1*time.Hour, maxAdvanceDays, webAppURL, b.Me.Username)
 	adminuserUc := adminuser.NewUsecase(state, users, 1*time.Hour)
 	profileUc := profile.NewUsecase(state, users, notifier, 1*time.Hour)
 	onboardingUc := onboarding.NewUsecase(state, users, notifier, 1*time.Hour)

@@ -2,6 +2,7 @@ package config
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -67,8 +68,7 @@ type BookingConfig struct {
 }
 
 type MapsConfig struct {
-	GoogleAPIKey string `env:"GOOGLE_MAPS_API_KEY"`
-	WebAppURL    string `env:"MAP_WEB_APP_URL" env-default:""`
+	WebAppURL string `env:"MAP_WEB_APP_URL" env-default:""`
 }
 
 type KarmaConfig struct {
@@ -90,7 +90,13 @@ func MustLoad() *Config {
 
 	var cfg Config
 
-	if err := cleanenv.ReadConfig(".env", &cfg); err != nil {
+	var err error
+	if _, statErr := os.Stat(".env"); statErr == nil {
+		err = cleanenv.ReadConfig(".env", &cfg)
+	} else {
+		err = cleanenv.ReadEnv(&cfg)
+	}
+	if err != nil {
 		log.Fatalf("cannot read config: %s", err)
 	}
 

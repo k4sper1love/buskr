@@ -103,7 +103,6 @@ func main() {
 		bookingService,
 		locService,
 		cfg.Booking.MaxAdvanceDays,
-		cfg.Maps.GoogleAPIKey,
 		cfg.Maps.WebAppURL,
 		cfg.Booking.MinHour,
 		cfg.Booking.MaxHourWeekday,

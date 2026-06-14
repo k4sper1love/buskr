@@ -4,25 +4,126 @@ services:
   postgres:
     image: postgis/postgis:15-3.3
     container_name: buskr_postgres
+    command: postgres -c shared_buffers=64MB -c max_connections=20 -c effective_cache_size=128MB
     environment:
-      POSTGRES_USER: buskr
-      POSTGRES_PASSWORD: buskr
-      POSTGRES_DB: buskr
-    ports:
-      - 5432:5432
+      POSTGRES_USER: ${POSTGRES_USER:-buskr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-buskr}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped  
+    networks:
+      - buskr_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-buskr}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 400m
 
   redis:
     image: redis:7-alpine
     container_name: buskr_redis
-    ports:
-      - 6379:6379
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
+    networks:
+      - buskr_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 96m
+
+  bot:
+    image: ghcr.io/k4sper1love/buskr:latest
+    container_name: buskr_bot
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+    environment:
+      ENV: ${ENV:-prod}
+      TIMEZONE: ${TIMEZONE:-Asia/Almaty}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_ADMIN_CHAT_ID: ${TELEGRAM_ADMIN_CHAT_ID}
+      TELEGRAM_DEFAULT_LANG: ${TELEGRAM_DEFAULT_LANG:-ru}
+      TELEGRAM_ADMIN_LANG: ${TELEGRAM_ADMIN_LANG:-ru}
+      TELEGRAM_ADMIN_THREAD_APPLICATIONS: ${TELEGRAM_ADMIN_THREAD_APPLICATIONS:-0}
+      TELEGRAM_ADMIN_THREAD_UPGRADES: ${TELEGRAM_ADMIN_THREAD_UPGRADES:-0}
+      TELEGRAM_PUBLIC_CHAT_ID: ${TELEGRAM_PUBLIC_CHAT_ID:-0}
+      TELEGRAM_SUPPORT_CONTACT: ${TELEGRAM_SUPPORT_CONTACT:-@buskr_support}
+      INVITE_TTL_HOURS: ${INVITE_TTL_HOURS:-24}
+      DATABASE_DSN: ${DATABASE_DSN}
+      REDIS_ADDR: ${REDIS_ADDR:-redis:6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DB: ${REDIS_DB:-0}
+      REDIS_DIAL_TIMEOUT: ${REDIS_DIAL_TIMEOUT:-5s}
+      MAP_WEB_APP_URL: ${MAP_WEB_APP_URL:-https://k4sper1love.github.io/buskr/map.html}
+      BOOKING_MAX_ACTIVE: ${BOOKING_MAX_ACTIVE:-2}
+      BOOKING_ADMIN_MAX_ACTIVE: ${BOOKING_ADMIN_MAX_ACTIVE:--1}
+      BOOKING_MAX_PER_LOCATION_AT_DAY: ${BOOKING_MAX_PER_LOCATION_AT_DAY:-1}
+      BOOKING_ADMIN_MAX_PER_LOCATION_AT_DAY: ${BOOKING_ADMIN_MAX_PER_LOCATION_AT_DAY:--1}
+      BOOKING_MAX_ADVANCE_DAYS: ${BOOKING_MAX_ADVANCE_DAYS:-5}
+      BOOKING_ADJACENCY_RADIUS: ${BOOKING_ADJACENCY_RADIUS:-100}
+      BOOKING_ENABLE_HOT_SLOTS: ${BOOKING_ENABLE_HOT_SLOTS:-true}
+      BOOKING_ENABLE_NO_SHOW_CANCEL: ${BOOKING_ENABLE_NO_SHOW_CANCEL:-true}
+      BOOKING_ADMIN_BYPASS_NOISE_LIMITS: ${BOOKING_ADMIN_BYPASS_NOISE_LIMITS:-true}
+      BOOKING_ADMIN_BYPASS_USER_OVERLAP: ${BOOKING_ADMIN_BYPASS_USER_OVERLAP:-true}
+      BOOKING_ADMIN_BYPASS_NOISY_NEIGHBOR: ${BOOKING_ADMIN_BYPASS_NOISY_NEIGHBOR:-true}
+      BOOKING_MIN_HOUR: ${BOOKING_MIN_HOUR:-10}
+      BOOKING_MAX_HOUR_WEEKDAY: ${BOOKING_MAX_HOUR_WEEKDAY:-22}
+      BOOKING_MAX_HOUR_WEEKEND: ${BOOKING_MAX_HOUR_WEEKEND:-23}
+      BOOKING_MAX_DURATION_HOURS: ${BOOKING_MAX_DURATION_HOURS:-3}
+      BOOKING_ADMIN_MAX_DURATION_HOURS: ${BOOKING_ADMIN_MAX_DURATION_HOURS:--1}
+      KARMA_MAX: ${KARMA_MAX:-100}
+      KARMA_MIN: ${KARMA_MIN:-0}
+      KARMA_REWARD: ${KARMA_REWARD:-5}
+      KARMA_PENALTY: ${KARMA_PENALTY:-20}
+      KARMA_PERFECT_THRESHOLD: ${KARMA_PERFECT_THRESHOLD:-100}
+      KARMA_WARNING_THRESHOLD: ${KARMA_WARNING_THRESHOLD:-50}
+    networks:
+      - buskr_net
+    restart: unless-stopped
+
+  # Run manually to apply migrations:
+  # docker compose --profile migrate run --rm migrate up
+  migrate:
+    image: ghcr.io/kukymbr/goose-docker:3.27.1
+    container_name: buskr_migrate
+    volumes:
+      - ./migrations:/migrations
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: ${DATABASE_DSN}
+      GOOSE_MIGRATION_DIR: /migrations
+    networks:
+      - buskr_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - migrate
+
+networks:
+  buskr_net:
+    name: buskr_net
 
 volumes:
   postgres_data:
+    name: buskr_postgres_data
   redis_data:
+    name: buskr_redis_data

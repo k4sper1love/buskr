@@ -1,0 +1,116 @@
+name: Deploy Bot
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'web/**'
+      - '.github/workflows/pages.yml'
+      - '*.md'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "docker-compose.yml,migrations"
+          target: /opt/buskr/
+
+      - name: Deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+            export TELEGRAM_ADMIN_CHAT_ID=${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}
+            export DATABASE_DSN=${{ secrets.DATABASE_DSN }}
+            USERINFO="${DATABASE_DSN#*://}" && USERINFO="${USERINFO%@*}" && export POSTGRES_PASSWORD="${USERINFO#*:}"
+            export ENV=${{ secrets.ENV }}
+            export TIMEZONE=${{ secrets.TIMEZONE }}
+            export TELEGRAM_DEFAULT_LANG=${{ secrets.TELEGRAM_DEFAULT_LANG }}
+            export TELEGRAM_ADMIN_LANG=${{ secrets.TELEGRAM_ADMIN_LANG }}
+            export TELEGRAM_ADMIN_THREAD_APPLICATIONS=${{ secrets.TELEGRAM_ADMIN_THREAD_APPLICATIONS }}
+            export TELEGRAM_ADMIN_THREAD_UPGRADES=${{ secrets.TELEGRAM_ADMIN_THREAD_UPGRADES }}
+            export TELEGRAM_PUBLIC_CHAT_ID=${{ secrets.TELEGRAM_PUBLIC_CHAT_ID }}
+            export TELEGRAM_SUPPORT_CONTACT=${{ secrets.TELEGRAM_SUPPORT_CONTACT }}
+            export INVITE_TTL_HOURS=${{ secrets.INVITE_TTL_HOURS }}
+            export REDIS_ADDR=${{ secrets.REDIS_ADDR }}
+            export REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            export REDIS_DB=${{ secrets.REDIS_DB }}
+            export REDIS_DIAL_TIMEOUT=${{ secrets.REDIS_DIAL_TIMEOUT }}
+            export MAP_WEB_APP_URL=${{ secrets.MAP_WEB_APP_URL }}
+            export BOOKING_MAX_ACTIVE=${{ secrets.BOOKING_MAX_ACTIVE }}
+            export BOOKING_ADMIN_MAX_ACTIVE=${{ secrets.BOOKING_ADMIN_MAX_ACTIVE }}
+            export BOOKING_MAX_PER_LOCATION_AT_DAY=${{ secrets.BOOKING_MAX_PER_LOCATION_AT_DAY }}
+            export BOOKING_ADMIN_MAX_PER_LOCATION_AT_DAY=${{ secrets.BOOKING_ADMIN_MAX_PER_LOCATION_AT_DAY }}
+            export BOOKING_MAX_ADVANCE_DAYS=${{ secrets.BOOKING_MAX_ADVANCE_DAYS }}
+            export BOOKING_ADJACENCY_RADIUS=${{ secrets.BOOKING_ADJACENCY_RADIUS }}
+            export BOOKING_ENABLE_HOT_SLOTS=${{ secrets.BOOKING_ENABLE_HOT_SLOTS }}
+            export BOOKING_ENABLE_NO_SHOW_CANCEL=${{ secrets.BOOKING_ENABLE_NO_SHOW_CANCEL }}
+            export BOOKING_ADMIN_BYPASS_NOISE_LIMITS=${{ secrets.BOOKING_ADMIN_BYPASS_NOISE_LIMITS }}
+            export BOOKING_ADMIN_BYPASS_USER_OVERLAP=${{ secrets.BOOKING_ADMIN_BYPASS_USER_OVERLAP }}
+            export BOOKING_ADMIN_BYPASS_NOISY_NEIGHBOR=${{ secrets.BOOKING_ADMIN_BYPASS_NOISY_NEIGHBOR }}
+            export BOOKING_MIN_HOUR=${{ secrets.BOOKING_MIN_HOUR }}
+            export BOOKING_MAX_HOUR_WEEKDAY=${{ secrets.BOOKING_MAX_HOUR_WEEKDAY }}
+            export BOOKING_MAX_HOUR_WEEKEND=${{ secrets.BOOKING_MAX_HOUR_WEEKEND }}
+            export BOOKING_MAX_DURATION_HOURS=${{ secrets.BOOKING_MAX_DURATION_HOURS }}
+            export BOOKING_ADMIN_MAX_DURATION_HOURS=${{ secrets.BOOKING_ADMIN_MAX_DURATION_HOURS }}
+            export KARMA_MAX=${{ secrets.KARMA_MAX }}
+            export KARMA_MIN=${{ secrets.KARMA_MIN }}
+            export KARMA_REWARD=${{ secrets.KARMA_REWARD }}
+            export KARMA_PENALTY=${{ secrets.KARMA_PENALTY }}
+            export KARMA_PERFECT_THRESHOLD=${{ secrets.KARMA_PERFECT_THRESHOLD }}
+            export KARMA_WARNING_THRESHOLD=${{ secrets.KARMA_WARNING_THRESHOLD }}
+            cd /opt/buskr
+            docker compose up -d postgres redis
+            docker compose --profile migrate run --rm migrate up
+            docker compose pull bot
+            docker compose up -d bot
