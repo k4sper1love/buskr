@@ -63,6 +63,8 @@ type Invite struct {
 	IsUsed     bool
 	CreatedAt  time.Time
 	ExpiresAt  time.Time
+	CreatedBy  string
+	UsedBy     string
 }
 
 func NewUser(telegramID int64, username string, startingKarma int) *User {
@@ -80,7 +82,7 @@ func NewUser(telegramID int64, username string, startingKarma int) *User {
 	}
 }
 
-func NewInvite(noiseLevel NoiseLevel, expirationHours int) *Invite {
+func NewInvite(createdBy string, noiseLevel NoiseLevel, expirationHours int) *Invite {
 	now := time.Now()
 	token := uuid.New().String() // generate unique token
 
@@ -91,6 +93,7 @@ func NewInvite(noiseLevel NoiseLevel, expirationHours int) *Invite {
 		IsUsed:     false,
 		CreatedAt:  now,
 		ExpiresAt:  now.Add(time.Hour * time.Duration(expirationHours)),
+		CreatedBy:  createdBy,
 	}
 }
 

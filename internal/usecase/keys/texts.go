@@ -58,7 +58,12 @@ const (
 	TextAuthActiveBtnBookings = "auth.active.btn_bookings"
 	TextAuthActiveBtnProfile  = "auth.active.btn_profile"
 	TextAuthActiveBtnAdmin    = "auth.active.btn_admin"
-	TextAuthInvitedPromptName = "auth.invited.prompt_name"
+	TextAuthInvitedPromptName     = "auth.invited.prompt_name"
+	TextAuthInvitedErrNotFound    = "auth.invited.err_not_found"
+	TextAuthInvitedErrAlreadyUsed = "auth.invited.err_already_used"
+	TextAuthInvitedErrExpired     = "auth.invited.err_expired"
+	TextAuthInvitedErrActive      = "auth.invited.err_active"
+	TextAuthInvitedErrGeneric     = "auth.invited.err_generic"
 )
 
 // group

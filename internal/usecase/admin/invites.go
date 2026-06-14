@@ -61,7 +61,7 @@ func (uc *Usecase) GenerateInvite(ctx context.Context, actor *user.User, botUser
 		return response.Reply{}, errors.New("access denied")
 	}
 
-	invite, err := uc.users.GenerateInvite(ctx, user.NoiseLevel(noise), uc.inviteTTL)
+	invite, err := uc.users.GenerateInvite(ctx, actor.ID, user.NoiseLevel(noise), uc.inviteTTL)
 	if err != nil {
 		return response.Reply{}, err
 	}

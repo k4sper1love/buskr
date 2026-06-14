@@ -23,7 +23,7 @@ type Users interface {
 	RejectApplication(ctx context.Context, userID string) error
 	GetByID(ctx context.Context, id string) (*user.User, error)
 	Update(ctx context.Context, user *user.User) error
-	GenerateInvite(ctx context.Context, noiseLevel user.NoiseLevel, expirationHours int) (*user.Invite, error)
+	GenerateInvite(ctx context.Context, createdBy string, noiseLevel user.NoiseLevel, expirationHours int) (*user.Invite, error)
 }
 
 type UserNotification struct {

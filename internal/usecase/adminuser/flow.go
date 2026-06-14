@@ -187,6 +187,17 @@ func (uc *Usecase) UserDetail(ctx context.Context, actor *user.User, targetID st
 		stats = &user.UserStats{UserID: target.ID}
 	}
 
+	var invitedByDisplay string
+	invite, err := uc.users.GetInviteByUsedByID(ctx, target.ID)
+	if err == nil && invite != nil && invite.CreatedBy != "" {
+		if creator, err := uc.users.GetByID(ctx, invite.CreatedBy); err == nil {
+			invitedByDisplay = creator.Name
+			if creator.Username != "" {
+				invitedByDisplay += " (@" + creator.Username + ")"
+			}
+		}
+	}
+
 	usernameDisplay := target.Username
 	if usernameDisplay != "" {
 		if !strings.HasPrefix(usernameDisplay, "@") {
@@ -257,6 +268,7 @@ func (uc *Usecase) UserDetail(ctx context.Context, actor *user.User, targetID st
 				"total_bookings":      stats.TotalBookings,
 				"successful_checkins": stats.SuccessfulCheckins,
 				"no_shows":            stats.NoShows,
+				"invited_by":          invitedByDisplay,
 			},
 			SubKeyArgs: []string{"role", "status", "noise"},
 		},

@@ -32,6 +32,7 @@ type TelegramConfig struct {
 	AdminThreadApplications int    `env:"TELEGRAM_ADMIN_THREAD_APPLICATIONS" env-default:"0"`
 	AdminThreadUpgrades     int    `env:"TELEGRAM_ADMIN_THREAD_UPGRADES" env-default:"0"`
 	PublicChatID            int64  `env:"TELEGRAM_PUBLIC_CHAT_ID" env-default:"0"`
+	InviteTTLHours          int    `env:"INVITE_TTL_HOURS" env-default:"24"`
 }
 
 type DatabaseConfig struct {

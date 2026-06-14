@@ -210,8 +210,8 @@ func (s *Service) BanUser(ctx context.Context, actorID, targetUserID string) err
 	return s.repo.Update(ctx, targetUser)
 }
 
-func (s *Service) GenerateInvite(ctx context.Context, noiseLevel NoiseLevel, expirationHours int) (*Invite, error) {
-	invite := NewInvite(noiseLevel, expirationHours)
+func (s *Service) GenerateInvite(ctx context.Context, createdBy string, noiseLevel NoiseLevel, expirationHours int) (*Invite, error) {
+	invite := NewInvite(createdBy, noiseLevel, expirationHours)
 
 	err := s.repo.CreateInvite(ctx, invite)
 	if err != nil {
@@ -253,6 +253,7 @@ func (s *Service) ProcessInvite(ctx context.Context, userID string, token string
 	}
 
 	inv.IsUsed = true
+	inv.UsedBy = userID
 	err = s.repo.UpdateInvite(ctx, inv)
 	if err != nil {
 		return err
@@ -315,4 +316,8 @@ func (s *Service) GetUsersPaginated(ctx context.Context, offset, limit int, sort
 
 func (s *Service) FindByQuery(ctx context.Context, query string, offset, limit int) ([]*User, int, error) {
 	return s.repo.FindByQuery(ctx, query, offset, limit)
+}
+
+func (s *Service) GetInviteByUsedByID(ctx context.Context, userID string) (*Invite, error) {
+	return s.repo.GetInviteByUsedByID(ctx, userID)
 }

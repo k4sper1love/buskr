@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/domain/user"
@@ -12,9 +13,40 @@ import (
 
 func (uc *Usecase) Start(ctx context.Context, u *user.User, payload string) (response.Reply, error) {
 	if payload != "" {
+		if u.Status == user.StatusActive {
+			return uc.Start(ctx, u, "")
+		}
+
 		err := uc.users.ProcessInvite(ctx, u.ID, payload)
 		if err != nil {
-			return response.Reply{}, err
+			var key string
+			switch {
+			case errors.Is(err, user.ErrInviteNotFound):
+				key = keys.TextAuthInvitedErrNotFound
+			case errors.Is(err, user.ErrInviteAlreadyUsed):
+				key = keys.TextAuthInvitedErrAlreadyUsed
+			case errors.Is(err, user.ErrInviteExpired):
+				key = keys.TextAuthInvitedErrExpired
+			case errors.Is(err, user.ErrInvalidStatus):
+				key = keys.TextAuthInvitedErrActive
+			default:
+				key = keys.TextAuthInvitedErrGeneric
+			}
+
+			return response.Reply{
+				Kind: response.KindSend,
+				Text: response.Text{Key: key},
+				Keyboard: response.Keyboard{
+					InlineRows: [][]response.Button{
+						{
+							{
+								Text: response.Text{Key: keys.TextCommonBtnBack},
+								Data: response.CallbackData{Unique: keys.BtnCommonMenu},
+							},
+						},
+					},
+				},
+			}, nil
 		}
 
 		_ = uc.state.SetState(ctx, u.TelegramID, keys.StateAuthInvitedName, uc.ttl)

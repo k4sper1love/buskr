@@ -27,6 +27,7 @@ type Users interface {
 	GetUsersPaginated(ctx context.Context, offset, limit int, sortBy string) ([]*user.User, int, error)
 	FindByQuery(ctx context.Context, query string, offset, limit int) ([]*user.User, int, error)
 	IsLowKarma(u *user.User) bool
+	GetInviteByUsedByID(ctx context.Context, userID string) (*user.Invite, error)
 }
 
 type Usecase struct {

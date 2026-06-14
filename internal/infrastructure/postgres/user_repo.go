@@ -248,9 +248,14 @@ func (r *UserRepository) UpdateStats(ctx context.Context, stats *user.UserStats)
 
 func (r *UserRepository) CreateInvite(ctx context.Context, invite *user.Invite) error {
 	query := `
-		INSERT INTO invites (id, token, noise_level, is_used, created_at, expires_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO invites (id, token, noise_level, is_used, created_at, expires_at, created_by)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
+
+	var createdBy sql.NullString
+	if invite.CreatedBy != "" {
+		createdBy = sql.NullString{String: invite.CreatedBy, Valid: true}
+	}
 
 	_, err := r.db.ExecContext(ctx, query,
 		invite.ID,
@@ -259,6 +264,7 @@ func (r *UserRepository) CreateInvite(ctx context.Context, invite *user.Invite) 
 		invite.IsUsed,
 		invite.CreatedAt,
 		invite.ExpiresAt,
+		createdBy,
 	)
 
 	return err
@@ -266,13 +272,14 @@ func (r *UserRepository) CreateInvite(ctx context.Context, invite *user.Invite) 
 
 func (r *UserRepository) GetInviteByToken(ctx context.Context, token string) (*user.Invite, error) {
 	query := `
-		SELECT id, token, noise_level, is_used, created_at, expires_at
+		SELECT id, token, noise_level, is_used, created_at, expires_at, created_by, used_by
 		FROM invites
 		WHERE token = $1
 	`
 
 	var inv user.Invite
 	var noise string
+	var createdBy, usedBy sql.NullString
 
 	err := r.db.QueryRowContext(ctx, query, token).Scan(
 		&inv.ID,
@@ -281,6 +288,8 @@ func (r *UserRepository) GetInviteByToken(ctx context.Context, token string) (*u
 		&inv.IsUsed,
 		&inv.CreatedAt,
 		&inv.ExpiresAt,
+		&createdBy,
+		&usedBy,
 	)
 
 	if err != nil {
@@ -291,19 +300,70 @@ func (r *UserRepository) GetInviteByToken(ctx context.Context, token string) (*u
 	}
 
 	inv.NoiseLevel = user.NoiseLevel(noise)
+	if createdBy.Valid {
+		inv.CreatedBy = createdBy.String
+	}
+	if usedBy.Valid {
+		inv.UsedBy = usedBy.String
+	}
 	return &inv, nil
 }
 
 func (r *UserRepository) UpdateInvite(ctx context.Context, invite *user.Invite) error {
 	query := `
 		UPDATE invites
-		SET is_used = $1
-		WHERE id = $2
+		SET is_used = $1, used_by = $2
+		WHERE id = $3
 	`
 
-	_, err := r.db.ExecContext(ctx, query, invite.IsUsed, invite.ID)
+	var usedBy sql.NullString
+	if invite.UsedBy != "" {
+		usedBy = sql.NullString{String: invite.UsedBy, Valid: true}
+	}
+
+	_, err := r.db.ExecContext(ctx, query, invite.IsUsed, usedBy, invite.ID)
 	return err
 }
+
+func (r *UserRepository) GetInviteByUsedByID(ctx context.Context, userID string) (*user.Invite, error) {
+	query := `
+		SELECT id, token, noise_level, is_used, created_at, expires_at, created_by, used_by
+		FROM invites
+		WHERE used_by = $1
+	`
+
+	var inv user.Invite
+	var noise string
+	var createdBy, usedBy sql.NullString
+
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(
+		&inv.ID,
+		&inv.Token,
+		&noise,
+		&inv.IsUsed,
+		&inv.CreatedAt,
+		&inv.ExpiresAt,
+		&createdBy,
+		&usedBy,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, user.ErrInviteNotFound
+		}
+		return nil, err
+	}
+
+	inv.NoiseLevel = user.NoiseLevel(noise)
+	if createdBy.Valid {
+		inv.CreatedBy = createdBy.String
+	}
+	if usedBy.Valid {
+		inv.UsedBy = usedBy.String
+	}
+	return &inv, nil
+}
+
 
 func (r *UserRepository) GetActiveUsers(ctx context.Context) ([]*user.User, error) {
 	query := `
