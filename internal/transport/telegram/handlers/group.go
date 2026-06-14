@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/k4sper1love/buskr/internal/config"
 	"github.com/k4sper1love/buskr/internal/mdutil"
@@ -26,9 +26,9 @@ func NewGroupHandler(cfg *config.TelegramConfig, renderer *render.Renderer) *Gro
 
 func (h *GroupHandler) HandleAddedToGroup(c telebot.Context) error {
 	chat := c.Chat()
-	log.Printf("HandleAddedToGroup triggered in chat: %d (%s)", chat.ID, chat.Title)
+	slog.Debug("bot added to group", "chat_id", chat.ID, "chat_title", chat.Title)
 	if chat.ID != h.cfg.AdminChatID && chat.ID != h.cfg.PublicChatID {
-		log.Printf("Chat %d is unauthorized. Leaving...", chat.ID)
+		slog.Warn("unauthorized chat, leaving", "chat_id", chat.ID)
 		msg := h.renderer.Translate(h.cfg.DefaultLang, response.Text{
 			Key: keys.TextGroupUnathorizedChat,
 		})
@@ -39,21 +39,21 @@ func (h *GroupHandler) HandleAddedToGroup(c telebot.Context) error {
 }
 
 func (h *GroupHandler) HandleUserJoined(c telebot.Context) error {
-	log.Printf("HandleUserJoined triggered in chat: %d (%s)", c.Chat().ID, c.Chat().Title)
-	
+	slog.Debug("user joined event", "chat_id", c.Chat().ID, "chat_title", c.Chat().Title)
+
 	if c.Chat().ID == h.cfg.AdminChatID {
 		return nil
 	}
 
 	if c.Chat().ID != h.cfg.PublicChatID {
-		log.Printf("User joined unauthorized chat: %d. Leaving...", c.Chat().ID)
+		slog.Warn("user joined unauthorized chat, leaving", "chat_id", c.Chat().ID)
 		_ = c.Bot().Leave(c.Chat())
 		return nil
 	}
 
 	joinedUser := c.Message().UserJoined
 	usersJoined := c.Message().UsersJoined
-	log.Printf("UserJoined (singular): %+v, UsersJoined (plural) count: %d", joinedUser, len(usersJoined))
+	slog.Debug("user joined details", "singular", joinedUser != nil, "plural_count", len(usersJoined))
 
 	var targetUser *telebot.User
 	if joinedUser != nil {
@@ -63,7 +63,7 @@ func (h *GroupHandler) HandleUserJoined(c telebot.Context) error {
 	}
 
 	if targetUser == nil || targetUser.ID == c.Bot().Me.ID {
-		log.Printf("Target user is nil or is the bot itself. Skipping welcome.")
+		slog.Debug("skipping welcome: target is nil or bot itself")
 		return nil
 	}
 

@@ -3,7 +3,7 @@ package worker
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -55,14 +55,14 @@ func NewScheduler(
 
 func (s *Scheduler) Start(ctx context.Context) {
 	ticker := time.NewTicker(1 * time.Minute)
-	log.Println("Background scheduler started...")
+	slog.Info("background scheduler started")
 
 	go func() {
 		defer ticker.Stop()
 		for {
 			select {
 			case <-ctx.Done():
-				log.Println("Scheduler stopped gracefully")
+				slog.Info("scheduler stopped gracefully")
 				return
 			case <-ticker.C:
 				s.processReminders(ctx)
@@ -76,7 +76,7 @@ func (s *Scheduler) Start(ctx context.Context) {
 func (s *Scheduler) processReminders(ctx context.Context) {
 	upcoming, err := s.bookings.GetUpcomingForReminder(ctx, 60*time.Minute)
 	if err != nil {
-		log.Printf("Scheduler Reminder error: %v", err)
+		slog.Error("scheduler reminder error", "err", err)
 		return
 	}
 
@@ -126,7 +126,7 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 func (s *Scheduler) processCheckins(ctx context.Context) {
 	expired, err := s.bookings.GetPendingForCheckinTimeout(ctx, 15*time.Minute)
 	if err != nil {
-		log.Printf("Scheduler Checkin error: %v", err)
+		slog.Error("scheduler checkin error", "err", err)
 		return
 	}
 
@@ -140,7 +140,7 @@ func (s *Scheduler) processCheckins(ctx context.Context) {
 		if s.enableNoShowCancel {
 			err := s.bookings.MarkNoShow(ctx, b.ID)
 			if err != nil {
-				log.Printf("Failed to mark no-show for booking %s: %v", b.ID, err)
+				slog.Error("failed to mark no-show", "booking_id", b.ID, "err", err)
 				continue
 			}
 
@@ -165,7 +165,7 @@ func (s *Scheduler) processCheckins(ctx context.Context) {
 			// Auto check-in to confirm the booking so it remains active (and later completed)
 			err := s.bookings.CheckIn(ctx, b.ID, b.UserID)
 			if err != nil {
-				log.Printf("Failed to auto check-in booking %s: %v", b.ID, err)
+				slog.Error("failed to auto check-in", "booking_id", b.ID, "err", err)
 				continue
 			}
 
@@ -189,14 +189,14 @@ func (s *Scheduler) processCheckins(ctx context.Context) {
 func (s *Scheduler) processCompletions(ctx context.Context) {
 	finished, err := s.bookings.GetActiveForCompletion(ctx)
 	if err != nil {
-		log.Printf("Scheduler Completion error: %v", err)
+		slog.Error("scheduler completion error", "err", err)
 		return
 	}
 
 	for _, b := range finished {
 		err := s.bookings.CompleteBooking(ctx, b.ID)
 		if err != nil {
-			log.Printf("Failed to complete booking %s: %v", b.ID, err)
+			slog.Error("failed to complete booking", "booking_id", b.ID, "err", err)
 			continue
 		}
 	}
@@ -238,9 +238,9 @@ func (s *Scheduler) broadcastHotSpot(ctx context.Context, b *booking.Booking) {
 	)
 
 	for _, u := range activeUsers {
-		// if u.ID == b.UserID {
-		// 	continue
-		// }
+		if u.ID == b.UserID {
+			continue
+		}
 
 		if !booking.IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise) {
 			continue
@@ -248,7 +248,7 @@ func (s *Scheduler) broadcastHotSpot(ctx context.Context, b *booking.Booking) {
 
 		_, err := s.bot.Send(&telebot.User{ID: u.TelegramID}, msg, menu, telebot.ModeHTML)
 		if err != nil {
-			log.Printf("Failed to send hot spot to %d: %v", u.TelegramID, err)
+			slog.Warn("failed to send hot spot", "telegram_id", u.TelegramID, "err", err)
 		}
 	}
 }

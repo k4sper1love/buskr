@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/ctxkey"
@@ -19,7 +19,7 @@ func AuthMiddleware(users *user.Service) telebot.MiddlewareFunc {
 
 			u, err := users.GetOrCreateUser(c.Get("ctx").(context.Context), sender.ID, sender.Username)
 			if err != nil {
-				log.Printf("failed to get or create user %d: %v", sender.ID, err)
+				slog.Error("failed to get or create user", "telegram_id", sender.ID, "err", err)
 				return c.Send("System error occurred. Please try again later.")
 			}
 

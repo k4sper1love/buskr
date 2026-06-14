@@ -1,7 +1,7 @@
 package telegram
 
 import (
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/config"
@@ -68,6 +68,13 @@ func NewBot(
 	pref := telebot.Settings{
 		Token:  cfg.BotToken,
 		Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
+		OnError: func(err error, c telebot.Context) {
+			args := []any{"err", err}
+			if c != nil && c.Sender() != nil {
+				args = append(args, "telegram_id", c.Sender().ID)
+			}
+			slog.Error("unhandled handler error", args...)
+		},
 	}
 
 	b, err := telebot.NewBot(pref)
@@ -145,7 +152,7 @@ func (b *Bot) Start() {
 	router := NewRouter(b, b.fsm, b.handlers)
 	router.RegisterRoutes()
 
-	log.Printf("Buskr Telegram Bot is starting as @%s...", b.bot.Me.Username)
+	slog.Info("buskr telegram bot starting", "username", b.bot.Me.Username)
 	b.bot.Start()
 }
 

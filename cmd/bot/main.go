@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,6 +18,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/transport/telegram"
 	"github.com/k4sper1love/buskr/internal/tz"
 	"github.com/k4sper1love/buskr/internal/worker"
+	"github.com/k4sper1love/buskr/pkg/logger"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 )
@@ -25,24 +26,28 @@ import (
 func main() {
 	cfg := config.MustLoad()
 
-	log.Print("Starting bot in env:", cfg.Env)
+	logger.Setup(cfg.Env)
+	slog.Info("starting bot", "env", cfg.Env)
 
 	// timezone
 	if err := tz.Init(cfg.Timezone); err != nil {
-		log.Fatalf("Failed to initialize timezone: %v", err)
+		slog.Error("failed to initialize timezone", "err", err)
+		os.Exit(1)
 	}
 
 	// database
 	db, err := sql.Open("postgres", cfg.Database.DSN)
 	if err != nil {
-		log.Fatalf("Failed to connect to Postgres: %v", err)
+		slog.Error("failed to open postgres", "err", err)
+		os.Exit(1)
 	}
 	defer db.Close()
 
 	if err := db.Ping(); err != nil {
-		log.Fatalf("Postgres is dead: %v", err)
+		slog.Error("postgres ping failed", "err", err)
+		os.Exit(1)
 	}
-	log.Println("PostgreSQL connected successfully!")
+	slog.Info("postgres connected")
 
 	// redis
 	rdb := redis.NewClient(&redis.Options{
@@ -54,9 +59,10 @@ func main() {
 	defer rdb.Close()
 
 	if err := rdb.Ping(context.Background()).Err(); err != nil {
-		log.Fatalf("Redis is dead: %v", err)
+		slog.Error("redis ping failed", "err", err)
+		os.Exit(1)
 	}
-	log.Println("Redis connected successfully!")
+	slog.Info("redis connected")
 
 	// translator
 	tr := i18n.NewTranslator()
@@ -67,7 +73,7 @@ func main() {
 	locRepo := postgres.NewLocationRepository(db)
 	bookingRepo := postgres.NewBookingRepository(db)
 
-	// servives
+	// services
 	userService := user.NewService(userRepo, user.Config{
 		MaxKarma:         cfg.Karma.MaxKarma,
 		MinKarma:         cfg.Karma.MinKarma,
@@ -106,8 +112,10 @@ func main() {
 		cfg.Booking.AdminMaxDurationHours,
 	)
 	if err != nil {
-		log.Fatalf("Failed to initialize bot: %v", err)
+		slog.Error("failed to initialize bot", "err", err)
+		os.Exit(1)
 	}
+
 	// workers
 	scheduler := worker.NewScheduler(
 		bot.GetTelebot(),
@@ -130,14 +138,12 @@ func main() {
 		stop := make(chan os.Signal, 1)
 		signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 		<-stop
-		log.Println("Shutting down gracefully...")
+		slog.Info("shutting down gracefully")
 		cancel()
 		bot.GetTelebot().Stop()
 	}()
 
-	// start bot
 	bot.Start()
 
-	// when apllication was stopped
-	log.Println("App stopped.")
+	slog.Info("app stopped")
 }

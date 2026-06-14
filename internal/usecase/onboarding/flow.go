@@ -3,7 +3,7 @@ package onboarding
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -182,7 +182,7 @@ func (uc *Usecase) finish(ctx context.Context, u *user.User, mediaData string, i
 		IsVideo:          isVideo,
 	})
 	if errApp != nil {
-		log.Printf("Failed to send admin notification for new application: %v", errApp)
+		slog.Error("failed to send admin notification for new application", "err", errApp)
 	}
 
 	return response.Reply{
