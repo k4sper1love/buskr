@@ -147,7 +147,7 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 				},
 				{
 					{
-						Text: response.Text{Key: keys.TextAdminLocsBtnSchedule},
+						Text: response.Text{Key: keys.TextCommonBtnSchedule},
 						Data: response.CallbackData{Unique: keys.BtnAdminLocSchedule, Args: []string{loc.ID}},
 					},
 				},

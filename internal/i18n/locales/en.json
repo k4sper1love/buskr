@@ -5,6 +5,7 @@
   "common.btn.cancel": "❌",
   "common.btn.open_map": "🗺️ Open Map",
   "common.btn.last_loc": "🕒 Last spot: {{.name}}",
+  "common.btn.schedule": "🗓️ Schedule",
   "common.lbl.noise_light": "🟢 Light",
   "common.lbl.noise_medium": "🟡 Medium",
   "common.lbl.noise_hard": "🔴 Hard",
@@ -205,7 +206,6 @@
   "admin.locs.map_empty": "No active locations.",
   "group.unauthorized_chat": "❌ This chat is not authorized to use the bot. Leaving the chat.",
   "group.welcome_user": "👋 Welcome, {{.mention}}!\n\nWelcome to the street performance chat. You can book a performance slot directly in private messages with the bot: {{.bot_link}}.",
-  "auth.active.btn_schedule": "🗓️ Booking Schedule",
-  "book.schedule.prompt_loc": "📅 <b>Booking Schedule</b>\n\nSelect a spot on the map or from the list to view its schedule:",
+  "book.schedule.prompt_loc": "🗓️ <b>Schedule</b>\n\nSelect a spot on the map or from the list:",
   "book.schedule.empty_for_day": "📅 <b>{{.name}}</b>\n{{.date}}\n\nNo bookings for this day."
 }

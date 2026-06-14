@@ -71,7 +71,7 @@ func (uc *Usecase) Start(ctx context.Context, u *user.User, payload string) (res
 
 		rows = append(rows, []response.Button{
 			{
-				Text: response.Text{Key: keys.TextAuthActiveBtnSchedule},
+				Text: response.Text{Key: keys.TextCommonBtnSchedule},
 				Data: response.CallbackData{Unique: keys.BtnBookSchedule},
 			},
 		})

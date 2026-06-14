@@ -5,6 +5,7 @@
   "common.btn.cancel": "✕ Отмена",
   "common.btn.open_map": "🗺️ Открыть карту",
   "common.btn.last_loc": "🕒 Последнее место: {{.name}}",
+  "common.btn.schedule": "🗓️ Расписание",
   "common.lbl.noise_light": "🟢 Тихий",
   "common.lbl.noise_medium": "🟡 Средний",
   "common.lbl.noise_hard": "🔴 Громкий",
@@ -182,7 +183,6 @@
   "admin.locs.edit_step_geo": "📍 Отправьте новую геопозицию:",
   "admin.locs.edit_msg_success": "✅ Изменения сохранены.",
   "admin.locs.edit_msg_err": "⚠️ Ошибка сохранения изменений.",
-  "admin.locs.btn_schedule": "📅 График броней",
   "admin.locs.nearby_warning": "⚠️ <b>Конфликт точек</b>\n\nВ радиусе <code>{{.radius}}м</code> уже есть площадки:\n{{.list}}\n\nПодтвердить создание?",
   "admin.locs.nearby_confirm": "Подтвердить",
   "admin.locs.err.delete_has_bookings": "❌ Невозможно удалить локацию, так как на неё уже есть бронирования. Вместо этого вы можете её отключить.",
@@ -205,7 +205,6 @@
   "admin.locs.map_empty": "🗺️ На карте пока нет активных локаций.",
   "group.unauthorized_chat": "❌ Этот чат не авторизован для использования бота. Бот выходит из чата.",
   "group.welcome_user": "👋 Приветствуем, {{.mention}}!\n\nДобро пожаловать в чат уличных выступлений. Вы можете забронировать место для выступления прямо в личных сообщениях с ботом: {{.bot_link}}.",
-  "auth.active.btn_schedule": "🗓️ График броней",
-  "book.schedule.prompt_loc": "📅 <b>График броней</b>\n\nВыберите площадку на карте или из списка, чтобы посмотреть расписание:",
+  "book.schedule.prompt_loc": "🗓️ <b>Расписание</b>\n\nВыберите площадку на карте или из списка:",
   "book.schedule.empty_for_day": "📅 <b>{{.name}}</b>\n{{.date}}\n\nНа этот день бронирований нет."
 }

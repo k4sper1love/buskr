@@ -8,6 +8,7 @@ const (
 	TextCommonBtnCancel       = "common.btn.cancel"
 	TextCommonBtnOpenMap      = "common.btn.open_map"
 	TextCommonBtnLastLoc      = "common.btn.last_loc"
+	TextCommonBtnSchedule     = "common.btn.schedule"
 	TextCommonLblNoise        = "common.lbl.noise"
 	TextCommonLblNoiseLight   = "common.lbl.noise_light"
 	TextCommonLblNoiseMedium  = "common.lbl.noise_medium"
@@ -55,7 +56,6 @@ const (
 	TextAuthActiveTitle       = "auth.active.title"
 	TextAuthActiveBtnBook     = "auth.active.btn_book"
 	TextAuthActiveBtnBookings = "auth.active.btn_bookings"
-	TextAuthActiveBtnSchedule = "auth.active.btn_schedule"
 	TextAuthActiveBtnProfile  = "auth.active.btn_profile"
 	TextAuthActiveBtnAdmin    = "auth.active.btn_admin"
 	TextAuthInvitedPromptName = "auth.invited.prompt_name"
@@ -141,7 +141,6 @@ const (
 	TextAdminLocsEditBtnNoise   = "admin.locs.edit.btn_noise"
 	TextAdminLocsEditNoiseTitle = "admin.locs.edit.noise_title"
 
-	TextAdminLocsBtnSchedule               = "admin.locs.btn_schedule"
 	TextAdminLocsScheduleEmpty             = "admin.locs.schedule_empty"
 	TextAdminLocsScheduleLblTodayActive    = "admin.locs.schedule.lbl_today_active"
 	TextAdminLocsScheduleLblTomorrowActive = "admin.locs.schedule.lbl_tomorrow_active"
