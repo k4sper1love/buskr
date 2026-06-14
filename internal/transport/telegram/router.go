@@ -115,6 +115,11 @@ func (r *Router) RegisterRoutes() {
 	r.b.bot.Handle("\f"+keys.BtnBookDetails, r.handlers.booking.HandleBookingDetails)
 	r.b.bot.Handle("\f"+keys.BtnBookCancelConf, r.handlers.booking.HandleBookingCancelConfirm)
 
+	// booking schedule
+	r.b.bot.Handle("\f"+keys.BtnBookSchedule, r.handlers.booking.HandleBookScheduleStart)
+	r.b.bot.Handle("\f"+keys.BtnBookScheduleLocSel, r.handlers.booking.HandleBookScheduleLocSel)
+	r.b.bot.Handle("\f"+keys.BtnBookScheduleDaySel, r.handlers.booking.HandleBookScheduleDaySel)
+
 	// booking fsm flow
 	r.b.bot.Handle("\f"+keys.BtnBookStart, r.handlers.booking.HandleBook)
 	r.b.bot.Handle("\f"+keys.BtnBookDateSel, r.handlers.booking.HandleBookDateSelected)

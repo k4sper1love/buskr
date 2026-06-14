@@ -6,6 +6,7 @@ import (
 
 	"github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/domain/location"
+	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 )
@@ -23,6 +24,10 @@ type StateStore interface {
 type Locations interface {
 	GetLocationsForMusicians(ctx context.Context) ([]*location.Location, error)
 	GetByID(ctx context.Context, id string) (*location.Location, error)
+}
+
+type Users interface {
+	GetByID(ctx context.Context, id string) (*user.User, error)
 }
 
 type Bookings interface {
@@ -55,17 +60,29 @@ type Usecase struct {
 	state          StateStore
 	locs           Locations
 	bookings       Bookings
+	users          Users
 	ttl            time.Duration
 	maxAdvanceDays int
 	webAppURL      string
 	botUsername    string
 }
 
-func NewUsecase(state StateStore, locs Locations, bookings Bookings, ttl time.Duration, maxAdvanceDays int, webAppURL string, botUsername string) *Usecase {
+type webAppLocation struct {
+	ID       string  `json:"id"`
+	Name     string  `json:"name"`
+	Desc     string  `json:"desc"`
+	Lat      float64 `json:"lat"`
+	Lon      float64 `json:"lon"`
+	MaxNoise string  `json:"max_noise,omitempty"`
+	Allowed  *bool   `json:"allowed,omitempty"`
+}
+
+func NewUsecase(state StateStore, locs Locations, bookings Bookings, users Users, ttl time.Duration, maxAdvanceDays int, webAppURL string, botUsername string) *Usecase {
 	return &Usecase{
 		state:          state,
 		locs:           locs,
 		bookings:       bookings,
+		users:          users,
 		ttl:            ttl,
 		maxAdvanceDays: maxAdvanceDays,
 		webAppURL:      webAppURL,

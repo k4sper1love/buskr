@@ -6,6 +6,8 @@ const (
 	TextCommonBtnBack         = "common.btn.back"
 	TextCommonBtnMenu         = "common.btn.menu"
 	TextCommonBtnCancel       = "common.btn.cancel"
+	TextCommonBtnOpenMap      = "common.btn.open_map"
+	TextCommonBtnLastLoc      = "common.btn.last_loc"
 	TextCommonLblNoise        = "common.lbl.noise"
 	TextCommonLblNoiseLight   = "common.lbl.noise_light"
 	TextCommonLblNoiseMedium  = "common.lbl.noise_medium"
@@ -53,9 +55,16 @@ const (
 	TextAuthActiveTitle       = "auth.active.title"
 	TextAuthActiveBtnBook     = "auth.active.btn_book"
 	TextAuthActiveBtnBookings = "auth.active.btn_bookings"
+	TextAuthActiveBtnSchedule = "auth.active.btn_schedule"
 	TextAuthActiveBtnProfile  = "auth.active.btn_profile"
 	TextAuthActiveBtnAdmin    = "auth.active.btn_admin"
 	TextAuthInvitedPromptName = "auth.invited.prompt_name"
+)
+
+// group
+const (
+	TextGroupUnathorizedChat = "group.unauthorized_chat"
+	TextGroupWelcomeUser     = "group.welcome_user"
 )
 
 // onboarding
@@ -138,12 +147,11 @@ const (
 	TextAdminLocsScheduleLblTomorrowActive = "admin.locs.schedule.lbl_tomorrow_active"
 	TextAdminLocsScheduleLblOtherActive    = "admin.locs.schedule.lbl_other_active"
 	TextAdminLocsScheduleEmptyForDay       = "admin.locs.schedule_empty_for_day"
-	TextAdminLocsBtnMap                    = "admin.locs.btn_map"
 	TextAdminLocsNearbyWarn                = "admin.locs.nearby_warning"
 	TextAdminLocsNearbyConfirm             = "admin.locs.nearby_confirm"
-	TextAdminLocsBtnOpenMap                = "admin.locs.btn_open_map"
 	TextAdminLocsMapTitle                  = "admin.locs.map_title"
 	TextAdminLocsMapEmpty                  = "admin.locs.map_empty"
+	TextAdminLocsErrDeleteHasBookings      = "admin.locs.err.delete_has_bookings"
 
 	// Users
 	TextAdminUsersListTitle          = "admin.users.list_title"
@@ -189,7 +197,7 @@ const (
 	TextBookCreateMsgNoLocs    = "book.create.msg_no_locs"
 	TextBookCreateBtnDates     = "book.create.btn_dates"
 	TextBookCreatePromptLoc    = "book.create.prompt_loc"
-	TextBookCreateBtnOpenMap   = "book.create.btn_open_map"
+	TextBookCreatePromptLocErr = "book.create.prompt_loc_err"
 	TextBookCreateMsgNoSlots   = "book.create.msg_no_slots"
 	TextBookCreateBtnLocs      = "book.create.btn_locs"
 	TextBookCreatePromptSlot   = "book.create.prompt_slot"
@@ -222,19 +230,21 @@ const (
 	TextBookDetMsgCheckinCb     = "book.det.msg_checkin_cb"
 	TextBookDetMsgGrabTitle     = "book.det.msg_grab_title"
 
-	// group
-	TextGroupUnathorizedChat = "group.unauthorized_chat"
-	TextGroupWelcomeUser     = "group.welcome_user"
+	// schedule
+	TextBookSchedulePromptLoc   = "book.schedule.prompt_loc"
+	TextBookScheduleEmptyForDay = "book.schedule.empty_for_day"
 
 	// errors
-	TextBookErrSlotTaken      = "book.err.slot_taken"
-	TextBookErrNoisyNeighbor  = "book.err.noisy_neighbor"
-	TextBookErrNoiseExceeded  = "book.err.noise_exceeded"
-	TextBookErrMaxActive      = "book.err.max_active"
-	TextBookErrMaxPerLoc      = "book.err.max_per_loc"
-	TextBookErrTooFarInFuture = "book.err.too_far"
-	TextBookErrTimeOverlap    = "book.err.time_overlap"
-	TextBookErrInvalidTime    = "book.err.invalid_time"
+	TextBookErrSlotTaken        = "book.err.slot_taken"
+	TextBookErrNoisyNeighbor    = "book.err.noisy_neighbor"
+	TextBookErrNoiseExceeded    = "book.err.noise_exceeded"
+	TextBookErrMaxActive        = "book.err.max_active"
+	TextBookErrMaxPerLoc        = "book.err.max_per_loc"
+	TextBookErrTooFarInFuture   = "book.err.too_far"
+	TextBookErrTimeOverlap      = "book.err.time_overlap"
+	TextBookErrInvalidTime      = "book.err.invalid_time"
+	TextBookErrInvalidStatus    = "book.err.invalid_status"
+	TextBookErrHotSlotsDisabled = "book.err.hot_slots_disabled"
 )
 
 // worker

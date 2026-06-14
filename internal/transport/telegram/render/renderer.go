@@ -3,6 +3,7 @@ package render
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/k4sper1love/buskr/internal/mdutil"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
@@ -92,7 +93,11 @@ func (r *Renderer) Render(c telebot.Context, rep response.Reply) error {
 	case response.KindSend:
 		return c.Send(text, opts...)
 	case response.KindEdit:
-		return c.Edit(text, opts...)
+		err := c.Edit(text, opts...)
+		if err != nil && strings.Contains(err.Error(), "message is not modified") {
+			return nil
+		}
+		return err
 	case response.KindSendImage:
 		photo := &telebot.Photo{
 			File:    telebot.FromReader(bytes.NewReader(rep.Image)),

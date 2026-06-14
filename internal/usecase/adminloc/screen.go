@@ -76,7 +76,7 @@ func (uc *Usecase) List(ctx context.Context, actor *user.User, page int) (respon
 	if webAppURL != "" {
 		rows = append(rows, []response.Button{
 			{
-				Text:      response.Text{Key: keys.TextAdminLocsBtnMap},
+				Text:      response.Text{Key: keys.TextCommonBtnOpenMap},
 				WebAppURL: webAppURL,
 			},
 		})
@@ -502,7 +502,7 @@ func (uc *Usecase) DeleteExecuted(ctx context.Context, actor *user.User, locID s
 	if err != nil {
 		return response.Reply{
 			Kind: response.KindEdit,
-			Text: response.Text{Fallback: "❌ Невозможно удалить локацию, так как на неё уже есть бронирования. Вместо этого вы можете её отключить."},
+			Text: response.Text{Key: keys.TextAdminLocsErrDeleteHasBookings},
 			Keyboard: response.Keyboard{
 				InlineRows: [][]response.Button{{{
 					Text: response.Text{Key: keys.TextCommonBtnBack},

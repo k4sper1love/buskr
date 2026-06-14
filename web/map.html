@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Select Spot - Buskr</title>
-  
+
   <!-- Modern Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-  
+
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
   <style>
     /* Premium Styling System */
     :root {
@@ -26,14 +27,14 @@
       --text-muted: #9ca3af;
       --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
-    
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
     }
-    
+
     body {
       font-family: 'Outfit', sans-serif;
       background-color: var(--bg-color);
@@ -43,7 +44,7 @@
       display: flex;
       flex-direction: column;
     }
-    
+
     /* Map Container */
     #map {
       flex-grow: 1;
@@ -51,7 +52,7 @@
       height: 100%;
       z-index: 1;
     }
-    
+
     /* Loading Spinner */
     #loader {
       position: absolute;
@@ -67,7 +68,7 @@
       z-index: 9999;
       transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    
+
     .spinner {
       width: 50px;
       height: 50px;
@@ -77,11 +78,13 @@
       animation: spin 1s ease-in-out infinite;
       margin-bottom: 20px;
     }
-    
+
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
-    
+
     /* Glassmorphism Header */
     .header {
       position: absolute;
@@ -101,7 +104,7 @@
       justify-content: space-between;
       pointer-events: none;
     }
-    
+
     .header-title {
       font-size: 1.1rem;
       font-weight: 700;
@@ -110,7 +113,7 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    
+
     .header-badge {
       font-size: 0.75rem;
       font-weight: 600;
@@ -120,11 +123,12 @@
       padding: 4px 10px;
       border-radius: 20px;
     }
-    
+
     /* Glassmorphism Details Bottom Sheet */
     .detail-card {
       position: absolute;
-      bottom: -100%; /* Hidden off-screen initially */
+      bottom: -100%;
+      /* Hidden off-screen initially */
       left: 0;
       right: 0;
       margin: 0 auto;
@@ -142,11 +146,11 @@
       flex-direction: column;
       gap: 16px;
     }
-    
+
     .detail-card.active {
       bottom: 0;
     }
-    
+
     .detail-card-handle {
       width: 40px;
       height: 4px;
@@ -154,26 +158,26 @@
       border-radius: 2px;
       margin: -12px auto 8px auto;
     }
-    
+
     .spot-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
     }
-    
+
     .spot-title {
       font-size: 1.25rem;
       font-weight: 700;
       color: #ffffff;
       line-height: 1.3;
     }
-    
+
     .spot-desc {
       font-size: 0.9rem;
       color: var(--text-muted);
       line-height: 1.5;
     }
-    
+
     /* Buttons with gradients and scale animations */
     .btn-select {
       width: 100%;
@@ -193,12 +197,12 @@
       align-items: center;
       gap: 8px;
     }
-    
+
     .btn-select:active {
       transform: scale(0.97);
       box-shadow: 0 2px 6px 0 rgba(79, 70, 229, 0.2);
     }
-    
+
     /* Custom Marker Styling */
     .custom-marker {
       display: flex;
@@ -213,7 +217,7 @@
       box-shadow: 0 4px 10px rgba(79, 70, 229, 0.4);
       animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    
+
     .custom-marker-inner {
       width: 10px;
       height: 10px;
@@ -221,32 +225,45 @@
       border-radius: 50%;
       transform: rotate(45deg);
     }
-    
+
     .custom-marker.selected {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
       border-color: #ffffff;
       transform: rotate(-45deg) scale(1.15);
     }
-    
+
     .custom-marker.inactive {
       background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
       box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
     }
-    
+
     .custom-marker.locked {
       background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%);
       box-shadow: 0 4px 10px rgba(75, 85, 99, 0.4);
       border-color: #9ca3af;
     }
-    
+
     @keyframes bounceIn {
-      0% { transform: scale(0.3) rotate(-45deg); opacity: 0; }
-      50% { transform: scale(1.05) rotate(-45deg); }
-      70% { transform: scale(0.9) rotate(-45deg); }
-      100% { transform: scale(1) rotate(-45deg); opacity: 1; }
+      0% {
+        transform: scale(0.3) rotate(-45deg);
+        opacity: 0;
+      }
+
+      50% {
+        transform: scale(1.05) rotate(-45deg);
+      }
+
+      70% {
+        transform: scale(0.9) rotate(-45deg);
+      }
+
+      100% {
+        transform: scale(1) rotate(-45deg);
+        opacity: 1;
+      }
     }
-    
+
     /* Empty State View */
     .empty-state {
       padding: 40px 20px;
@@ -254,7 +271,7 @@
       color: var(--text-muted);
       font-size: 0.95rem;
     }
-    
+
     /* Permanent Tooltips and Zoom Controls offset */
     .spot-tooltip {
       background-color: rgba(26, 29, 38, 0.95);
@@ -268,15 +285,18 @@
       box-shadow: var(--shadow);
       white-space: nowrap;
     }
+
     .leaflet-tooltip-top:before {
       border-top-color: rgba(26, 29, 38, 0.95) !important;
     }
+
     .leaflet-top.leaflet-right {
       margin-top: 80px !important;
       margin-right: 15px !important;
     }
   </style>
 </head>
+
 <body>
 
   <!-- Loading View -->
@@ -299,7 +319,8 @@
     <div class="detail-card-handle"></div>
     <div class="spot-header">
       <div class="spot-title" id="spot-title">Spot Name</div>
-      <span class="header-badge" id="spot-status-badge" style="display: none; font-size: 0.75rem; padding: 2px 10px; margin-left: 10px;"></span>
+      <span class="header-badge" id="spot-status-badge"
+        style="display: none; font-size: 0.75rem; padding: 2px 10px; margin-left: 10px;"></span>
     </div>
     <div class="spot-desc" id="spot-desc">Spot detailed description will be rendered right here.</div>
     <button class="btn-select" id="btn-select">
@@ -310,9 +331,9 @@
   <!-- Telegram WebApp JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-          
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
   <script>
     let map;
     let selectedMarker = null;
@@ -326,7 +347,7 @@
 
     // Determine language from Telegram WebApp
     const userLang = (tg.initDataUnsafe?.user?.language_code || 'ru').toLowerCase();
-    
+
     // Localization dictionary without hardcoded app branding
     const locales = {
       ru: {
@@ -430,7 +451,7 @@
 
       // Render markers for all available spots
       const bounds = [];
-      
+
       spots.forEach(spot => {
         // Create custom Leaflet DivIcon marker (grey/locked for unavailable)
         let markerClass = 'custom-marker';
@@ -448,7 +469,7 @@
         });
 
         const marker = L.marker([spot.lat, spot.lon], { icon }).addTo(map);
-        
+
         // Add permanent spot name labels on the map
         marker.bindTooltip(spot.name, {
           permanent: true,
@@ -462,7 +483,7 @@
         markersList.push(marker);
 
         // Marker click event handler
-        marker.on('click', function(e) {
+        marker.on('click', function (e) {
           // Reset styling for previous selected marker
           if (selectedMarker) {
             const innerElement = selectedMarker.getElement().querySelector('.custom-marker');
@@ -485,7 +506,7 @@
 
           // Show details sliding sheet
           document.getElementById('spot-title').innerText = spot.name;
-          
+
           let descHtml = spot.desc || t.noDesc;
           if (spot.max_noise) {
             const noiseLabels = {
@@ -534,10 +555,10 @@
       }
 
       // Dismiss details card when clicking on empty map space
-      map.on('click', function(e) {
+      map.on('click', function (e) {
         // Don't close if clicking marker directly (handled in marker click)
         if (e.originalEvent.target.closest('.custom-leaflet-marker')) return;
-        
+
         document.getElementById('detail-card').classList.remove('active');
         if (selectedMarker) {
           const innerElement = selectedMarker.getElement().querySelector('.custom-marker');
@@ -556,7 +577,7 @@
     }
 
     // Confirm spot selection and send data back to Telegram bot
-    document.getElementById('btn-select').addEventListener('click', function() {
+    document.getElementById('btn-select').addEventListener('click', function () {
       if (!selectedSpot) return;
 
       // Trigger final success haptic feedback
@@ -565,7 +586,12 @@
       }
 
       // Redirect back using t.me link
-      const prefix = mode === 'admin' ? 'admloc_' : 'loc_';
+      let prefix = 'loc_';
+      if (mode == 'admin') {
+        prefix = 'admloc_';
+      } else if (mode == 'schedule') {
+        prefix = "locsch_"
+      }
       tg.openTelegramLink("https://t.me/" + botUsername + "?start=" + prefix + selectedSpot.id);
 
       // Close WebApp
@@ -588,4 +614,5 @@
     }
   </script>
 </body>
+
 </html>

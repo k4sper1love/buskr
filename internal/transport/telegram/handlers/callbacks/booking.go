@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strconv"
 
-	bookingDomain "github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/config"
+	bookingDomain "github.com/k4sper1love/buskr/internal/domain/booking"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/ctxkey"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/render"
 	"github.com/k4sper1love/buskr/internal/usecase/auth"
@@ -348,7 +348,7 @@ func (h *Booking) HandleBookingCheckIn(c telebot.Context) error {
 		var alertText string
 		if errors.Is(err, bookingDomain.ErrInvalidStatus) {
 			alertText = h.renderer.Translate(lang, response.Text{
-				Key:      "book.err.invalid_status",
+				Key:      keys.TextBookErrInvalidStatus,
 				Fallback: "Чек-ин недоступен: время вышло или бронь отменена",
 			})
 			_ = c.Respond(&telebot.CallbackResponse{Text: alertText, ShowAlert: true})
@@ -391,7 +391,7 @@ func (h *Booking) HandleBookingGrabHotSlot(c telebot.Context) error {
 			lang = s.LanguageCode
 		}
 		alertText := h.renderer.Translate(lang, response.Text{
-			Key:      "book.err.hot_slots_disabled",
+			Key:      keys.TextBookErrHotSlotsDisabled,
 			Fallback: "Горящие слоты временно отключены / Hot slots are temporarily disabled",
 		})
 		return c.Respond(&telebot.CallbackResponse{Text: alertText, ShowAlert: true})
@@ -492,4 +492,57 @@ func (h *Booking) HandleBookingCancelFlow(c telebot.Context) error {
 	startRep.Kind = response.KindEdit
 
 	return h.renderer.Render(c, startRep)
+}
+
+func (h *Booking) HandleBookScheduleStart(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	rep, err := h.uc.ScheduleStart(ctx, u)
+	if err != nil {
+		return err
+	}
+
+	_ = h.uc.SaveBookingMessageID(ctx, u.TelegramID, c.Message().ID)
+
+	_ = c.Respond(&telebot.CallbackResponse{})
+	return h.renderer.Render(c, rep)
+}
+
+func (h *Booking) HandleBookScheduleLocSel(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	locID := c.Args()[0]
+	rep, err := h.uc.ScheduleForUser(ctx, u, locID, "")
+	if err != nil {
+		return err
+	}
+
+	_ = c.Respond(&telebot.CallbackResponse{})
+	return h.renderer.Render(c, rep)
+}
+
+func (h *Booking) HandleBookScheduleDaySel(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	locID := c.Args()[0]
+	dateStr := c.Args()[1]
+	rep, err := h.uc.ScheduleForUser(ctx, u, locID, dateStr)
+	if err != nil {
+		return err
+	}
+
+	_ = c.Respond(&telebot.CallbackResponse{})
+	return h.renderer.Render(c, rep)
 }

@@ -100,16 +100,6 @@ func (uc *Usecase) Book(ctx context.Context, u *user.User) (response.Reply, erro
 	}, nil
 }
 
-type webAppLocation struct {
-	ID       string  `json:"id"`
-	Name     string  `json:"name"`
-	Desc     string  `json:"desc"`
-	Lat      float64 `json:"lat"`
-	Lon      float64 `json:"lon"`
-	MaxNoise string  `json:"max_noise,omitempty"`
-	Allowed  *bool   `json:"allowed,omitempty"`
-}
-
 func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) (response.Reply, error) {
 	st, err := uc.state.GetState(ctx, u.TelegramID)
 	if err != nil {
@@ -192,7 +182,7 @@ func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) 
 	if webAppURL != "" {
 		rows = append(rows, []response.Button{
 			{
-				Text:      response.Text{Key: keys.TextBookCreateBtnOpenMap},
+				Text:      response.Text{Key: keys.TextCommonBtnOpenMap},
 				WebAppURL: webAppURL,
 			},
 		})
@@ -202,7 +192,8 @@ func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) 
 		rows = append(rows, []response.Button{
 			{
 				Text: response.Text{
-					Fallback: fmt.Sprintf("🕒 Последнее место: %s", lastLoc.Name),
+					Key:  keys.TextCommonBtnLastLoc,
+					Args: map[string]any{"name": lastLoc.Name},
 				},
 				Data: response.CallbackData{
 					Unique: keys.BtnBookLocSel,
@@ -658,7 +649,7 @@ func (uc *Usecase) ProcessMapSelection(ctx context.Context, u *user.User, locID 
 		if err != nil {
 			return response.Reply{}, err
 		}
-		reply.Text.Fallback = "⚠️ Please select a valid location.\n\n" + reply.Text.Fallback
+		reply.Text.Key = keys.TextBookCreatePromptLocErr
 		return reply, nil
 	}
 

@@ -34,6 +34,10 @@ const (
 	BtnBookGrabHot    = "bk_hot"
 	BtnBookDismissHot = "bk_dmh"
 
+	BtnBookSchedule       = "bk_sch_st"
+	BtnBookScheduleLocSel = "bk_sch_loc"
+	BtnBookScheduleDaySel = "bk_sch_day"
+
 	BtnBookBackToLocs  = "bk_b_loc"
 	BtnBookBackToSlots = "bk_b_slt"
 
@@ -44,22 +48,22 @@ const (
 	BtnAdminInvGen    = "ad_ign"
 
 	// admin loc
-	BtnAdminLocs          = "ad_loc"
-	BtnAdminLocDet        = "ad_ldt"
-	BtnAdminLocTog        = "ad_ltg"
-	BtnAdminLocAdd        = "ad_lad"
-	BtnAdminLocNoise      = "ad_lno"
-	BtnAdminLocCancel     = "ad_lcn"
-	BtnAdminLocEdit       = "ad_led"
-	BtnAdminLocEditName   = "ad_lena"
-	BtnAdminLocEditDesc   = "ad_leds"
-	BtnAdminLocEditNoise      = "ad_leno"
-	BtnAdminLocEditNoiseMenu  = "ad_leno_m"
-	BtnAdminLocEditGeo        = "ad_lege"
-	BtnAdminLocEditCancel     = "ad_lecn"
-	BtnAdminLocSchedule   = "ad_lsc"
-	BtnAdminLocConfirm    = "ad_lcnf"
-	BtnAdminLocDel        = "ad_ldel"
+	BtnAdminLocs             = "ad_loc"
+	BtnAdminLocDet           = "ad_ldt"
+	BtnAdminLocTog           = "ad_ltg"
+	BtnAdminLocAdd           = "ad_lad"
+	BtnAdminLocNoise         = "ad_lno"
+	BtnAdminLocCancel        = "ad_lcn"
+	BtnAdminLocEdit          = "ad_led"
+	BtnAdminLocEditName      = "ad_lena"
+	BtnAdminLocEditDesc      = "ad_leds"
+	BtnAdminLocEditNoise     = "ad_leno"
+	BtnAdminLocEditNoiseMenu = "ad_leno_m"
+	BtnAdminLocEditGeo       = "ad_lege"
+	BtnAdminLocEditCancel    = "ad_lecn"
+	BtnAdminLocSchedule      = "ad_lsc"
+	BtnAdminLocConfirm       = "ad_lcnf"
+	BtnAdminLocDel           = "ad_ldel"
 
 	// admin user
 	BtnAdminUsers            = "ad_usr"
@@ -74,8 +78,8 @@ const (
 	BtnAdminAppAppr          = "ad_aap"
 
 	// admin moderation
-	BtnAdminAppRej    = "ad_arj"
-	BtnAdminNoiseAppr = "ad_nap"
-	BtnAdminNoiseRej  = "ad_nrj"
+	BtnAdminAppRej     = "ad_arj"
+	BtnAdminNoiseAppr  = "ad_nap"
+	BtnAdminNoiseRej   = "ad_nrj"
 	BtnAdminLocDelConf = "ad_ldel_c"
 )

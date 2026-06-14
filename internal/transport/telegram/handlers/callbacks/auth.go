@@ -43,7 +43,7 @@ func (h *Auth) HandleStart(c telebot.Context) error {
 	}
 
 	payload := c.Message().Payload
-	if strings.HasPrefix(payload, "admloc_") || strings.HasPrefix(payload, "loc_") {
+	if strings.HasPrefix(payload, "admloc_") || strings.HasPrefix(payload, "loc_") || strings.HasPrefix(payload, "locsch_") {
 		_ = c.Delete()
 
 	}
@@ -76,6 +76,28 @@ func (h *Auth) HandleStart(c telebot.Context) error {
 		}
 
 		rep, err := h.bookingUc.ProcessMapSelection(ctx, u, locID)
+		if err != nil {
+			return err
+		}
+		if rep.IsEmpty() {
+			return nil
+		}
+		rep.Kind = response.KindSend
+		return h.renderer.Render(c, rep)
+	}
+
+	if strings.HasPrefix(payload, "locsch_") {
+		locID := strings.TrimPrefix(payload, "locsch_")
+
+		if msgID, err := h.bookingUc.GetBookingMessageID(ctx, u.TelegramID); err == nil && msgID != 0 {
+			_ = c.Bot().Delete(&telebot.Message{
+				ID:   msgID,
+				Chat: &telebot.Chat{ID: u.TelegramID},
+			})
+			_ = h.bookingUc.ClearBookingMessageID(ctx, u.TelegramID)
+		}
+
+		rep, err := h.bookingUc.ScheduleForUser(ctx, u, locID, "")
 		if err != nil {
 			return err
 		}

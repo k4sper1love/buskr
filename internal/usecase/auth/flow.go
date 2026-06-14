@@ -60,26 +60,32 @@ func (uc *Usecase) Start(ctx context.Context, u *user.User, payload string) (res
 		}, nil
 
 	case user.StatusActive:
-		rows := [][]response.Button{
+		var rows [][]response.Button
+
+		rows = append(rows, []response.Button{
 			{
-				{
-					Text: response.Text{Key: keys.TextAuthActiveBtnBook},
-					Data: response.CallbackData{Unique: keys.BtnBookStart},
-				},
+				Text: response.Text{Key: keys.TextAuthActiveBtnBook},
+				Data: response.CallbackData{Unique: keys.BtnBookStart},
+			},
+		})
+
+		rows = append(rows, []response.Button{
+			{
+				Text: response.Text{Key: keys.TextAuthActiveBtnSchedule},
+				Data: response.CallbackData{Unique: keys.BtnBookSchedule},
+			},
+		})
+
+		rows = append(rows, []response.Button{
+			{
+				Text: response.Text{Key: keys.TextAuthActiveBtnBookings},
+				Data: response.CallbackData{Unique: keys.BtnBookList},
 			},
 			{
-				{
-					Text: response.Text{Key: keys.TextAuthActiveBtnBookings},
-					Data: response.CallbackData{Unique: keys.BtnBookList},
-				},
+				Text: response.Text{Key: keys.TextAuthActiveBtnProfile},
+				Data: response.CallbackData{Unique: keys.BtnProfileMain},
 			},
-			{
-				{
-					Text: response.Text{Key: keys.TextAuthActiveBtnProfile},
-					Data: response.CallbackData{Unique: keys.BtnProfileMain},
-				},
-			},
-		}
+		})
 
 		if u.Role == user.RoleAdmin {
 			rows = append(rows, []response.Button{

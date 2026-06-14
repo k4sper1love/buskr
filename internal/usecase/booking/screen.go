@@ -2,11 +2,16 @@ package booking
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/domain/booking"
+	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
+	"github.com/k4sper1love/buskr/internal/mdutil"
 	"github.com/k4sper1love/buskr/internal/tz"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
@@ -204,5 +209,237 @@ func (uc *Usecase) GrabHotSlot(ctx context.Context, u *user.User, locID string, 
 				},
 			},
 		},
+	}, nil
+}
+
+func (uc *Usecase) ScheduleStart(ctx context.Context, u *user.User) (response.Reply, error) {
+	if u.Status != user.StatusActive {
+		return response.Reply{}, fmt.Errorf("user is not active")
+	}
+
+	locations, err := uc.locs.GetLocationsForMusicians(ctx)
+	if err != nil {
+		return response.Reply{}, err
+	}
+
+	var webAppLocs []webAppLocation
+	for _, loc := range locations {
+		webAppLocs = append(webAppLocs, webAppLocation{
+			ID:       loc.ID,
+			Name:     loc.Name,
+			Desc:     loc.Description,
+			Lat:      loc.Coords.Lat,
+			Lon:      loc.Coords.Lon,
+			MaxNoise: string(loc.MaxNoise),
+		})
+	}
+
+	var webAppURL string
+	if uc.webAppURL != "" && len(webAppLocs) > 0 {
+		jsonData, err := json.Marshal(webAppLocs)
+		if err == nil {
+			encoded := base64.URLEncoding.EncodeToString(jsonData)
+			webAppURL = fmt.Sprintf("%s?v=%d#bot=%s&mode=schedule&locs=%s", uc.webAppURL, time.Now().Unix(), uc.botUsername, encoded)
+		}
+	}
+
+	var lastLoc *location.Location
+	lastBooking, err := uc.bookings.GetLastBookingByUser(ctx, u.ID)
+	if err == nil && lastBooking != nil {
+		for _, loc := range locations {
+			if loc.ID == lastBooking.LocationID {
+				lastLoc = loc
+				break
+			}
+		}
+	}
+
+	var rows [][]response.Button
+	if webAppURL != "" {
+		rows = append(rows, []response.Button{
+			{
+				Text:      response.Text{Key: keys.TextCommonBtnOpenMap},
+				WebAppURL: webAppURL,
+			},
+		})
+	}
+
+	if lastLoc != nil {
+		rows = append(rows, []response.Button{
+			{
+				Text: response.Text{
+					Key:  keys.TextCommonBtnLastLoc,
+					Args: map[string]any{"name": lastLoc.Name},
+				},
+				Data: response.CallbackData{
+					Unique: keys.BtnBookScheduleLocSel,
+					Args:   []string{lastLoc.ID},
+				},
+			},
+		})
+	}
+
+	rows = append(rows, []response.Button{
+		{
+			Text: response.Text{Key: keys.TextCommonBtnBack},
+			Data: response.CallbackData{Unique: keys.BtnCommonMenu},
+		},
+	})
+
+	return response.Reply{
+		Kind: response.KindEdit,
+		Text: response.Text{Key: keys.TextBookSchedulePromptLoc},
+		Keyboard: response.Keyboard{
+			InlineRows: rows,
+		},
+	}, nil
+}
+
+func (uc *Usecase) ScheduleForUser(ctx context.Context, u *user.User, locID string, dateStr string) (response.Reply, error) {
+	loc, err := uc.locs.GetByID(ctx, locID)
+	if err != nil {
+		return response.Reply{}, err
+	}
+
+	targetDate := tz.Now()
+	if dateStr != "" {
+		if parsed, err := time.ParseInLocation("2006-01-02", dateStr, tz.Location()); err == nil {
+			targetDate = parsed
+		}
+	}
+
+	bookings, err := uc.bookings.GetScheduleForLocation(ctx, locID, targetDate)
+	if err != nil {
+		return response.Reply{Kind: response.KindEdit, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+	}
+
+	now := tz.Now()
+	var rows [][]response.Button
+
+	for i := 0; i < uc.maxAdvanceDays; i++ {
+		tDate := now.AddDate(0, 0, i)
+		dateValue := tDate.Format("2006-01-02")
+		dateHuman := tDate.Format("02.01")
+
+		isActive := tDate.Year() == targetDate.Year() && tDate.YearDay() == targetDate.YearDay()
+
+		var key string
+		args := map[string]any{"date": dateHuman}
+		var subKeyArgs []string
+
+		switch i {
+		case 0:
+			if isActive {
+				key = keys.TextAdminLocsScheduleLblTodayActive
+			} else {
+				key = keys.TextBookCreateLblToday
+			}
+		case 1:
+			if isActive {
+				key = keys.TextAdminLocsScheduleLblTomorrowActive
+			} else {
+				key = keys.TextBookCreateLblTomorrow
+			}
+		default:
+			weekdayKeys := []string{
+				keys.TextCommonWeekdaySun,
+				keys.TextCommonWeekdayMon,
+				keys.TextCommongWeekdayTue,
+				keys.TextCommonWeekdayWed,
+				keys.TextCommonWeekdayThu,
+				keys.TextCommonWeekdayFri,
+				keys.TextCommonWeekdaySat,
+			}
+			args["weekday"] = weekdayKeys[tDate.Weekday()]
+			subKeyArgs = []string{"weekday"}
+			if isActive {
+				key = keys.TextAdminLocsScheduleLblOtherActive
+			} else {
+				key = keys.TextBookCreateLblOther
+			}
+		}
+
+		rows = append(rows, []response.Button{
+			{
+				Text: response.Text{
+					Key:        key,
+					Args:       args,
+					SubKeyArgs: subKeyArgs,
+				},
+				Data: response.CallbackData{
+					Unique: keys.BtnBookScheduleDaySel,
+					Args:   []string{locID, dateValue},
+				},
+			},
+		})
+	}
+
+	rows = append(rows, []response.Button{
+		{
+			Text: response.Text{Key: keys.TextCommonBtnBack},
+			Data: response.CallbackData{Unique: keys.BtnBookSchedule},
+		},
+	})
+
+	keyboard := response.Keyboard{
+		InlineRows: rows,
+	}
+
+	var active []*booking.Booking
+	for _, b := range bookings {
+		if b.Status == booking.StatusPending || b.Status == booking.StatusActive {
+			active = append(active, b)
+		}
+	}
+
+	if len(active) == 0 {
+		return response.Reply{
+			Kind: response.KindEdit,
+			Text: response.Text{
+				Key: keys.TextBookScheduleEmptyForDay,
+				Args: map[string]any{
+					"name": loc.Name,
+					"date": targetDate.Format("02.01.2006"),
+				},
+			},
+			Keyboard: keyboard,
+		}, nil
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("📅 <b>%s</b>\n%s\n\n", loc.Name, targetDate.Format("02.01.2006")))
+	for _, b := range active {
+		icon := "⏳"
+		if b.Status == booking.StatusActive {
+			icon = "✅"
+		}
+
+		var userPart string
+		uData, err := uc.users.GetByID(ctx, b.UserID)
+		if err == nil && uData != nil {
+			var displayName string
+			if uData.Name != "" {
+				displayName = uData.Name
+			} else {
+				displayName = "User"
+			}
+			if uData.Username != "" {
+				displayName += fmt.Sprintf(" (@%s)", uData.Username)
+			}
+			userPart = " - " + mdutil.Escape(displayName)
+		}
+
+		sb.WriteString(fmt.Sprintf("%s <code>%s – %s</code> %s\n",
+			icon,
+			tz.In(b.StartTime).Format("15:04"),
+			tz.In(b.EndTime).Format("15:04"),
+			userPart,
+		))
+	}
+
+	return response.Reply{
+		Kind:     response.KindEdit,
+		Text:     response.Text{Fallback: sb.String()},
+		Keyboard: keyboard,
 	}, nil
 }

@@ -78,7 +78,7 @@ func NewBot(
 
 	// usecases
 	authUc := auth.NewUsecase(state, users, 1*time.Hour, b.Me.FirstName)
-	bookingUc := bookingUsecase.NewUsecase(state, locs, bookings, 1*time.Hour, maxAdvanceDays, webAppURL, b.Me.Username)
+	bookingUc := bookingUsecase.NewUsecase(state, locs, bookings, users, 1*time.Hour, maxAdvanceDays, webAppURL, b.Me.Username)
 	adminUc := admin.NewUsecase(state, users, 1*time.Hour, 1)
 	adminlocUc := adminloc.NewUsecase(state, locs, bookings, users, mapimg.NewClient(mapsAPIKey), 1*time.Hour, maxAdvanceDays, webAppURL, b.Me.Username)
 	adminuserUc := adminuser.NewUsecase(state, users, 1*time.Hour)
