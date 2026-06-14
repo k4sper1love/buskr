@@ -236,3 +236,57 @@ func (h *AdminUser) HandleAdminUserNoiseSet(c telebot.Context) error {
 
 	return h.renderer.Render(c, rep)
 }
+
+func (h *AdminUser) HandleAdminPromote(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	targetID := args[0]
+
+	rep, err := h.uc.Promote(ctx, u, targetID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+
+	return h.renderer.Render(c, rep)
+}
+
+func (h *AdminUser) HandleAdminDemote(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	targetID := args[0]
+
+	rep, err := h.uc.Demote(ctx, u, targetID)
+	if err != nil {
+		return err
+	}
+
+	c.Respond(&telebot.CallbackResponse{})
+	if rep.IsEmpty() {
+		return nil
+	}
+
+	return h.renderer.Render(c, rep)
+}

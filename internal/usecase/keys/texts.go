@@ -165,6 +165,8 @@ const (
 	TextAdminUsersNoiseMenuTitle     = "admin.users.noise_menu_title"
 	TextAdminUsersBtnBan             = "admin.users.btn_ban"
 	TextAdminUsersBtnUnban           = "admin.users.btn_unban"
+	TextAdminUsersBtnPromote         = "admin.users.btn_promote"
+	TextAdminUsersBtnDemote          = "admin.users.btn_demote"
 	TextAdminUsersMsgIsAdmin         = "admin.users.msg_is_admin"
 	TextAdminUsersMsgBanSuccess      = "admin.users.msg_ban_success"
 	TextAdminUsersMsgUnbanSuccess    = "admin.users.msg_unban_success"

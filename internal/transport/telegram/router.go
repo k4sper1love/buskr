@@ -106,6 +106,8 @@ func (r *Router) RegisterRoutes() {
 	r.b.bot.Handle("\f"+keys.BtnAdminUserNoiseSet, r.handlers.adminUser.HandleAdminUserNoiseSet)
 	r.b.bot.Handle("\f"+keys.BtnAdminUserBan, r.handlers.adminUser.HandleAdminBan)
 	r.b.bot.Handle("\f"+keys.BtnAdminUserUnban, r.handlers.adminUser.HandleAdminUnban)
+	r.b.bot.Handle("\f"+keys.BtnAdminUserPromote, r.handlers.adminUser.HandleAdminPromote)
+	r.b.bot.Handle("\f"+keys.BtnAdminUserDemote, r.handlers.adminUser.HandleAdminDemote)
 	r.b.bot.Handle("\fnoop", func(c telebot.Context) error {
 		return c.Respond(&telebot.CallbackResponse{})
 	})

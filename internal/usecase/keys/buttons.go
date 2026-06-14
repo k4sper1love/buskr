@@ -75,6 +75,8 @@ const (
 	BtnAdminUserNoiseSet     = "ad_usns"
 	BtnAdminUserBan          = "ad_ubn"
 	BtnAdminUserUnban        = "ad_uub"
+	BtnAdminUserPromote      = "ad_upr"
+	BtnAdminUserDemote       = "ad_ude"
 	BtnAdminAppAppr          = "ad_aap"
 
 	// admin moderation

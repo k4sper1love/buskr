@@ -167,13 +167,6 @@ func (uc *Usecase) UserDetail(ctx context.Context, actor *user.User, targetID st
 		stats = &user.UserStats{UserID: target.ID}
 	}
 
-	actionText := keys.TextAdminUsersBtnBan
-	actionUnique := keys.BtnAdminUserBan
-	if target.Status == user.StatusBanned {
-		actionText = keys.TextAdminUsersBtnUnban
-		actionUnique = keys.BtnAdminUserUnban
-	}
-
 	usernameDisplay := target.Username
 	if usernameDisplay != "" {
 		if !strings.HasPrefix(usernameDisplay, "@") {
@@ -182,6 +175,52 @@ func (uc *Usecase) UserDetail(ctx context.Context, actor *user.User, targetID st
 	} else {
 		usernameDisplay = "—"
 	}
+
+	var keyboardRows [][]response.Button
+
+	keyboardRows = append(keyboardRows, []response.Button{
+		{
+			Text: response.Text{Key: keys.TextAdminUsersBtnChangeNoise},
+			Data: response.CallbackData{Unique: keys.BtnAdminUserNoiseMenu, Args: []string{target.ID}},
+		},
+	})
+
+	if target.ID != actor.ID {
+		roleText := keys.TextAdminUsersBtnPromote
+		roleUnique := keys.BtnAdminUserPromote
+		if target.Role == user.RoleAdmin {
+			roleText = keys.TextAdminUsersBtnDemote
+			roleUnique = keys.BtnAdminUserDemote
+		}
+		keyboardRows = append(keyboardRows, []response.Button{
+			{
+				Text: response.Text{Key: roleText},
+				Data: response.CallbackData{Unique: roleUnique, Args: []string{target.ID}},
+			},
+		})
+	}
+
+	if target.Role != user.RoleAdmin {
+		actionText := keys.TextAdminUsersBtnBan
+		actionUnique := keys.BtnAdminUserBan
+		if target.Status == user.StatusBanned {
+			actionText = keys.TextAdminUsersBtnUnban
+			actionUnique = keys.BtnAdminUserUnban
+		}
+		keyboardRows = append(keyboardRows, []response.Button{
+			{
+				Text: response.Text{Key: actionText},
+				Data: response.CallbackData{Unique: actionUnique, Args: []string{target.ID}},
+			},
+		})
+	}
+
+	keyboardRows = append(keyboardRows, []response.Button{
+		{
+			Text: response.Text{Key: keys.TextCommonBtnBack},
+			Data: response.CallbackData{Unique: keys.BtnAdminUsers},
+		},
+	})
 
 	return response.Reply{
 		Kind: response.KindEdit,
@@ -202,24 +241,7 @@ func (uc *Usecase) UserDetail(ctx context.Context, actor *user.User, targetID st
 			SubKeyArgs: []string{"role", "status", "noise"},
 		},
 		Keyboard: response.Keyboard{
-			InlineRows: [][]response.Button{
-				{
-					{
-						Text: response.Text{Key: keys.TextAdminUsersBtnChangeNoise},
-						Data: response.CallbackData{Unique: keys.BtnAdminUserNoiseMenu, Args: []string{target.ID}},
-					},
-				},
-				{
-					{
-						Text: response.Text{Key: actionText},
-						Data: response.CallbackData{Unique: actionUnique, Args: []string{target.ID}},
-					},
-					{
-						Text: response.Text{Key: keys.TextCommonBtnBack},
-						Data: response.CallbackData{Unique: keys.BtnAdminUsers},
-					},
-				},
-			},
+			InlineRows: keyboardRows,
 		},
 	}, nil
 }
