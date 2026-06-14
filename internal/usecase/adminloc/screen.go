@@ -137,12 +137,12 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 			InlineRows: [][]response.Button{
 				{
 					{
-						Text: response.Text{Key: toogleKey},
-						Data: response.CallbackData{Unique: keys.BtnAdminLocTog, Args: []string{loc.ID}},
+						Text: response.Text{Key: keys.TextBookCreateBtn2GIS},
+						URL:  map2GISURL,
 					},
 					{
-						Text: response.Text{Key: keys.TextAdminLocsBtnEdit},
-						Data: response.CallbackData{Unique: keys.BtnAdminLocEdit, Args: []string{loc.ID}},
+						Text: response.Text{Key: keys.TextBookCreateBtnYandex},
+						URL:  mapYandexURL,
 					},
 				},
 				{
@@ -153,12 +153,12 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 				},
 				{
 					{
-						Text: response.Text{Key: keys.TextBookCreateBtn2GIS},
-						URL:  map2GISURL,
+						Text: response.Text{Key: keys.TextAdminLocsBtnEdit},
+						Data: response.CallbackData{Unique: keys.BtnAdminLocEdit, Args: []string{loc.ID}},
 					},
 					{
-						Text: response.Text{Key: keys.TextBookCreateBtnYandex},
-						URL:  mapYandexURL,
+						Text: response.Text{Key: toogleKey},
+						Data: response.CallbackData{Unique: keys.BtnAdminLocTog, Args: []string{loc.ID}},
 					},
 				},
 				{
