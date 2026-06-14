@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 )
@@ -26,6 +27,12 @@ type Users interface {
 	GenerateInvite(ctx context.Context, createdBy string, noiseLevel user.NoiseLevel, expirationHours int) (*user.Invite, error)
 }
 
+type Locations interface {
+	GetByID(ctx context.Context, id string) (*location.Location, error)
+	ChangeStatus(ctx context.Context, id string, status location.Status) error
+	DeleteLocation(ctx context.Context, id string) error
+}
+
 type UserNotification struct {
 	TelegramID int64
 	Reply      response.Reply
@@ -40,14 +47,16 @@ type ModerationResult struct {
 type Usecase struct {
 	state     StateStore
 	users     Users
+	locs      Locations
 	ttl       time.Duration
 	inviteTTL int
 }
 
-func NewUsecase(state StateStore, users Users, ttl time.Duration, inviteTTL int) *Usecase {
+func NewUsecase(state StateStore, users Users, locs Locations, ttl time.Duration, inviteTTL int) *Usecase {
 	return &Usecase{
 		state:     state,
 		users:     users,
+		locs:      locs,
 		ttl:       ttl,
 		inviteTTL: inviteTTL,
 	}

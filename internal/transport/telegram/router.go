@@ -39,6 +39,7 @@ func (r *Router) RegisterRoutes() {
 
 	// commands
 	r.b.bot.Handle("/start", r.handlers.auth.HandleStart)
+	r.b.bot.Handle("/help", r.handlers.auth.HandleHelp)
 
 	// fsm message handlers
 	r.b.bot.Handle(telebot.OnText, r.fsm.HandleText)
@@ -59,6 +60,8 @@ func (r *Router) RegisterRoutes() {
 	r.b.bot.Handle("\f"+keys.BtnAdminAppRej, r.handlers.admin.HandleAdminRejectApplication)
 	r.b.bot.Handle("\f"+keys.BtnAdminNoiseAppr, r.handlers.admin.HandleAdminApproveNoiseUpgrade)
 	r.b.bot.Handle("\f"+keys.BtnAdminNoiseRej, r.handlers.admin.HandleAdminRejectNoiseUpgrade)
+	r.b.bot.Handle("\f"+keys.BtnAdminLocSuggestAppr, r.handlers.admin.HandleAdminLocSuggestApprove)
+	r.b.bot.Handle("\f"+keys.BtnAdminLocSuggestRej, r.handlers.admin.HandleAdminLocSuggestReject)
 
 	// profile
 	r.b.bot.Handle("\f"+keys.BtnProfileMain, r.handlers.profile.HandleProfile)
@@ -128,6 +131,12 @@ func (r *Router) RegisterRoutes() {
 	r.b.bot.Handle("\f"+keys.BtnBookLocSel, r.handlers.booking.HandleBookLocationSelected)
 	r.b.bot.Handle("\f"+keys.BtnBookSlotSel, r.handlers.booking.HandleBookSlotSelected)
 	r.b.bot.Handle("\f"+keys.BtnBookDurSel, r.handlers.booking.HandleBookDurationSelected)
+
+	// suggest location flow
+	r.b.bot.Handle("\f"+keys.BtnSuggestLocStart, r.handlers.booking.HandleSuggestLocStart)
+	r.b.bot.Handle("\f"+keys.BtnSuggestLocNoise, r.handlers.booking.HandleSuggestLocNoise)
+	r.b.bot.Handle("\f"+keys.BtnSuggestLocConfirm, r.handlers.booking.HandleSuggestLocConfirm)
+	r.b.bot.Handle("\f"+keys.BtnSuggestLocCancel, r.handlers.booking.HandleSuggestLocCancel)
 
 	// fsm backward navigation
 	r.b.bot.Handle("\f"+keys.BtnBookBackToLocs, r.handlers.booking.HandleBookingBackToLocs)

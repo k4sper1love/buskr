@@ -84,4 +84,14 @@ const (
 	BtnAdminNoiseAppr  = "ad_nap"
 	BtnAdminNoiseRej   = "ad_nrj"
 	BtnAdminLocDelConf = "ad_ldel_c"
+
+	// suggest location
+	BtnSuggestLocStart   = "sg_loc_st"
+	BtnSuggestLocNoise   = "sg_loc_no"
+	BtnSuggestLocCancel  = "sg_loc_cn"
+	BtnSuggestLocConfirm = "sg_loc_cnf"
+
+	// admin loc suggest moderation
+	BtnAdminLocSuggestAppr = "ad_lsg_ap"
+	BtnAdminLocSuggestRej  = "ad_lsg_rj"
 )

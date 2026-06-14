@@ -77,15 +77,34 @@ func main() {
 	})
 	locService := location.NewService(locRepo)
 	bookingService := booking.NewService(bookingRepo, userService, locService, booking.Config{
-		MaxActiveBookings:      cfg.Booking.MaxActive,
-		AdminMaxActiveBookings: cfg.Booking.AdminMaxActive,
-		MaxBookingsPerLocation: cfg.Booking.MaxPerLocationAtDay,
-		MaxAdvanceDays:         cfg.Booking.MaxAdvanceDays,
-		AdjacencyRadius:        cfg.Booking.AdjacencyRadius,
+		MaxActiveBookings:           cfg.Booking.MaxActive,
+		AdminMaxActiveBookings:      cfg.Booking.AdminMaxActive,
+		MaxBookingsPerLocation:      cfg.Booking.MaxPerLocationAtDay,
+		AdminMaxBookingsPerLocation: cfg.Booking.AdminMaxPerLocationAtDay,
+		MaxAdvanceDays:              cfg.Booking.MaxAdvanceDays,
+		AdjacencyRadius:             cfg.Booking.AdjacencyRadius,
+		AdminBypassNoiseLimits:      cfg.Booking.AdminBypassNoiseLimits,
+		AdminBypassUserOverlap:      cfg.Booking.AdminBypassUserOverlap,
+		AdminBypassNoisyNeighbor:    cfg.Booking.AdminBypassNoisyNeighbor,
 	})
 
 	// bot
-	bot, err := telegram.NewBot(&cfg.Telegram, tr, stateStore, userService, bookingService, locService, cfg.Booking.MaxAdvanceDays, cfg.Maps.GoogleAPIKey, cfg.Maps.WebAppURL)
+	bot, err := telegram.NewBot(
+		&cfg.Telegram,
+		tr,
+		stateStore,
+		userService,
+		bookingService,
+		locService,
+		cfg.Booking.MaxAdvanceDays,
+		cfg.Maps.GoogleAPIKey,
+		cfg.Maps.WebAppURL,
+		cfg.Booking.MinHour,
+		cfg.Booking.MaxHourWeekday,
+		cfg.Booking.MaxHourWeekend,
+		cfg.Booking.MaxDurationHours,
+		cfg.Booking.AdminMaxDurationHours,
+	)
 	if err != nil {
 		log.Fatalf("Failed to initialize bot: %v", err)
 	}

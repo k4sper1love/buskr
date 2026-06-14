@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/domain/booking"
@@ -205,6 +206,13 @@ func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) 
 
 	rows = append(rows, []response.Button{
 		{
+			Text: response.Text{Key: keys.TextAuthActiveBtnSuggestLoc},
+			Data: response.CallbackData{Unique: keys.BtnSuggestLocStart},
+		},
+	})
+
+	rows = append(rows, []response.Button{
+		{
 			Text: response.Text{Key: keys.TextBookCreateBtnDates},
 			Data: response.CallbackData{Unique: keys.BtnBookStart},
 		},
@@ -262,15 +270,15 @@ func (uc *Usecase) LocationSelected(ctx context.Context, u *user.User, locID str
 	var rows [][]response.Button
 	var currentRow []response.Button
 
-	endHour := 22
+	endHour := uc.maxHourWeekday
 	if targetDate.Weekday() == time.Saturday || targetDate.Weekday() == time.Sunday {
-		endHour = 23
+		endHour = uc.maxHourWeekend
 	}
 
 	now := tz.Now()
 	isToday := targetDate.YearDay() == now.YearDay() && targetDate.Year() == now.Year()
 
-	for hour := 10; hour < endHour; hour++ {
+	for hour := uc.minHour; hour < endHour; hour++ {
 		if isToday && hour <= now.Hour() {
 			continue // skip already passed hours on today
 		}
@@ -380,13 +388,22 @@ func (uc *Usecase) SlotSelected(ctx context.Context, u *user.User, hour int) (re
 
 	schedule, _ := uc.bookings.GetScheduleForLocation(ctx, locID, targetDate)
 
-	endHourLimit := 22
+	endHourLimit := uc.maxHourWeekday
 	if targetDate.Weekday() == time.Saturday || targetDate.Weekday() == time.Sunday {
-		endHourLimit = 23
+		endHourLimit = uc.maxHourWeekend
+	}
+
+	maxDuration := uc.maxDurationHours
+	if u.Role == user.RoleAdmin {
+		if uc.adminMaxDurationHours != -1 {
+			maxDuration = uc.adminMaxDurationHours
+		} else {
+			maxDuration = endHourLimit - hour
+		}
 	}
 
 	maxAvailableHours := 0
-	for h := 1; h <= 3; h++ {
+	for h := 1; h <= maxDuration; h++ {
 		checkHour := hour + h - 1
 		if checkHour >= endHourLimit {
 			break
@@ -429,6 +446,10 @@ func (uc *Usecase) SlotSelected(ctx context.Context, u *user.User, hour int) (re
 				Args:   []string{fmt.Sprintf("%d", i)},
 			},
 		})
+		if len(currentRow) == 3 {
+			rows = append(rows, currentRow)
+			currentRow = nil
+		}
 	}
 
 	if len(currentRow) > 0 {
@@ -673,4 +694,251 @@ func bookingErrKey(err error) string {
 	default:
 		return ""
 	}
+}
+
+
+func (uc *Usecase) SuggestLocStart(ctx context.Context, actor *user.User) (response.Reply, error) {
+	if actor.Status != user.StatusActive {
+		return response.Reply{}, errors.New("user is not active")
+	}
+
+	_ = uc.state.SetState(ctx, actor.TelegramID, keys.StateSuggestLocName, uc.ttl)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocName)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocDesc)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocNoise)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocLat)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocLon)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocMsgID)
+
+	return response.Reply{
+		Kind: response.KindEdit,
+		Text: response.Text{Key: keys.TextSuggestLocStep1},
+		Keyboard: response.Keyboard{
+			InlineRows: [][]response.Button{
+				{
+					{Text: response.Text{Key: keys.TextCommonBtnCancel}, Data: response.CallbackData{Unique: keys.BtnSuggestLocCancel}},
+				},
+			},
+		},
+	}, nil
+}
+
+func (uc *Usecase) OnSuggestText(ctx context.Context, actor *user.User, text string) (response.Reply, error) {
+	if actor.Status != user.StatusActive {
+		return response.Reply{}, errors.New("user is not active")
+	}
+
+	st, err := uc.state.GetState(ctx, actor.TelegramID)
+	if err != nil {
+		return response.Reply{}, err
+	}
+
+	switch st {
+	case keys.StateSuggestLocName:
+		_ = uc.state.SetData(ctx, actor.TelegramID, keys.DataSuggestLocName, text, uc.ttl)
+		_ = uc.state.SetState(ctx, actor.TelegramID, keys.StateSuggestLocDesc, uc.ttl)
+
+		return response.Reply{
+			Kind: response.KindEdit,
+			Text: response.Text{
+				Key:  keys.TextSuggestLocStep2,
+				Args: map[string]any{"name": text},
+			},
+			Keyboard: response.Keyboard{
+				InlineRows: [][]response.Button{
+					{
+						{Text: response.Text{Key: keys.TextCommonBtnCancel}, Data: response.CallbackData{Unique: keys.BtnSuggestLocCancel}},
+					},
+				},
+			},
+		}, nil
+
+	case keys.StateSuggestLocDesc:
+		_ = uc.state.SetData(ctx, actor.TelegramID, keys.DataSuggestLocDesc, text, uc.ttl)
+		_ = uc.state.SetState(ctx, actor.TelegramID, keys.StateSuggestLocNoise, uc.ttl)
+
+		var name string
+		_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocName, &name)
+
+		return response.Reply{
+			Kind: response.KindEdit,
+			Text: response.Text{
+				Key: keys.TextSuggestLocStep3,
+				Args: map[string]any{
+					"name": name,
+					"desc": text,
+				},
+			},
+			Keyboard: response.Keyboard{
+				InlineRows: [][]response.Button{
+					{
+						{Text: response.Text{Key: keys.TextCommonLblNoiseLight}, Data: response.CallbackData{Unique: keys.BtnSuggestLocNoise, Args: []string{string(user.NoiseLight)}}},
+						{Text: response.Text{Key: keys.TextCommonLblNoiseMedium}, Data: response.CallbackData{Unique: keys.BtnSuggestLocNoise, Args: []string{string(user.NoiseMedium)}}},
+						{Text: response.Text{Key: keys.TextCommonLblNoiseHard}, Data: response.CallbackData{Unique: keys.BtnSuggestLocNoise, Args: []string{string(user.NoiseHard)}}},
+					},
+					{
+						{Text: response.Text{Key: keys.TextCommonBtnCancel}, Data: response.CallbackData{Unique: keys.BtnSuggestLocCancel}},
+					},
+				},
+			},
+		}, nil
+
+	default:
+		return response.Reply{}, nil
+	}
+}
+
+func (uc *Usecase) OnSuggestNoiseSelected(ctx context.Context, actor *user.User, noise string) (response.Reply, error) {
+	if actor.Status != user.StatusActive {
+		return response.Reply{}, errors.New("user is not active")
+	}
+
+	_ = uc.state.SetData(ctx, actor.TelegramID, keys.DataSuggestLocNoise, noise, uc.ttl)
+	_ = uc.state.SetState(ctx, actor.TelegramID, keys.StateSuggestLocGeo, uc.ttl)
+
+	var name, desc string
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocName, &name)
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocDesc, &desc)
+
+	noiseKey := "common.lbl.noise_" + noise
+
+	return response.Reply{
+		Kind: response.KindEdit,
+		Text: response.Text{
+			Key: keys.TextSuggestLocStep4,
+			Args: map[string]any{
+				"name":  name,
+				"desc":  desc,
+				"noise": noiseKey,
+			},
+			SubKeyArgs: []string{"noise"},
+		},
+		Keyboard: response.Keyboard{
+			InlineRows: [][]response.Button{
+				{
+					{Text: response.Text{Key: keys.TextCommonBtnCancel}, Data: response.CallbackData{Unique: keys.BtnSuggestLocCancel}},
+				},
+			},
+		},
+	}, nil
+}
+
+func (uc *Usecase) OnSuggestLocation(ctx context.Context, actor *user.User, lat, lon float64) (response.Reply, error) {
+	if actor.Status != user.StatusActive {
+		return response.Reply{}, errors.New("user is not active")
+	}
+
+	st, err := uc.state.GetState(ctx, actor.TelegramID)
+	if err != nil {
+		return response.Reply{}, err
+	}
+	if st != keys.StateSuggestLocGeo {
+		return response.Reply{}, nil
+	}
+
+	var name, desc, noise string
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocName, &name)
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocDesc, &desc)
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocNoise, &noise)
+
+	_ = uc.state.SetData(ctx, actor.TelegramID, keys.DataSuggestLocLat, lat, uc.ttl)
+	_ = uc.state.SetData(ctx, actor.TelegramID, keys.DataSuggestLocLon, lon, uc.ttl)
+
+	nearby, err := uc.locs.FindNearby(ctx, lat, lon, location.NearbyRadius)
+	if err != nil {
+		return response.Reply{Kind: response.KindSend, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
+	}
+
+	if len(nearby) > 0 {
+		var lines []string
+		for _, l := range nearby {
+			icon := "🟢"
+			if l.Status == location.StatusInactive {
+				icon = "🔴"
+			}
+			lines = append(lines, fmt.Sprintf("%s %s", icon, l.Name))
+		}
+
+		return response.Reply{
+			Kind: response.KindSend,
+			Text: response.Text{
+				Key: keys.TextSuggestLocNearbyWarn,
+				Args: map[string]any{
+					"radius": location.NearbyRadius,
+					"list":   strings.Join(lines, "\n"),
+				},
+			},
+			Keyboard: response.Keyboard{
+				InlineRows: [][]response.Button{
+					{
+						{Text: response.Text{Key: keys.TextSuggestLocNearbyConfirm}, Data: response.CallbackData{Unique: keys.BtnSuggestLocConfirm}},
+						{Text: response.Text{Key: keys.TextCommonBtnCancel}, Data: response.CallbackData{Unique: keys.BtnSuggestLocCancel}},
+					},
+				},
+			},
+		}, nil
+	}
+
+	return uc.doCreateSuggest(ctx, actor, name, desc, noise, lat, lon)
+}
+
+func (uc *Usecase) ConfirmSuggest(ctx context.Context, actor *user.User) (response.Reply, error) {
+	if actor.Status != user.StatusActive {
+		return response.Reply{}, errors.New("user is not active")
+	}
+
+	var name, desc, noise string
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocName, &name)
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocDesc, &desc)
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocNoise, &noise)
+	var lat, lon float64
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocLat, &lat)
+	_ = uc.state.GetData(ctx, actor.TelegramID, keys.DataSuggestLocLon, &lon)
+
+	return uc.doCreateSuggest(ctx, actor, name, desc, noise, lat, lon)
+}
+
+func (uc *Usecase) CancelSuggestFlow(ctx context.Context, actor *user.User) (response.Reply, error) {
+	_ = uc.state.ClearState(ctx, actor.TelegramID)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocName)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocDesc)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocNoise)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocLat)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocLon)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocMsgID)
+
+	return response.Reply{}, nil
+}
+
+func (uc *Usecase) doCreateSuggest(ctx context.Context, actor *user.User, name, desc, noise string, lat, lon float64) (response.Reply, error) {
+	loc, err := uc.locs.SuggestLocation(ctx, name, desc, lat, lon, location.NoiseLimit(noise), actor.ID)
+	if err != nil {
+		return response.Reply{
+			Kind: response.KindSend,
+			Text: response.Text{Key: keys.TextSuggestLocMsgErr},
+		}, nil
+	}
+
+	// Send notification to admins
+	if uc.notifier != nil {
+		_ = uc.notifier.NewLocationSuggestion(ctx, loc, actor)
+	}
+
+	_ = uc.state.ClearState(ctx, actor.TelegramID)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocName)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocDesc)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocNoise)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocLat)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocLon)
+	_ = uc.state.ClearData(ctx, actor.TelegramID, keys.DataSuggestLocMsgID)
+
+	return response.Reply{
+		Kind: response.KindSend,
+		Text: response.Text{Key: keys.TextSuggestLocMsgSuccess},
+		Keyboard: response.Keyboard{
+			InlineRows: [][]response.Button{
+				{{Text: response.Text{Key: keys.TextCommonBtnMenu}, Data: response.CallbackData{Unique: keys.BtnCommonMenuSend}}},
+			},
+		},
+	}, nil
 }

@@ -58,6 +58,11 @@ func NewBot(
 	maxAdvanceDays int,
 	mapsAPIKey string,
 	webAppURL string,
+	minHour int,
+	maxHourWeekday int,
+	maxHourWeekend int,
+	maxDurationHours int,
+	adminMaxDurationHours int,
 ) (*Bot, error) {
 	// create bot instance
 	pref := telebot.Settings{
@@ -78,8 +83,23 @@ func NewBot(
 
 	// usecases
 	authUc := auth.NewUsecase(state, users, notifier, 1*time.Hour, b.Me.FirstName)
-	bookingUc := bookingUsecase.NewUsecase(state, locs, bookings, users, 1*time.Hour, maxAdvanceDays, webAppURL, b.Me.Username)
-	adminUc := admin.NewUsecase(state, users, 1*time.Hour, cfg.InviteTTLHours)
+	bookingUc := bookingUsecase.NewUsecase(
+		state,
+		locs,
+		bookings,
+		users,
+		notifier,
+		1*time.Hour,
+		maxAdvanceDays,
+		webAppURL,
+		b.Me.Username,
+		minHour,
+		maxHourWeekday,
+		maxHourWeekend,
+		maxDurationHours,
+		adminMaxDurationHours,
+	)
+	adminUc := admin.NewUsecase(state, users, locs, 1*time.Hour, cfg.InviteTTLHours)
 	adminlocUc := adminloc.NewUsecase(state, locs, bookings, users, mapimg.NewClient(mapsAPIKey), 1*time.Hour, maxAdvanceDays, webAppURL, b.Me.Username)
 	adminuserUc := adminuser.NewUsecase(state, users, 1*time.Hour)
 	profileUc := profile.NewUsecase(state, users, notifier, 1*time.Hour)
@@ -99,7 +119,7 @@ func NewBot(
 
 	// handlers
 	handlers := &Handlers{
-		auth:       callbacks.NewAuth(authUc, bookingUc, adminlocUc, renderer),
+		auth:       callbacks.NewAuth(authUc, bookingUc, adminlocUc, renderer, cfg.SupportContact),
 		onboarding: callbacks.NewOnboarding(onboardingUc, authUc, renderer),
 		booking:    callbacks.NewBooking(bookingUc, authUc, renderer),
 		admin:      callbacks.NewAdmin(adminUc, renderer),

@@ -45,6 +45,7 @@ const (
 	TextCommonMonthOct = "common.month.oct"
 	TextCommonMonthNov = "common.month.nov"
 	TextCommonMonthDec = "common.month.dec"
+	TextHelpTitle      = "help.title"
 )
 
 // auth
@@ -268,4 +269,25 @@ const (
 	TextWorkerHotSpotMsg         = "worker.hotspot.msg"
 	TextWorkerHotSpotBtn         = "worker.hotspot.btn"
 	TextWorkerHotSpotDismissBtn  = "worker.hotspot.dismiss_btn"
+)
+
+// suggest location
+const (
+	TextAuthActiveBtnSuggestLoc       = "auth.active.btn_suggest_loc"
+	TextSuggestLocStep1               = "suggest_loc.step1"
+	TextSuggestLocStep2               = "suggest_loc.step2"
+	TextSuggestLocStep3               = "suggest_loc.step3"
+	TextSuggestLocStep4               = "suggest_loc.step4"
+	TextSuggestLocMsgSuccess          = "suggest_loc.msg_success"
+	TextSuggestLocMsgCancel           = "suggest_loc.msg_cancel"
+	TextSuggestLocMsgErr              = "suggest_loc.msg_err"
+	TextSuggestLocNearbyWarn          = "suggest_loc.nearby_warn"
+	TextSuggestLocNearbyConfirm       = "suggest_loc.nearby_confirm"
+	TextAdminModLocSuggestTitle       = "admin.mod.loc_suggest_title"
+	TextAdminModLocSuggestApprSfx     = "admin.mod.loc_suggest_appr_sfx"
+	TextAdminModLocSuggestApprCb      = "admin.mod.loc_suggest_appr_cb"
+	TextAdminModLocSuggestApprNotify  = "admin.mod.loc_suggest_appr_notify"
+	TextAdminModLocSuggestRejSfx      = "admin.mod.loc_suggest_rej_sfx"
+	TextAdminModLocSuggestRejCb       = "admin.mod.loc_suggest_rej_cb"
+	TextAdminModLocSuggestRejNotify   = "admin.mod.loc_suggest_rej_notify"
 )

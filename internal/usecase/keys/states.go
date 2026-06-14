@@ -31,4 +31,10 @@ const (
 	// profile
 	StateProfileEditName    = "st_pr_enm"
 	StateProfileNoiseReason = "st_pr_nre"
+
+	// suggest location
+	StateSuggestLocName  = "st_sg_lnm"
+	StateSuggestLocDesc  = "st_sg_lds"
+	StateSuggestLocNoise = "st_sg_lno"
+	StateSuggestLocGeo   = "st_sg_lge"
 )

@@ -281,6 +281,13 @@ func (uc *Usecase) ScheduleStart(ctx context.Context, u *user.User) (response.Re
 
 	rows = append(rows, []response.Button{
 		{
+			Text: response.Text{Key: keys.TextAuthActiveBtnSuggestLoc},
+			Data: response.CallbackData{Unique: keys.BtnSuggestLocStart},
+		},
+	})
+
+	rows = append(rows, []response.Button{
+		{
 			Text: response.Text{Key: keys.TextCommonBtnBack},
 			Data: response.CallbackData{Unique: keys.BtnCommonMenu},
 		},

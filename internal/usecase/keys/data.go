@@ -24,4 +24,12 @@ const (
 	// profile
 	DataProfileRequestedNoise = "d_pr_rqn"
 	DataProfileMsgID          = "d_pr_msg_id"
+
+	// suggest location
+	DataSuggestLocName  = "d_sgl_nm"
+	DataSuggestLocDesc  = "d_sgl_dsc"
+	DataSuggestLocNoise = "d_sgl_no"
+	DataSuggestLocLat   = "d_sgl_lat"
+	DataSuggestLocLon   = "d_sgl_lon"
+	DataSuggestLocMsgID = "d_sgl_msg_id"
 )

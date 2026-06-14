@@ -10,23 +10,26 @@ import (
 	"github.com/k4sper1love/buskr/internal/usecase/adminloc"
 	"github.com/k4sper1love/buskr/internal/usecase/auth"
 	"github.com/k4sper1love/buskr/internal/usecase/booking"
+	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 	"gopkg.in/telebot.v3"
 )
 
 type Auth struct {
-	uc         *auth.Usecase
-	bookingUc  *booking.Usecase
-	adminLocUc *adminloc.Usecase
-	renderer   *render.Renderer
+	uc             *auth.Usecase
+	bookingUc      *booking.Usecase
+	adminLocUc     *adminloc.Usecase
+	renderer       *render.Renderer
+	supportContact string
 }
 
-func NewAuth(uc *auth.Usecase, bookingUc *booking.Usecase, adminLocUc *adminloc.Usecase, renderer *render.Renderer) *Auth {
+func NewAuth(uc *auth.Usecase, bookingUc *booking.Usecase, adminLocUc *adminloc.Usecase, renderer *render.Renderer, supportContact string) *Auth {
 	return &Auth{
-		uc:         uc,
-		bookingUc:  bookingUc,
-		adminLocUc: adminLocUc,
-		renderer:   renderer,
+		uc:             uc,
+		bookingUc:      bookingUc,
+		adminLocUc:     adminLocUc,
+		renderer:       renderer,
+		supportContact: supportContact,
 	}
 }
 
@@ -190,3 +193,17 @@ func (h *Auth) HandleApplyButton(c telebot.Context) error {
 
 	return h.renderer.Render(c, rep)
 }
+
+func (h *Auth) HandleHelp(c telebot.Context) error {
+	rep := response.Reply{
+		Kind: response.KindSend,
+		Text: response.Text{
+			Key: keys.TextHelpTitle,
+			Args: map[string]any{
+				"support": h.supportContact,
+			},
+		},
+	}
+	return h.renderer.Render(c, rep)
+}
+

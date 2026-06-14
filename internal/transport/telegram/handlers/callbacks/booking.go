@@ -546,3 +546,97 @@ func (h *Booking) HandleBookScheduleDaySel(c telebot.Context) error {
 	_ = c.Respond(&telebot.CallbackResponse{})
 	return h.renderer.Render(c, rep)
 }
+
+func (h *Booking) HandleSuggestLocStart(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	rep, err := h.uc.SuggestLocStart(ctx, u)
+	if err != nil {
+		return err
+	}
+
+	_ = h.uc.SaveSuggestLocMessageID(ctx, u.TelegramID, c.Message().ID)
+
+	_ = c.Respond(&telebot.CallbackResponse{})
+	return h.renderer.Render(c, rep)
+}
+
+func (h *Booking) HandleSuggestLocNoise(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "System error", ShowAlert: true})
+	}
+	noise := args[0]
+
+	rep, err := h.uc.OnSuggestNoiseSelected(ctx, u, noise)
+	if err != nil {
+		return err
+	}
+
+	_ = c.Respond(&telebot.CallbackResponse{})
+	return h.renderer.Render(c, rep)
+}
+
+func (h *Booking) HandleSuggestLocConfirm(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	rep, err := h.uc.ConfirmSuggest(ctx, u)
+	if err != nil {
+		return err
+	}
+
+	_ = c.Respond(&telebot.CallbackResponse{})
+	_ = c.Delete()
+
+	if msgID, err := h.uc.GetSuggestLocMessageID(ctx, u.TelegramID); err == nil && msgID != 0 {
+		_ = c.Bot().Delete(&telebot.Message{
+			ID:   msgID,
+			Chat: &telebot.Chat{ID: u.TelegramID},
+		})
+		_ = h.uc.ClearSuggestLocMessageID(ctx, u.TelegramID)
+	}
+
+	return h.renderer.Render(c, rep)
+}
+
+func (h *Booking) HandleSuggestLocCancel(c telebot.Context) error {
+	ctx := c.Get("ctx").(context.Context)
+	u, err := ctxkey.GetUser(c)
+	if err != nil {
+		return err
+	}
+
+	_, err = h.uc.CancelSuggestFlow(ctx, u)
+	if err != nil {
+		return err
+	}
+
+	lang := ""
+	if s := c.Sender(); s != nil {
+		lang = s.LanguageCode
+	}
+	toastText := h.renderer.Translate(lang, response.Text{Key: keys.TextSuggestLocMsgCancel})
+	_ = c.Respond(&telebot.CallbackResponse{Text: toastText})
+
+	startRep, err := h.authUc.Start(ctx, u, "")
+	if err != nil {
+		return err
+	}
+	startRep.Kind = response.KindEdit
+
+	return h.renderer.Render(c, startRep)
+}

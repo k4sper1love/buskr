@@ -61,6 +61,10 @@ func (h *FSM) HandleText(c telebot.Context) error {
 
 		// admin user
 		keys.StateAdminUserSearch: h.AdminUser.OnText,
+
+		// suggest location
+		keys.StateSuggestLocName: h.Booking.OnSuggestText,
+		keys.StateSuggestLocDesc: h.Booking.OnSuggestText,
 	}
 
 	step, ok := steps[state]
@@ -121,6 +125,19 @@ func (h *FSM) HandleText(c telebot.Context) error {
 		}
 	}
 
+	if state == keys.StateSuggestLocName || state == keys.StateSuggestLocDesc {
+		_ = c.Delete()
+
+		msgID, err := h.Booking.GetSuggestLocMessageID(ctx, u.TelegramID)
+		if err == nil && msgID != 0 {
+			lang := ""
+			if s := c.Sender(); s != nil {
+				lang = s.LanguageCode
+			}
+			return h.Renderer.RenderToMessage(c.Bot(), u.TelegramID, msgID, lang, rep)
+		}
+	}
+
 	if state == keys.StateAdminLocEditName || state == keys.StateAdminLocEditDesc {
 		success := response.Reply{
 			Kind: response.KindSend,
@@ -169,12 +186,34 @@ func (h *FSM) HandleLocationMsg(c telebot.Context) error {
 
 	state, _ := h.State.GetState(ctx, c.Sender().ID)
 
-	rep, err := h.AdminLoc.OnLocation(ctx, u, msg.Location.Lat, msg.Location.Lng)
-	if err != nil {
-		return err
+	var rep response.Reply
+	var errLoc error
+
+	if state == keys.StateSuggestLocGeo {
+		rep, errLoc = h.Booking.OnSuggestLocation(ctx, u, float64(msg.Location.Lat), float64(msg.Location.Lng))
+	} else {
+		rep, errLoc = h.AdminLoc.OnLocation(ctx, u, msg.Location.Lat, msg.Location.Lng)
+	}
+
+	if errLoc != nil {
+		return errLoc
 	}
 	if rep.IsEmpty() {
 		return nil
+	}
+
+	if state == keys.StateSuggestLocGeo {
+		_ = c.Delete()
+
+		if msgID, err := h.Booking.GetSuggestLocMessageID(ctx, u.TelegramID); err == nil && msgID != 0 {
+			_ = c.Bot().Delete(&telebot.Message{
+				ID:   msgID,
+				Chat: &telebot.Chat{ID: u.TelegramID},
+			})
+			_ = h.Booking.ClearSuggestLocMessageID(ctx, u.TelegramID)
+		}
+
+		rep.Kind = response.KindSend
 	}
 
 	if state == keys.StateAdminLocGeo {

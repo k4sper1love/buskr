@@ -23,6 +23,18 @@ func (s *Service) CreateLocation(ctx context.Context, name, desc string, lat, lo
 	return loc, nil
 }
 
+func (s *Service) SuggestLocation(ctx context.Context, name, desc string, lat, lon float64, noise NoiseLimit, suggestedBy string) (*Location, error) {
+	loc := NewLocation(name, desc, lat, lon, noise)
+	loc.Status = StatusPending
+	loc.SuggestedBy = &suggestedBy
+
+	if err := s.repo.Create(ctx, loc); err != nil {
+		return nil, err
+	}
+
+	return loc, nil
+}
+
 func (s *Service) UpdateLocation(ctx context.Context, id string, name, desc string, lat, lon float64, noise NoiseLimit) error {
 	loc, err := s.repo.GetByID(ctx, id)
 	if err != nil {

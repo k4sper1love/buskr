@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/k4sper1love/buskr/internal/domain/location"
+	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/mdutil"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/onboarding"
@@ -106,6 +108,46 @@ func (n *Notifier) NewInviteRegistration(ctx context.Context, username, name, no
 
 	opts := &telebot.SendOptions{
 		ParseMode: telebot.ModeHTML,
+	}
+	if n.adminThreadApplications > 0 {
+		opts.ThreadID = n.adminThreadApplications
+	}
+
+	_, err := n.bot.Send(&telebot.Chat{ID: n.adminChatID}, textMsg, opts)
+	return err
+}
+
+func (n *Notifier) NewLocationSuggestion(ctx context.Context, loc *location.Location, suggestedBy *user.User) error {
+	menu := &telebot.ReplyMarkup{}
+
+	approveText := n.tr.T(n.adminLang, keys.TextAdminModBtnApprove, nil)
+	rejectText := n.tr.T(n.adminLang, keys.TextAdminModBtnReject, nil)
+
+	btnApprove := menu.Data(approveText, keys.BtnAdminLocSuggestAppr, loc.ID)
+	btnReject := menu.Data(rejectText, keys.BtnAdminLocSuggestRej, loc.ID)
+	menu.Inline(menu.Row(btnApprove, btnReject))
+
+	username := strings.TrimPrefix(strings.TrimSpace(suggestedBy.Username), "@")
+	var suggestedByStr string
+	if username != "" {
+		suggestedByStr = mdutil.Escape(suggestedBy.Name) + " (@" + mdutil.Escape(username) + ")"
+	} else {
+		suggestedByStr = mdutil.Escape(suggestedBy.Name)
+	}
+
+	noiseTranslated := n.tr.T(n.adminLang, "common.lbl.noise_"+string(loc.MaxNoise), nil)
+	textMsg := n.tr.T(n.adminLang, keys.TextAdminModLocSuggestTitle, map[string]any{
+		"name":         mdutil.Escape(loc.Name),
+		"desc":         mdutil.Escape(loc.Description),
+		"noise":        noiseTranslated,
+		"lat":          loc.Coords.Lat,
+		"lon":          loc.Coords.Lon,
+		"suggested_by": suggestedByStr,
+	})
+
+	opts := &telebot.SendOptions{
+		ParseMode:   telebot.ModeHTML,
+		ReplyMarkup: menu,
 	}
 	if n.adminThreadApplications > 0 {
 		opts.ThreadID = n.adminThreadApplications

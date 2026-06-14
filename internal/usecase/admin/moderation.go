@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/k4sper1love/buskr/internal/domain/location"
 	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
 	"github.com/k4sper1love/buskr/internal/usecase/response"
@@ -208,6 +209,118 @@ func (uc *Usecase) RejectNoiseUpgrade(ctx context.Context, actor *user.User, tar
 				},
 			},
 		},
+	}
+
+	return res, nil
+}
+
+func (uc *Usecase) ApproveLocationSuggestion(ctx context.Context, actor *user.User, locID string) (ModerationResult, error) {
+	if actor.Role != user.RoleAdmin {
+		return ModerationResult{}, errors.New("access denied")
+	}
+
+	loc, err := uc.locs.GetByID(ctx, locID)
+	if err != nil {
+		return ModerationResult{}, err
+	}
+
+	err = uc.locs.ChangeStatus(ctx, locID, location.StatusActive)
+	if err != nil {
+		return ModerationResult{}, err
+	}
+
+	res := ModerationResult{
+		AdminEditSuffix: response.Text{
+			Key: keys.TextAdminModLocSuggestApprSfx,
+			Args: map[string]any{
+				"actor": actor.Username,
+			},
+		},
+		CallbackText: response.Text{
+			Key: keys.TextAdminModLocSuggestApprCb,
+		},
+	}
+
+	if loc.SuggestedBy != nil && *loc.SuggestedBy != "" {
+		suggestedUser, err := uc.users.GetByID(ctx, *loc.SuggestedBy)
+		if err == nil && suggestedUser != nil {
+			res.NotifyUser = &UserNotification{
+				TelegramID: suggestedUser.TelegramID,
+				Reply: response.Reply{
+					Kind: response.KindSend,
+					Text: response.Text{
+						Key: keys.TextAdminModLocSuggestApprNotify,
+						Args: map[string]any{
+							"name": loc.Name,
+						},
+					},
+					Keyboard: response.Keyboard{
+						InlineRows: [][]response.Button{
+							{{
+								Text: response.Text{Key: keys.TextCommonBtnMenu},
+								Data: response.CallbackData{Unique: keys.BtnCommonMenu},
+							}},
+						},
+					},
+				},
+			}
+		}
+	}
+
+	return res, nil
+}
+
+func (uc *Usecase) RejectLocationSuggestion(ctx context.Context, actor *user.User, locID string) (ModerationResult, error) {
+	if actor.Role != user.RoleAdmin {
+		return ModerationResult{}, errors.New("access denied")
+	}
+
+	loc, err := uc.locs.GetByID(ctx, locID)
+	if err != nil {
+		return ModerationResult{}, err
+	}
+
+	err = uc.locs.DeleteLocation(ctx, locID)
+	if err != nil {
+		return ModerationResult{}, err
+	}
+
+	res := ModerationResult{
+		AdminEditSuffix: response.Text{
+			Key: keys.TextAdminModLocSuggestRejSfx,
+			Args: map[string]any{
+				"actor": actor.Username,
+			},
+		},
+		CallbackText: response.Text{
+			Key: keys.TextAdminModLocSuggestRejCb,
+		},
+	}
+
+	if loc.SuggestedBy != nil && *loc.SuggestedBy != "" {
+		suggestedUser, err := uc.users.GetByID(ctx, *loc.SuggestedBy)
+		if err == nil && suggestedUser != nil {
+			res.NotifyUser = &UserNotification{
+				TelegramID: suggestedUser.TelegramID,
+				Reply: response.Reply{
+					Kind: response.KindSend,
+					Text: response.Text{
+						Key: keys.TextAdminModLocSuggestRejNotify,
+						Args: map[string]any{
+							"name": loc.Name,
+						},
+					},
+					Keyboard: response.Keyboard{
+						InlineRows: [][]response.Button{
+							{{
+								Text: response.Text{Key: keys.TextCommonBtnMenu},
+								Data: response.CallbackData{Unique: keys.BtnCommonMenu},
+							}},
+						},
+					},
+				},
+			}
+		}
 	}
 
 	return res, nil

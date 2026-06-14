@@ -221,6 +221,62 @@ func (h *Admin) HandleAdminRejectNoiseUpgrade(c telebot.Context) error {
 	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
 }
 
+func (h *Admin) HandleAdminLocSuggestApprove(c telebot.Context) error {
+	cc, err := extractCtx(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "Ошибка: не передан ID локации", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.ApproveLocationSuggestion(cc.ctx, cc.user, locID)
+	if err != nil {
+		return c.Respond(&telebot.CallbackResponse{Text: "Ошибка при одобрении локации", ShowAlert: true})
+	}
+
+	suffix := h.renderer.Translate("", rep.AdminEditSuffix)
+	editMsgOrCaption(c, suffix)
+
+	if rep.NotifyUser != nil {
+		sendReplyToUser(c.Bot(), h.renderer, rep.NotifyUser.TelegramID, rep.NotifyUser.Reply)
+	}
+
+	callbackText := h.renderer.Translate("", rep.CallbackText)
+	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
+}
+
+func (h *Admin) HandleAdminLocSuggestReject(c telebot.Context) error {
+	cc, err := extractCtx(c)
+	if err != nil {
+		return err
+	}
+
+	args := c.Args()
+	if len(args) == 0 {
+		return c.Respond(&telebot.CallbackResponse{Text: "Ошибка: не передан ID локации", ShowAlert: true})
+	}
+	locID := args[0]
+
+	rep, err := h.uc.RejectLocationSuggestion(cc.ctx, cc.user, locID)
+	if err != nil {
+		return c.Respond(&telebot.CallbackResponse{Text: "Ошибка при отклонении локации", ShowAlert: true})
+	}
+
+	suffix := h.renderer.Translate("", rep.AdminEditSuffix)
+	editMsgOrCaption(c, suffix)
+
+	if rep.NotifyUser != nil {
+		sendReplyToUser(c.Bot(), h.renderer, rep.NotifyUser.TelegramID, rep.NotifyUser.Reply)
+	}
+
+	callbackText := h.renderer.Translate("", rep.CallbackText)
+	return c.Respond(&telebot.CallbackResponse{Text: callbackText})
+}
+
 func editMsgOrCaption(c telebot.Context, suffix string) {
 	msg := c.Message()
 	if msg.Caption != "" {

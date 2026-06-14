@@ -11,9 +11,6 @@ import (
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 )
 
-const (
-	nearbyRadius = 100 // meters
-)
 
 func (uc *Usecase) AddStart(ctx context.Context, actor *user.User) (response.Reply, error) {
 	if actor.Role != user.RoleAdmin {
@@ -212,7 +209,7 @@ func (uc *Usecase) OnLocation(ctx context.Context, actor *user.User, lat, lon fl
 		_ = uc.state.SetData(ctx, actor.TelegramID, keys.DataAdminLocLat, lat, uc.ttl)
 		_ = uc.state.SetData(ctx, actor.TelegramID, keys.DataAdminLocLon, lon, uc.ttl)
 
-		nearby, err := uc.locs.FindNearby(ctx, float64(lat), float64(lon), nearbyRadius)
+		nearby, err := uc.locs.FindNearby(ctx, float64(lat), float64(lon), location.NearbyRadius)
 		if err != nil {
 			return response.Reply{Kind: response.KindSend, Text: response.Text{Key: keys.TextCommonErrGeneral}}, nil
 		}
@@ -232,7 +229,7 @@ func (uc *Usecase) OnLocation(ctx context.Context, actor *user.User, lat, lon fl
 				Text: response.Text{
 					Key: keys.TextAdminLocsNearbyWarn,
 					Args: map[string]any{
-						"radius": 100,
+						"radius": location.NearbyRadius,
 						"list":   strings.Join(lines, "\n"),
 					},
 				},

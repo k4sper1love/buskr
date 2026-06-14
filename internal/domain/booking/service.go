@@ -19,11 +19,15 @@ type LocationProvider interface {
 }
 
 type Config struct {
-	MaxActiveBookings      int
-	AdminMaxActiveBookings int
-	MaxBookingsPerLocation int
-	MaxAdvanceDays         int
-	AdjacencyRadius        int
+	MaxActiveBookings           int
+	AdminMaxActiveBookings      int
+	MaxBookingsPerLocation      int
+	AdminMaxBookingsPerLocation int
+	MaxAdvanceDays              int
+	AdjacencyRadius             int
+	AdminBypassNoiseLimits      bool
+	AdminBypassUserOverlap      bool
+	AdminBypassNoisyNeighbor    bool
 }
 
 type Service struct {
@@ -74,11 +78,12 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 		return nil, ErrLocationInactive
 	}
 
-	if !IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise) {
+	bypassNoise := u.Role == user.RoleAdmin && s.cfg.AdminBypassNoiseLimits
+	if !bypassNoise && !IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise) {
 		return nil, ErrNoiseExceeded
 	}
 
-	if start.After(time.Now().AddDate(0, 0, s.cfg.MaxAdvanceDays)) {
+	if u.Role != user.RoleAdmin && start.After(time.Now().AddDate(0, 0, s.cfg.MaxAdvanceDays)) {
 		return nil, ErrTooFarInFuture
 	}
 
@@ -101,17 +106,24 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 		return nil, err
 	}
 
-	if bookingsPerLocation >= s.cfg.MaxBookingsPerLocation {
+	maxPerDay := s.cfg.MaxBookingsPerLocation
+	if u.Role == user.RoleAdmin {
+		maxPerDay = s.cfg.AdminMaxBookingsPerLocation
+	}
+
+	if maxPerDay != UnlimitedBookings && bookingsPerLocation >= maxPerDay {
 		return nil, ErrMaxBookingsPerLocation
 	}
 
-	userOverlap, err := s.repo.HasOverlapByUser(ctx, userID, start, end)
-	if err != nil {
-		return nil, err
-	}
-
-	if userOverlap {
-		return nil, ErrTimeOverlap
+	bypassOverlap := u.Role == user.RoleAdmin && s.cfg.AdminBypassUserOverlap
+	if !bypassOverlap {
+		userOverlap, err := s.repo.HasOverlapByUser(ctx, userID, start, end)
+		if err != nil {
+			return nil, err
+		}
+		if userOverlap {
+			return nil, ErrTimeOverlap
+		}
 	}
 
 	locOverlap, err := s.repo.HasOverlapByLocation(ctx, locID, start, end)
@@ -122,7 +134,8 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 		return nil, ErrSlotTaken
 	}
 
-	if u.NoiseLevel == user.NoiseHard {
+	bypassNoisy := u.Role == user.RoleAdmin && s.cfg.AdminBypassNoisyNeighbor
+	if !bypassNoisy && u.NoiseLevel == user.NoiseHard {
 		noisyNeighbor, err := s.repo.HasNoisyNeighbor(ctx, locID, start, end, float64(s.cfg.AdjacencyRadius))
 		if err != nil {
 			return nil, err

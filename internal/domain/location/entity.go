@@ -11,7 +11,10 @@ type Status string
 const (
 	StatusActive   Status = "active"
 	StatusInactive Status = "inactive"
+	StatusPending  Status = "pending"
 )
+
+const NearbyRadius = 100 // meters
 
 type NoiseLimit string
 
@@ -33,6 +36,7 @@ type Location struct {
 	Coords      Point      `json:"coords"`
 	MaxNoise    NoiseLimit `json:"max_noise"`
 	Status      Status     `json:"status"`
+	SuggestedBy *string    `json:"suggested_by,omitempty"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
