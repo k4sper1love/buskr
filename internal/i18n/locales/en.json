@@ -200,5 +200,7 @@
   "admin.locs.schedule.lbl_other_active": "👉 {{.weekday}} • {{.date}} 👈",
   "admin.locs.schedule_empty_for_day": "📅 **{{.name}}**\n{{.date}}\n\nNo bookings for this day.",
   "admin.locs.map_title": "Active locations: {{.count}}",
-  "admin.locs.map_empty": "No active locations."
+  "admin.locs.map_empty": "No active locations.",
+  "group.unauthorized_chat": "❌ This chat is not authorized to use the bot. Leaving the chat.",
+  "group.welcome_user": "👋 Welcome, {{.mention}}!\n\nWelcome to the street performance chat. You can book a performance slot directly in private messages with the bot: {{.bot_link}}."
 }

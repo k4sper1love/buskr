@@ -31,7 +31,16 @@ type Scheduler struct {
 	enableNoShowCancel bool
 }
 
-func NewScheduler(bot *telebot.Bot, tr Translator, bookings *booking.Service, users *user.Service, locs *location.Service, state *redis.StateStore, enableHotSlots bool, enableNoShowCancel bool) *Scheduler {
+func NewScheduler(
+	bot *telebot.Bot,
+	tr Translator,
+	bookings *booking.Service,
+	users *user.Service,
+	locs *location.Service,
+	state *redis.StateStore,
+	enableHotSlots bool,
+	enableNoShowCancel bool,
+) *Scheduler {
 	return &Scheduler{
 		bot:                bot,
 		tr:                 tr,
@@ -243,3 +252,4 @@ func (s *Scheduler) broadcastHotSpot(ctx context.Context, b *booking.Booking) {
 		}
 	}
 }
+

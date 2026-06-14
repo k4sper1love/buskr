@@ -3,6 +3,7 @@ package onboarding
 import (
 	"context"
 	"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -172,7 +173,7 @@ func (uc *Usecase) finish(ctx context.Context, u *user.User, mediaData string, i
 	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataOnboardName)
 	_ = uc.state.ClearData(ctx, u.TelegramID, keys.DataOnboardNoiseLevel)
 
-	_ = uc.admin.NewApplication(ctx, ApplicationPayload{
+	errApp := uc.admin.NewApplication(ctx, ApplicationPayload{
 		TelegramUsername: strings.TrimSpace(u.Username),
 		UserID:           u.ID,
 		Name:             name,
@@ -180,6 +181,9 @@ func (uc *Usecase) finish(ctx context.Context, u *user.User, mediaData string, i
 		MediaData:        mediaData,
 		IsVideo:          isVideo,
 	})
+	if errApp != nil {
+		log.Printf("Failed to send admin notification for new application: %v", errApp)
+	}
 
 	return response.Reply{
 		Kind: response.KindSend,

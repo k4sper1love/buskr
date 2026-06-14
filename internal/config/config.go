@@ -24,10 +24,13 @@ type Config struct {
 }
 
 type TelegramConfig struct {
-	BotToken    string `env:"TELEGRAM_BOT_TOKEN" env-required:"true"`
-	DefaultLang string `env:"TELEGRAM_DEFAULT_LANG" env-default:"ru"`
-	AdminChatID int64  `env:"TELEGRAM_ADMIN_CHAT_ID" env-required:"true"`
-	AdminLang   string `env:"TELEGRAM_ADMIN_LANG" env-default:"ru"`
+	BotToken                string `env:"TELEGRAM_BOT_TOKEN" env-required:"true"`
+	DefaultLang             string `env:"TELEGRAM_DEFAULT_LANG" env-default:"ru"`
+	AdminLang               string `env:"TELEGRAM_ADMIN_LANG" env-default:"ru"`
+	AdminChatID             int64  `env:"TELEGRAM_ADMIN_CHAT_ID" env-required:"true"`
+	AdminThreadApplications int    `env:"TELEGRAM_ADMIN_THREAD_APPLICATIONS" env-default:"0"`
+	AdminThreadUpgrades     int    `env:"TELEGRAM_ADMIN_THREAD_UPGRADES" env-default:"0"`
+	PublicChatID            int64  `env:"TELEGRAM_PUBLIC_CHAT_ID" env-default:"0"`
 }
 
 type DatabaseConfig struct {

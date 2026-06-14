@@ -30,24 +30,32 @@ func (n *Notifier) NewApplication(ctx context.Context, payload onboarding.Applic
 		"noise":    noiseTranslated,
 	})
 
+	opts := &telebot.SendOptions{
+		ParseMode:   telebot.ModeMarkdown,
+		ReplyMarkup: menu,
+	}
+	if n.adminThreadApplications > 0 {
+		opts.ThreadID = n.adminThreadApplications
+	}
+
 	var err error
 	if payload.IsVideo {
 		video := &telebot.Video{
 			File:    telebot.File{FileID: payload.MediaData},
 			Caption: caption,
 		}
-		_, err = n.bot.Send(&telebot.Chat{ID: n.adminChatID}, video, menu, telebot.ModeMarkdown)
+		_, err = n.bot.Send(&telebot.Chat{ID: n.adminChatID}, video, opts)
 	} else if payload.MediaData != "" {
 		textMsg := n.tr.T(n.adminLang, keys.TextAdminModAppLink, map[string]any{
 			"caption": caption,
 			"link":    payload.MediaData,
 		})
-		_, err = n.bot.Send(&telebot.Chat{ID: n.adminChatID}, textMsg, menu, telebot.ModeMarkdown)
+		_, err = n.bot.Send(&telebot.Chat{ID: n.adminChatID}, textMsg, opts)
 	} else {
 		textMsg := n.tr.T(n.adminLang, keys.TextAdminModAppNoMedia, map[string]any{
 			"caption": caption,
 		})
-		_, err = n.bot.Send(&telebot.Chat{ID: n.adminChatID}, textMsg, menu, telebot.ModeMarkdown)
+		_, err = n.bot.Send(&telebot.Chat{ID: n.adminChatID}, textMsg, opts)
 	}
 
 	return err
@@ -75,6 +83,14 @@ func (n *Notifier) NewNoiseUpgrade(ctx context.Context, payload profile.NoiseUpg
 		"reason":          mdutil.Escape(payload.Reason),
 	})
 
-	_, err := n.bot.Send(&telebot.Chat{ID: n.adminChatID}, caption, menu, telebot.ModeMarkdown)
+	opts := &telebot.SendOptions{
+		ParseMode:   telebot.ModeMarkdown,
+		ReplyMarkup: menu,
+	}
+	if n.adminThreadUpgrades > 0 {
+		opts.ThreadID = n.adminThreadUpgrades
+	}
+
+	_, err := n.bot.Send(&telebot.Chat{ID: n.adminChatID}, caption, opts)
 	return err
 }

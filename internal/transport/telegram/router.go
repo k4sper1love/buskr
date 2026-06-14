@@ -167,4 +167,7 @@ func (r *Router) RegisterRoutes() {
 		authRep.Kind = response.KindEdit
 		return r.b.renderer.Render(c, authRep)
 	})
+
+	r.b.bot.Handle(telebot.OnAddedToGroup, r.handlers.group.HandleAddedToGroup)
+	r.b.bot.Handle(telebot.OnUserJoined, r.handlers.group.HandleUserJoined)
 }

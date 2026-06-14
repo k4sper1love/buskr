@@ -200,5 +200,7 @@
   "admin.locs.schedule.lbl_other_active": "👉 {{.weekday}} · {{.date}} 👈",
   "admin.locs.schedule_empty_for_day": "📅 **{{.name}}**\n{{.date}}\n\nНа этот день бронирований нет.",
   "admin.locs.map_title": "Карта площадок · Всего точек: {{.count}}",
-  "admin.locs.map_empty": "🗺️ На карте пока нет активных локаций."
+  "admin.locs.map_empty": "🗺️ На карте пока нет активных локаций.",
+  "group.unauthorized_chat": "❌ Этот чат не авторизован для использования бота. Бот выходит из чата.",
+  "group.welcome_user": "👋 Приветствуем, {{.mention}}!\n\nДобро пожаловать в чат уличных выступлений. Вы можете забронировать место для выступления прямо в личных сообщениях с ботом: {{.bot_link}}."
 }

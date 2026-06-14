@@ -10,11 +10,11 @@ import (
 	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/i18n"
 	"github.com/k4sper1love/buskr/internal/infrastructure/redis"
+	"github.com/k4sper1love/buskr/internal/mapimg"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/handlers"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/handlers/callbacks"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/notifier"
 	"github.com/k4sper1love/buskr/internal/transport/telegram/render"
-	"github.com/k4sper1love/buskr/internal/mapimg"
 	"github.com/k4sper1love/buskr/internal/usecase/admin"
 	"github.com/k4sper1love/buskr/internal/usecase/adminloc"
 	"github.com/k4sper1love/buskr/internal/usecase/adminuser"
@@ -45,6 +45,7 @@ type Handlers struct {
 	adminLoc   *callbacks.AdminLoc
 	adminUser  *callbacks.AdminUser
 	profile    *callbacks.Profile
+	group      *handlers.GroupHandler
 }
 
 func NewBot(
@@ -73,7 +74,7 @@ func NewBot(
 	renderer := render.NewRenderer(tr, cfg.DefaultLang)
 
 	// admin notifier
-	notifier := notifier.NewNotifier(b, tr, cfg.AdminChatID, cfg.AdminLang)
+	notifier := notifier.NewNotifier(b, tr, cfg.AdminChatID, cfg.AdminLang, cfg.AdminThreadApplications, cfg.AdminThreadUpgrades)
 
 	// usecases
 	authUc := auth.NewUsecase(state, users, 1*time.Hour, b.Me.FirstName)
@@ -105,10 +106,12 @@ func NewBot(
 		adminLoc:   callbacks.NewAdminLoc(adminlocUc, renderer),
 		adminUser:  callbacks.NewAdminUser(adminuserUc, renderer),
 		profile:    callbacks.NewProfile(profileUc, renderer),
+		group:      handlers.NewGroupHandler(cfg, renderer),
 	}
 
 	return &Bot{
 		bot:      b,
+		cfg:      cfg,
 		state:    state,
 		renderer: renderer,
 		users:    users,
