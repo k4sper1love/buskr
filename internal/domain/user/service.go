@@ -5,18 +5,27 @@ import (
 	"time"
 )
 
-type Service struct {
-	repo Repository
+type Config struct {
+	MaxKarma         int
+	MinKarma         int
+	KarmaReward      int
+	KarmaPenalty     int
+	WarningThreshold int
 }
 
-func NewService(repo Repository) *Service {
-	return &Service{repo: repo}
+type Service struct {
+	repo Repository
+	cfg  Config
+}
+
+func NewService(repo Repository, cfg Config) *Service {
+	return &Service{repo: repo, cfg: cfg}
 }
 
 func (s *Service) GetOrCreateUser(ctx context.Context, telegramID int64, username string) (*User, error) {
 	u, err := s.repo.GetByTelegramID(ctx, telegramID)
 	if err != nil {
-		newUser := NewUser(telegramID, username)
+		newUser := NewUser(telegramID, username, s.cfg.MaxKarma)
 		if err := s.repo.Create(ctx, newUser); err != nil {
 			return nil, err
 		}
@@ -138,11 +147,11 @@ func (s *Service) RecordSuccessfulCheckin(ctx context.Context, userID string) er
 		return err
 	}
 
-	u.Karma += KarmaReward
+	u.Karma += s.cfg.KarmaReward
 
 	// check karma bounds
-	if u.Karma > MaxKarma {
-		u.Karma = MaxKarma
+	if u.Karma > s.cfg.MaxKarma {
+		u.Karma = s.cfg.MaxKarma
 	}
 
 	u.UpdatedAt = time.Now()
@@ -165,11 +174,11 @@ func (s *Service) RecordNoShow(ctx context.Context, userID string) error {
 		return err
 	}
 
-	u.Karma -= KarmaPenalty
+	u.Karma -= s.cfg.KarmaPenalty
 
 	// check karma bounds
-	if u.Karma < MinKarma {
-		u.Karma = MinKarma
+	if u.Karma < s.cfg.MinKarma {
+		u.Karma = s.cfg.MinKarma
 	}
 
 	u.UpdatedAt = time.Now()
@@ -286,14 +295,22 @@ func (s *Service) ForgiveFines(ctx context.Context, userID string) error {
 	if err != nil {
 		return err
 	}
-	u.Karma = MaxKarma
+	u.Karma = s.cfg.MaxKarma
 	u.UpdatedAt = time.Now()
 
 	return s.repo.Update(ctx, u)
 }
 
-func (s *Service) GetUsersPaginated(ctx context.Context, offset, limit int) ([]*User, int, error) {
-	return s.repo.GetUsersPaginated(ctx, offset, limit)
+func (s *Service) IsLowKarma(u *User) bool {
+	return u.Karma < s.cfg.WarningThreshold
+}
+
+func (s *Service) Penalty() int {
+	return s.cfg.KarmaPenalty
+}
+
+func (s *Service) GetUsersPaginated(ctx context.Context, offset, limit int, sortBy string) ([]*User, int, error) {
+	return s.repo.GetUsersPaginated(ctx, offset, limit, sortBy)
 }
 
 func (s *Service) FindByQuery(ctx context.Context, query string, offset, limit int) ([]*User, int, error) {

@@ -152,7 +152,7 @@ func (s *Scheduler) processCheckins(ctx context.Context) {
 					"name":    locName,
 					"start":   tz.In(b.StartTime).Format("15:04"),
 					"end":     tz.In(b.EndTime).Format("15:04"),
-					"penalty": 20,
+					"penalty": s.users.Penalty(),
 					"karma":   targetUser.Karma,
 				})
 				_, _ = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, telebot.ModeHTML)
@@ -177,7 +177,7 @@ func (s *Scheduler) processCheckins(ctx context.Context) {
 					"name":    locName,
 					"start":   tz.In(b.StartTime).Format("15:04"),
 					"end":     tz.In(b.EndTime).Format("15:04"),
-					"penalty": 20,
+					"penalty": s.users.Penalty(),
 					"karma":   targetUser.Karma,
 				})
 				_, _ = s.bot.Send(&telebot.User{ID: targetUser.TelegramID}, msg, telebot.ModeHTML)

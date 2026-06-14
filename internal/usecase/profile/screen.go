@@ -20,7 +20,7 @@ func (uc *Usecase) Profile(ctx context.Context, u *user.User) (response.Reply, e
 	}
 
 	karmaText := keys.TextProfileMainLblKarmaGood
-	if stats.NoShows > 0 {
+	if uc.users.IsLowKarma(u) {
 		karmaText = keys.TextProfileMainLblKarmaBad
 	}
 

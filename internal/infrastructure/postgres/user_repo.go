@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/k4sper1love/buskr/internal/domain/user"
 )
@@ -385,19 +386,29 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*u
 	return &u, nil
 }
 
-func (r *UserRepository) GetUsersPaginated(ctx context.Context, offset, limit int) ([]*user.User, int, error) {
+func (r *UserRepository) GetUsersPaginated(ctx context.Context, offset, limit int, sortBy string) ([]*user.User, int, error) {
 	var total int
 	err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM users").Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	query := `
+	orderBy := "created_at DESC"
+	switch sortBy {
+	case "karma_asc", "karma":
+		orderBy = "karma ASC, created_at DESC"
+	case "role":
+		orderBy = "role ASC, created_at DESC"
+	case "name":
+		orderBy = "name ASC"
+	}
+
+	query := fmt.Sprintf(`
 		SELECT id, telegram_id, username, name, role, status, noise_level, karma, created_at, updated_at
 		FROM users
-		ORDER BY created_at DESC
+		ORDER BY %s
 		LIMIT $1 OFFSET $2
-	`
+	`, orderBy)
 	rows, err := r.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		return nil, 0, err

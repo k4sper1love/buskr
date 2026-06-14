@@ -21,6 +21,7 @@ type StateStore interface {
 type Users interface {
 	Update(ctx context.Context, user *user.User) error
 	GetStats(ctx context.Context, userID string) (*user.UserStats, error)
+	IsLowKarma(u *user.User) bool
 }
 
 type AdminNotifier interface {

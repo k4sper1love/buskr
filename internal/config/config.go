@@ -21,6 +21,7 @@ type Config struct {
 	// services
 	Booking BookingConfig
 	Maps    MapsConfig
+	Karma   KarmaConfig
 }
 
 type TelegramConfig struct {
@@ -57,6 +58,15 @@ type BookingConfig struct {
 type MapsConfig struct {
 	GoogleAPIKey string `env:"GOOGLE_MAPS_API_KEY"`
 	WebAppURL    string `env:"MAP_WEB_APP_URL" env-default:""`
+}
+
+type KarmaConfig struct {
+	MaxKarma         int `env:"KARMA_MAX" env-default:"100"`
+	MinKarma         int `env:"KARMA_MIN" env-default:"0"`
+	KarmaReward      int `env:"KARMA_REWARD" env-default:"5"`
+	KarmaPenalty     int `env:"KARMA_PENALTY" env-default:"20"`
+	PerfectThreshold int `env:"KARMA_PERFECT_THRESHOLD" env-default:"100"`
+	WarningThreshold int `env:"KARMA_WARNING_THRESHOLD" env-default:"50"`
 }
 
 // singleton pattern

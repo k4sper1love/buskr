@@ -31,14 +31,18 @@ func (h *AdminUser) HandleAdminUsersList(c telebot.Context) error {
 	}
 
 	page := 0
+	sortMode := "date"
 	args := c.Args()
 	if len(args) > 0 {
 		if p, err := strconv.Atoi(args[0]); err == nil {
 			page = p
 		}
 	}
+	if len(args) > 1 {
+		sortMode = args[1]
+	}
 
-	rep, err := h.uc.UsersList(ctx, u, page)
+	rep, err := h.uc.UsersList(ctx, u, page, sortMode)
 	if err != nil {
 		return err
 	}

@@ -34,14 +34,6 @@ const (
 	NoiseHard   NoiseLevel = "hard"   // drums, powerful speakers
 )
 
-// Karma settings (trust index)
-const (
-	MaxKarma     = 100
-	MinKarma     = 0
-	KarmaReward  = 5
-	KarmaPenalty = 20
-)
-
 // User represents a registered user in the system
 type User struct {
 	ID         string     `json:"id"`
@@ -58,10 +50,10 @@ type User struct {
 
 // UserStats stores statistics for shadow analytics
 type UserStats struct {
-	UserID             string
-	TotalBookings      int
-	SuccessfulCheckins int
-	NoShows            int
+	UserID             string `json:"user_id"`
+	TotalBookings      int    `json:"total_bookings"`
+	SuccessfulCheckins int    `json:"successful_checkins"`
+	NoShows            int    `json:"no_shows"`
 }
 
 type Invite struct {
@@ -73,7 +65,7 @@ type Invite struct {
 	ExpiresAt  time.Time
 }
 
-func NewUser(telegramID int64, username string) *User {
+func NewUser(telegramID int64, username string, startingKarma int) *User {
 	now := time.Now()
 	return &User{
 		ID:         uuid.New().String(),
@@ -82,7 +74,7 @@ func NewUser(telegramID int64, username string) *User {
 		Role:       RoleMusician,
 		Status:     StatusGuest,
 		NoiseLevel: NoiseNone,
-		Karma:      MaxKarma,
+		Karma:      startingKarma,
 		CreatedAt:  now,
 		UpdatedAt:  now,
 	}

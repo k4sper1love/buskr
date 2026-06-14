@@ -68,7 +68,13 @@ func main() {
 	bookingRepo := postgres.NewBookingRepository(db)
 
 	// servives
-	userService := user.NewService(userRepo)
+	userService := user.NewService(userRepo, user.Config{
+		MaxKarma:         cfg.Karma.MaxKarma,
+		MinKarma:         cfg.Karma.MinKarma,
+		KarmaReward:      cfg.Karma.KarmaReward,
+		KarmaPenalty:     cfg.Karma.KarmaPenalty,
+		WarningThreshold: cfg.Karma.WarningThreshold,
+	})
 	locService := location.NewService(locRepo)
 	bookingService := booking.NewService(bookingRepo, userService, locService, booking.Config{
 		MaxActiveBookings:      cfg.Booking.MaxActive,

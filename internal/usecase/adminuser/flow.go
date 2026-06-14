@@ -13,7 +13,7 @@ import (
 	"github.com/k4sper1love/buskr/internal/usecase/response"
 )
 
-func (uc *Usecase) UsersList(ctx context.Context, actor *user.User, page int) (response.Reply, error) {
+func (uc *Usecase) UsersList(ctx context.Context, actor *user.User, page int, sortMode string) (response.Reply, error) {
 	if actor.Role != user.RoleAdmin {
 		return response.Reply{}, nil
 	}
@@ -24,7 +24,7 @@ func (uc *Usecase) UsersList(ctx context.Context, actor *user.User, page int) (r
 	}
 
 	offset := page * pageSize
-	users, total, err := uc.users.GetUsersPaginated(ctx, offset, pageSize)
+	users, total, err := uc.users.GetUsersPaginated(ctx, offset, pageSize, sortMode)
 	if err != nil {
 		return response.Reply{
 			Kind: response.KindEdit,
@@ -40,7 +40,7 @@ func (uc *Usecase) UsersList(ctx context.Context, actor *user.User, page int) (r
 	if offset >= total && total > 0 {
 		page = totalPages - 1
 		offset = page * pageSize
-		users, total, err = uc.users.GetUsersPaginated(ctx, offset, pageSize)
+		users, total, err = uc.users.GetUsersPaginated(ctx, offset, pageSize, sortMode)
 		if err != nil {
 			return response.Reply{
 				Kind: response.KindEdit,
@@ -52,12 +52,7 @@ func (uc *Usecase) UsersList(ctx context.Context, actor *user.User, page int) (r
 	var inlineRows [][]response.Button
 
 	for _, u := range users {
-		display := u.Name
-		if u.Username != "" {
-			display += fmt.Sprintf(" (@%s)", u.Username)
-		} else {
-			display += fmt.Sprintf(" (ID: %d)", u.TelegramID)
-		}
+		display := uc.formatUserBtnText(u)
 
 		inlineRows = append(inlineRows, []response.Button{
 			{
@@ -72,7 +67,7 @@ func (uc *Usecase) UsersList(ctx context.Context, actor *user.User, page int) (r
 	if page > 0 {
 		navRow = append(navRow, response.Button{
 			Text: response.Text{Fallback: "⬅️"},
-			Data: response.CallbackData{Unique: keys.BtnAdminUsersPage, Args: []string{strconv.Itoa(page - 1)}},
+			Data: response.CallbackData{Unique: keys.BtnAdminUsersPage, Args: []string{strconv.Itoa(page - 1), sortMode}},
 		})
 	}
 	if totalPages > 1 {
@@ -84,12 +79,37 @@ func (uc *Usecase) UsersList(ctx context.Context, actor *user.User, page int) (r
 	if page < totalPages-1 {
 		navRow = append(navRow, response.Button{
 			Text: response.Text{Fallback: "➡️"},
-			Data: response.CallbackData{Unique: keys.BtnAdminUsersPage, Args: []string{strconv.Itoa(page + 1)}},
+			Data: response.CallbackData{Unique: keys.BtnAdminUsersPage, Args: []string{strconv.Itoa(page + 1), sortMode}},
 		})
 	}
 	if len(navRow) > 0 {
 		inlineRows = append(inlineRows, navRow)
 	}
+
+	// Sorting row
+	var sortTextKey string
+	var nextSortMode string
+	switch sortMode {
+	case "karma_asc", "karma":
+		sortTextKey = keys.TextAdminUsersBtnSortKarmaAsc
+		nextSortMode = "role"
+	case "role":
+		sortTextKey = keys.TextAdminUsersBtnSortRole
+		nextSortMode = "name"
+	case "name":
+		sortTextKey = keys.TextAdminUsersBtnSortName
+		nextSortMode = "date"
+	default: // "date" or other
+		sortTextKey = keys.TextAdminUsersBtnSortDate
+		nextSortMode = "karma_asc"
+	}
+
+	inlineRows = append(inlineRows, []response.Button{
+		{
+			Text: response.Text{Key: sortTextKey},
+			Data: response.CallbackData{Unique: keys.BtnAdminUsersPage, Args: []string{"0", nextSortMode}},
+		},
+	})
 
 	// Search button
 	inlineRows = append(inlineRows, []response.Button{
@@ -271,7 +291,7 @@ func (uc *Usecase) SearchPage(ctx context.Context, actor *user.User, page int) (
 	var query string
 	err := uc.state.GetData(ctx, actor.TelegramID, "admin_search_query", &query)
 	if err != nil || query == "" {
-		return uc.UsersList(ctx, actor, 0)
+		return uc.UsersList(ctx, actor, 0, "date")
 	}
 
 	return uc.SearchResults(ctx, actor, query, page, response.KindEdit)
@@ -335,12 +355,7 @@ func (uc *Usecase) SearchResults(ctx context.Context, actor *user.User, query st
 
 	var inlineRows [][]response.Button
 	for _, u := range results {
-		display := u.Name
-		if u.Username != "" {
-			display += fmt.Sprintf(" (@%s)", u.Username)
-		} else {
-			display += fmt.Sprintf(" (ID: %d)", u.TelegramID)
-		}
+		display := uc.formatUserBtnText(u)
 		inlineRows = append(inlineRows, []response.Button{
 			{
 				Text: response.Text{Fallback: display},
@@ -475,4 +490,30 @@ func (uc *Usecase) SetUserNoise(ctx context.Context, actor *user.User, targetID 
 	}
 
 	return uc.UserDetail(ctx, actor, targetID)
+}
+
+func (uc *Usecase) formatUserBtnText(u *user.User) string {
+	var prefix string
+	switch u.Status {
+	case user.StatusBanned:
+		prefix = "🚫 "
+	case user.StatusPending:
+		prefix = "⏳ "
+	case user.StatusGuest:
+		prefix = "👤 "
+	default: // StatusActive
+		if u.Role == user.RoleAdmin {
+			prefix = "👑 "
+		} else if uc.users.IsLowKarma(u) {
+			prefix = "⚠️ "
+		}
+	}
+
+	display := prefix + u.Name
+	if u.Username != "" {
+		display += fmt.Sprintf(" (@%s)", u.Username)
+	} else {
+		display += fmt.Sprintf(" (ID: %d)", u.TelegramID)
+	}
+	return display
 }
