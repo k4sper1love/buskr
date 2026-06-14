@@ -94,3 +94,23 @@ func (n *Notifier) NewNoiseUpgrade(ctx context.Context, payload profile.NoiseUpg
 	_, err := n.bot.Send(&telebot.Chat{ID: n.adminChatID}, caption, opts)
 	return err
 }
+
+func (n *Notifier) NewInviteRegistration(ctx context.Context, username, name, noiseLevel, invitedBy string) error {
+	noiseTranslated := n.tr.T(n.adminLang, "common.lbl.noise_"+noiseLevel, nil)
+	textMsg := n.tr.T(n.adminLang, keys.TextAdminModInviteRegTitle, map[string]any{
+		"username":   mdutil.Escape(username),
+		"name":       mdutil.Escape(name),
+		"noise":      noiseTranslated,
+		"invited_by": mdutil.Escape(invitedBy),
+	})
+
+	opts := &telebot.SendOptions{
+		ParseMode: telebot.ModeHTML,
+	}
+	if n.adminThreadApplications > 0 {
+		opts.ThreadID = n.adminThreadApplications
+	}
+
+	_, err := n.bot.Send(&telebot.Chat{ID: n.adminChatID}, textMsg, opts)
+	return err
+}

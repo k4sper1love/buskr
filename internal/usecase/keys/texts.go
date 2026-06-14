@@ -113,6 +113,8 @@ const (
 	TextAdminModMsgUpgCb      = "admin.mod.msg_upg_cb"
 	TextAdminModMsgUpgNotify  = "admin.mod.msg_upg_notify"
 	TextAdminModAppNoMedia    = "admin.mod.app_no_media"
+	TextAdminModInviteRegTitle = "admin.mod.invite_reg_title"
+
 
 	// Locations
 	TextAdminLocsTitle           = "admin.locs.title"

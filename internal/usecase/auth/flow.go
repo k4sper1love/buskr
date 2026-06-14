@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/domain/user"
@@ -191,6 +192,26 @@ func (uc *Usecase) OnText(ctx context.Context, u *user.User, text string) (respo
 	}
 
 	_ = uc.state.ClearState(ctx, u.TelegramID)
+
+	// Notify admins if registered via invite
+	if invite, err := uc.users.GetInviteByUsedByID(ctx, u.ID); err == nil && invite != nil && invite.CreatedBy != "" {
+		invitedBy := "Admin"
+		if creator, err := uc.users.GetByID(ctx, invite.CreatedBy); err == nil {
+			invitedBy = creator.Name
+			if creator.Username != "" {
+				invitedBy += " (@" + creator.Username + ")"
+			}
+		}
+
+		username := u.Username
+		if username == "" {
+			username = "—"
+		} else if !strings.HasPrefix(username, "@") {
+			username = "@" + username
+		}
+
+		_ = uc.notifier.NewInviteRegistration(ctx, username, u.Name, string(u.NoiseLevel), invitedBy)
+	}
 
 	return uc.Start(ctx, u, "")
 }

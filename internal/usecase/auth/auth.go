@@ -21,20 +21,28 @@ type StateStore interface {
 type Users interface {
 	ProcessInvite(ctx context.Context, userID string, payload string) error
 	Update(ctx context.Context, user *user.User) error
+	GetInviteByUsedByID(ctx context.Context, userID string) (*user.Invite, error)
+	GetByID(ctx context.Context, id string) (*user.User, error)
+}
+
+type Notifier interface {
+	NewInviteRegistration(ctx context.Context, username, name, noiseLevel, invitedBy string) error
 }
 
 type Usecase struct {
-	state   StateStore
-	users   Users
-	ttl     time.Duration
-	botName string
+	state    StateStore
+	users    Users
+	notifier Notifier
+	ttl      time.Duration
+	botName  string
 }
 
-func NewUsecase(state StateStore, users Users, ttl time.Duration, botName string) *Usecase {
+func NewUsecase(state StateStore, users Users, notifier Notifier, ttl time.Duration, botName string) *Usecase {
 	return &Usecase{
-		state:   state,
-		users:   users,
-		ttl:     ttl,
-		botName: botName,
+		state:    state,
+		users:    users,
+		notifier: notifier,
+		ttl:      ttl,
+		botName:  botName,
 	}
 }

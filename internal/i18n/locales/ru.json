@@ -89,6 +89,7 @@
   "admin.mod.msg_upg_cb": "Изменения применены",
   "admin.mod.msg_upg_notify": "🎉 <b>Уровень шума обновлен!</b>\n\nНовый лимит: <code>{{.category}}</code>. Доступны новые локации.",
   "admin.mod.app_no_media": "{{.caption}}\n\n📹 Медиа: <i>Пропущено</i>",
+  "admin.mod.invite_reg_title": "🎫 <b>Новый участник по инвайту</b>\n\n• Имя: {{.name}}\n• Username: {{.username}}\n• Уровень шума: <code>{{.noise}}</code>\n• Пригласил: {{.invited_by}}",
   "admin.locs.title": "📍 <b>Локации</b>\n\nВыберите площадку для управления или добавьте новую:",
   "admin.locs.btn_add": "➕ Добавить точку",
   "admin.locs.add_step1": "📝 <b>Новая локация</b> · 1/4\n\nВведите название площадки:",

@@ -77,7 +77,7 @@ func NewBot(
 	notifier := notifier.NewNotifier(b, tr, cfg.AdminChatID, cfg.AdminLang, cfg.AdminThreadApplications, cfg.AdminThreadUpgrades)
 
 	// usecases
-	authUc := auth.NewUsecase(state, users, 1*time.Hour, b.Me.FirstName)
+	authUc := auth.NewUsecase(state, users, notifier, 1*time.Hour, b.Me.FirstName)
 	bookingUc := bookingUsecase.NewUsecase(state, locs, bookings, users, 1*time.Hour, maxAdvanceDays, webAppURL, b.Me.Username)
 	adminUc := admin.NewUsecase(state, users, 1*time.Hour, cfg.InviteTTLHours)
 	adminlocUc := adminloc.NewUsecase(state, locs, bookings, users, mapimg.NewClient(mapsAPIKey), 1*time.Hour, maxAdvanceDays, webAppURL, b.Me.Username)

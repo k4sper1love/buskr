@@ -89,6 +89,7 @@
   "admin.mod.msg_upg_cb": "Approved",
   "admin.mod.msg_upg_notify": "🎉 <b>Noise Limit Updated</b>\n\nNew limit: <b>{{.category}}</b>. New spots are now available on the map.",
   "admin.mod.app_no_media": "{{.caption}}\n\n📹 Media: <i>Skipped</i>",
+  "admin.mod.invite_reg_title": "🎫 <b>New User via Invite</b>\n\n• Name: {{.name}}\n• Username: {{.username}}\n• Noise Level: <code>{{.noise}}</code>\n• Invited by: {{.invited_by}}",
   "admin.locs.title": "<b>Locations</b>\n\nSelect a spot or add a new one:",
   "admin.locs.btn_add": "➕ Add Location",
   "admin.locs.add_step1": "<b>New Location • Step 1 of 4</b>\n\nSend spot name:\n<blockquote>Example: Central Park Square</blockquote>",
