@@ -10,6 +10,7 @@ var (
 	ErrLocationInactive       = errors.New("location is temporarily unavailable for booking")
 	ErrInvalidTime            = errors.New("invalid booking time")
 	ErrInvalidStatus          = errors.New("invalid booking status for this action")
+	ErrAlreadyCheckedIn       = errors.New("booking is already checked in")
 	ErrAccessDenied           = errors.New("user is not the owner of this booking")
 	ErrMaxActiveBookings      = errors.New("max active bookings reached")
 	ErrMaxBookingsPerLocation = errors.New("max bookings per location at same day reached")

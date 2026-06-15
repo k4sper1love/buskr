@@ -32,6 +32,7 @@ type TelegramConfig struct {
 	AdminChatID             int64  `env:"TELEGRAM_ADMIN_CHAT_ID" env-required:"true"`
 	AdminThreadApplications int    `env:"TELEGRAM_ADMIN_THREAD_APPLICATIONS" env-default:"0"`
 	AdminThreadUpgrades     int    `env:"TELEGRAM_ADMIN_THREAD_UPGRADES" env-default:"0"`
+	AdminThreadSuggestions  int    `env:"TELEGRAM_ADMIN_THREAD_SUGGESTIONS" env-default:"0"`
 	PublicChatID            int64  `env:"TELEGRAM_PUBLIC_CHAT_ID" env-default:"0"`
 	SupportContact          string `env:"TELEGRAM_SUPPORT_CONTACT" env-default:"@buskr_support"`
 	InviteTTLHours          int    `env:"INVITE_TTL_HOURS" env-default:"24"`

@@ -111,6 +111,41 @@ func (h *Auth) HandleStart(c telebot.Context) error {
 		return h.renderer.Render(c, rep)
 	}
 
+	if payload == "suggest_loc" {
+		_ = c.Delete()
+
+		// Retrieve stored message ID of the location selection interface and delete it
+		if msgID, err := h.bookingUc.GetBookingMessageID(ctx, u.TelegramID); err == nil && msgID != 0 {
+			_ = c.Bot().Delete(&telebot.Message{
+				ID:   msgID,
+				Chat: &telebot.Chat{ID: u.TelegramID},
+			})
+			_ = h.bookingUc.ClearBookingMessageID(ctx, u.TelegramID)
+		}
+
+		rep, err := h.bookingUc.SuggestLocStart(ctx, u)
+		if err != nil {
+			return err
+		}
+		if rep.IsEmpty() {
+			return nil
+		}
+		rep.Kind = response.KindSend
+
+		lang := ""
+		if s := c.Sender(); s != nil && s.LanguageCode != "" {
+			lang = s.LanguageCode
+		}
+		text, opts := h.renderer.BuildOpts(lang, rep)
+		msg, err := c.Bot().Send(c.Recipient(), text, opts...)
+		if err != nil {
+			return err
+		}
+
+		_ = h.bookingUc.SaveSuggestLocMessageID(ctx, u.TelegramID, msg.ID)
+		return nil
+	}
+
 	rep, err := h.uc.Start(ctx, u, payload)
 	if err != nil {
 		return err

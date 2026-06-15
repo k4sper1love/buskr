@@ -258,6 +258,7 @@ const (
 	TextBookErrInvalidTime      = "book.err.invalid_time"
 	TextBookErrInvalidStatus    = "book.err.invalid_status"
 	TextBookErrHotSlotsDisabled = "book.err.hot_slots_disabled"
+	TextBookErrAlreadyCheckedIn = "book.err.already_checked_in"
 )
 
 // worker

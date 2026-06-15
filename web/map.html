@@ -294,6 +294,37 @@
       margin-top: 80px !important;
       margin-right: 15px !important;
     }
+
+    /* Suggest Spot Floating Button */
+    .btn-suggest {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1), transform 0.2s ease;
+      z-index: 999;
+      /* below detail card which is 1000 */
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .btn-suggest:active {
+      transform: translateX(-50%) scale(0.95);
+    }
   </style>
 </head>
 
@@ -328,6 +359,11 @@
     </button>
   </div>
 
+  <!-- Suggest Spot Floating Button -->
+  <button class="btn-suggest" id="btn-suggest" style="display: none;">
+    📍 <span id="btn-suggest-text">Suggest Spot</span>
+  </button>
+
   <!-- Telegram WebApp JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Leaflet JS -->
@@ -359,7 +395,8 @@
         loading: "Загрузка интерактивной карты...",
         noDesc: "Описание отсутствует.",
         active: "Активна",
-        inactive: "Отключена"
+        inactive: "Отключена",
+        suggestBtn: "Предложить точку"
       },
       en: {
         title: "CHOOSE SPOT",
@@ -370,7 +407,8 @@
         loading: "Loading interactive map...",
         noDesc: "No description provided.",
         active: "Active",
-        inactive: "Disabled"
+        inactive: "Disabled",
+        suggestBtn: "Suggest Spot"
       }
     };
 
@@ -380,6 +418,7 @@
     document.getElementById('loader-text').innerText = t.loading;
     document.getElementById('header-title').innerText = t.title;
     document.getElementById('btn-select').innerHTML = t.confirmBtn;
+    document.getElementById('btn-suggest-text').innerText = t.suggestBtn;
 
     // Parse parameters from window.location.hash (e.g. #bot=Username&locs=Base64)
     function getParamsFromHash() {
@@ -546,6 +585,8 @@
           }
 
           document.getElementById('detail-card').classList.add('active');
+          document.getElementById('btn-suggest').style.opacity = '0';
+          document.getElementById('btn-suggest').style.pointerEvents = 'none';
         });
       });
 
@@ -560,6 +601,10 @@
         if (e.originalEvent.target.closest('.custom-leaflet-marker')) return;
 
         document.getElementById('detail-card').classList.remove('active');
+
+        document.getElementById('btn-suggest').style.opacity = '1';
+        document.getElementById('btn-suggest').style.pointerEvents = 'auto';
+
         if (selectedMarker) {
           const innerElement = selectedMarker.getElement().querySelector('.custom-marker');
           if (innerElement) innerElement.classList.remove('selected');
@@ -595,6 +640,22 @@
       tg.openTelegramLink("https://t.me/" + botUsername + "?start=" + prefix + selectedSpot.id);
 
       // Close WebApp
+      setTimeout(() => {
+        tg.close();
+      }, 100);
+    });
+
+    // Show suggest button for musicians
+    if (mode !== 'admin') {
+    document.getElementById('btn-suggest').style.display = 'flex';
+    }
+
+    // Suggest spot handler
+    document.getElementById('btn-suggest').addEventListener('click', function () {
+      if (tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('medium');
+      }
+      tg.openTelegramLink("https://t.me/" + botUsername + "?start=suggest_loc");
       setTimeout(() => {
         tg.close();
       }, 100);

@@ -30,6 +30,8 @@ type Locations interface {
 
 type Users interface {
 	GetByID(ctx context.Context, id string) (*user.User, error)
+	RecordNewBooking(ctx context.Context, userID string) error
+	RecordSuccessfulCheckin(ctx context.Context, userID string) error
 }
 
 type Notifier interface {

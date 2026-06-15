@@ -149,8 +149,12 @@ func (n *Notifier) NewLocationSuggestion(ctx context.Context, loc *location.Loca
 		ParseMode:   telebot.ModeHTML,
 		ReplyMarkup: menu,
 	}
-	if n.adminThreadApplications > 0 {
-		opts.ThreadID = n.adminThreadApplications
+	threadID := n.adminThreadSuggestions
+	if threadID == 0 {
+		threadID = n.adminThreadApplications
+	}
+	if threadID > 0 {
+		opts.ThreadID = threadID
 	}
 
 	_, err := n.bot.Send(&telebot.Chat{ID: n.adminChatID}, textMsg, opts)

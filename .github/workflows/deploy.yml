@@ -113,4 +113,4 @@ jobs:
             docker compose up -d postgres redis
             docker compose --profile migrate run --rm migrate up
             docker compose pull bot
-            docker compose up -d bot
+            docker compose up -d --force-recreate bot

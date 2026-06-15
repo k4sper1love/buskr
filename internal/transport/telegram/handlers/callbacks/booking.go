@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/k4sper1love/buskr/internal/config"
 	bookingDomain "github.com/k4sper1love/buskr/internal/domain/booking"
@@ -346,14 +347,24 @@ func (h *Booking) HandleBookingCheckIn(c telebot.Context) error {
 			lang = s.LanguageCode
 		}
 		var alertText string
-		if errors.Is(err, bookingDomain.ErrInvalidStatus) {
+		if errors.Is(err, bookingDomain.ErrAlreadyCheckedIn) {
+			alertText = h.renderer.Translate(lang, response.Text{
+				Key:      keys.TextBookErrAlreadyCheckedIn,
+				Fallback: "⚠️ Чек-ин уже пройден.",
+			})
+			_ = c.Respond(&telebot.CallbackResponse{Text: alertText, ShowAlert: true})
+			// Append error text and remove keyboard
+			updatedText := strings.TrimSpace(c.Message().Text) + "\n\n" + alertText
+			_, _ = c.Bot().Edit(c.Message(), updatedText, telebot.ModeHTML, &telebot.ReplyMarkup{})
+			return nil
+		} else if errors.Is(err, bookingDomain.ErrInvalidStatus) {
 			alertText = h.renderer.Translate(lang, response.Text{
 				Key:      keys.TextBookErrInvalidStatus,
 				Fallback: "Чек-ин недоступен: время вышло или бронь отменена",
 			})
 			_ = c.Respond(&telebot.CallbackResponse{Text: alertText, ShowAlert: true})
 			// Append error text and remove keyboard
-			updatedText := c.Message().Text + "\n\n" + alertText
+			updatedText := strings.TrimSpace(c.Message().Text) + "\n\n" + alertText
 			_, _ = c.Bot().Edit(c.Message(), updatedText, telebot.ModeHTML, &telebot.ReplyMarkup{})
 			return nil
 		} else {
@@ -365,8 +376,8 @@ func (h *Booking) HandleBookingCheckIn(c telebot.Context) error {
 		return c.Respond(&telebot.CallbackResponse{Text: alertText, ShowAlert: true})
 	}
 
-	suffix := h.renderer.Translate("", rep.SuccessSuffix)
-	updatedText := c.Message().Text + "\n\n" + suffix
+	suffix := strings.TrimSpace(h.renderer.Translate("", rep.SuccessSuffix))
+	updatedText := strings.TrimSpace(c.Message().Text) + "\n\n" + suffix
 
 	_, err = c.Bot().Edit(c.Message(), updatedText, telebot.ModeHTML, &telebot.ReplyMarkup{})
 	if err != nil {

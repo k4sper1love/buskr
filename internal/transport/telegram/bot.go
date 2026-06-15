@@ -84,7 +84,7 @@ func NewBot(
 	renderer := render.NewRenderer(tr, cfg.DefaultLang)
 
 	// admin notifier
-	notifier := notifier.NewNotifier(b, tr, cfg.AdminChatID, cfg.AdminLang, cfg.AdminThreadApplications, cfg.AdminThreadUpgrades)
+	notifier := notifier.NewNotifier(b, tr, cfg.AdminChatID, cfg.AdminLang, cfg.AdminThreadApplications, cfg.AdminThreadUpgrades, cfg.AdminThreadSuggestions)
 
 	// usecases
 	authUc := auth.NewUsecase(state, users, notifier, 1*time.Hour, b.Me.FirstName)

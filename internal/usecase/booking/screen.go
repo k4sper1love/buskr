@@ -171,6 +171,8 @@ func (uc *Usecase) CheckIn(ctx context.Context, u *user.User, bookingID string) 
 		return CheckInResult{}, err
 	}
 
+	_ = uc.users.RecordSuccessfulCheckin(ctx, u.ID)
+
 	return CheckInResult{
 		SuccessSuffix: response.Text{Key: keys.TextBookDetMsgCheckinSfx},
 		Callback:      response.Text{Key: keys.TextBookDetMsgCheckinCb},
@@ -187,6 +189,8 @@ func (uc *Usecase) GrabHotSlot(ctx context.Context, u *user.User, locID string, 
 	if err != nil {
 		return response.Reply{}, err
 	}
+
+	_ = uc.users.RecordNewBooking(ctx, u.ID)
 
 	locData, _ := uc.locs.GetByID(ctx, locID)
 
@@ -278,13 +282,6 @@ func (uc *Usecase) ScheduleStart(ctx context.Context, u *user.User) (response.Re
 			},
 		})
 	}
-
-	rows = append(rows, []response.Button{
-		{
-			Text: response.Text{Key: keys.TextAuthActiveBtnSuggestLoc},
-			Data: response.CallbackData{Unique: keys.BtnSuggestLocStart},
-		},
-	})
 
 	rows = append(rows, []response.Button{
 		{

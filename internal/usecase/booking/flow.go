@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -203,13 +204,6 @@ func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) 
 			},
 		})
 	}
-
-	rows = append(rows, []response.Button{
-		{
-			Text: response.Text{Key: keys.TextAuthActiveBtnSuggestLoc},
-			Data: response.CallbackData{Unique: keys.BtnSuggestLocStart},
-		},
-	})
 
 	rows = append(rows, []response.Button{
 		{
@@ -523,6 +517,8 @@ func (uc *Usecase) DurationSelected(ctx context.Context, u *user.User, duration 
 		}
 		return BookingResult{}, err
 	}
+
+	_ = uc.users.RecordNewBooking(ctx, u.ID)
 
 	uc.state.ClearState(ctx, u.TelegramID)
 	uc.state.ClearData(ctx, u.TelegramID, keys.DataBookingDate)
@@ -921,7 +917,9 @@ func (uc *Usecase) doCreateSuggest(ctx context.Context, actor *user.User, name, 
 
 	// Send notification to admins
 	if uc.notifier != nil {
-		_ = uc.notifier.NewLocationSuggestion(ctx, loc, actor)
+		if err := uc.notifier.NewLocationSuggestion(ctx, loc, actor); err != nil {
+			slog.Error("failed to send location suggestion notification", "err", err, "location_id", loc.ID)
+		}
 	}
 
 	_ = uc.state.ClearState(ctx, actor.TelegramID)

@@ -86,7 +86,7 @@ func (r *LocationRepository) List(ctx context.Context, includeInactive bool) ([]
 			ST_Y(coords::geometry) as lat, ST_X(coords::geometry) as lon, 
 			max_noise, status, suggested_by, created_at, updated_at
 		FROM locations
-		WHERE status = 'active' OR $1 = true
+		WHERE status = 'active' OR ($1 = true AND status = 'inactive')
 	`
 
 	rows, err := r.db.QueryContext(ctx, query, includeInactive)

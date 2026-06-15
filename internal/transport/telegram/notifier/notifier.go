@@ -16,6 +16,7 @@ type Notifier struct {
 	adminLang               string
 	adminThreadApplications int
 	adminThreadUpgrades     int
+	adminThreadSuggestions  int
 }
 
 func NewNotifier(
@@ -25,6 +26,7 @@ func NewNotifier(
 	adminLang string,
 	adminThreadApplications int,
 	adminThreadUpgrades int,
+	adminThreadSuggestions int,
 ) *Notifier {
 	return &Notifier{
 		bot:                     bot,
@@ -33,5 +35,6 @@ func NewNotifier(
 		adminLang:               adminLang,
 		adminThreadApplications: adminThreadApplications,
 		adminThreadUpgrades:     adminThreadUpgrades,
+		adminThreadSuggestions:  adminThreadSuggestions,
 	}
 }

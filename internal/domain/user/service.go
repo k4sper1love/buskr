@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
@@ -24,19 +25,25 @@ func NewService(repo Repository, cfg Config) *Service {
 
 func (s *Service) GetOrCreateUser(ctx context.Context, telegramID int64, username string) (*User, error) {
 	u, err := s.repo.GetByTelegramID(ctx, telegramID)
-	if err != nil {
-		newUser := NewUser(telegramID, username, s.cfg.MaxKarma)
-		if err := s.repo.Create(ctx, newUser); err != nil {
-			return nil, err
-		}
-
-		stats := &UserStats{UserID: newUser.ID}
-		_ = s.repo.UpdateStats(ctx, stats)
-
-		return newUser, nil
+	if err == nil {
+		return u, nil
+	}
+	if !errors.Is(err, ErrUserNotFound) {
+		return nil, err
 	}
 
-	return u, nil
+	newUser := NewUser(telegramID, username, s.cfg.MaxKarma)
+	if err := s.repo.Create(ctx, newUser); err != nil {
+		if existing, fetchErr := s.repo.GetByTelegramID(ctx, telegramID); fetchErr == nil {
+			return existing, nil
+		}
+		return nil, err
+	}
+
+	stats := &UserStats{UserID: newUser.ID}
+	_ = s.repo.UpdateStats(ctx, stats)
+
+	return newUser, nil
 }
 
 func (s *Service) GetByID(ctx context.Context, id string) (*User, error) {
@@ -129,6 +136,16 @@ func (s *Service) ActiveViaInvite(ctx context.Context, userID string, noise Nois
 	u.UpdatedAt = time.Now()
 
 	return s.repo.Update(ctx, u)
+}
+
+func (s *Service) RecordNewBooking(ctx context.Context, userID string) error {
+	stats, err := s.repo.GetStats(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	stats.TotalBookings++
+	return s.repo.UpdateStats(ctx, stats)
 }
 
 func (s *Service) RecordSuccessfulCheckin(ctx context.Context, userID string) error {

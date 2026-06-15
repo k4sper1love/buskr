@@ -183,6 +183,10 @@ func (s *Service) CheckIn(ctx context.Context, bookingID string, userID string) 
 		return user.ErrAccessDenied
 	}
 
+	if b.Status == StatusActive {
+		return ErrAlreadyCheckedIn
+	}
+
 	if b.Status != StatusPending {
 		return ErrInvalidStatus
 	}
