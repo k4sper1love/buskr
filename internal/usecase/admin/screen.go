@@ -2,7 +2,6 @@ package admin
 
 import (
 	"context"
-	"errors"
 
 	"github.com/k4sper1love/buskr/internal/domain/user"
 	"github.com/k4sper1love/buskr/internal/usecase/keys"
@@ -11,7 +10,7 @@ import (
 
 func (uc *Usecase) AdminPanel(ctx context.Context, u *user.User) (response.Reply, error) {
 	if u.Role != user.RoleAdmin {
-		return response.Reply{}, errors.New("access denied")
+		return response.Reply{}, user.ErrAccessDenied
 	}
 
 	return response.Reply{

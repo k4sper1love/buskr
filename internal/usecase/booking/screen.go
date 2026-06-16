@@ -243,7 +243,11 @@ func (uc *Usecase) ScheduleStart(ctx context.Context, u *user.User) (response.Re
 		jsonData, err := json.Marshal(webAppLocs)
 		if err == nil {
 			encoded := base64.URLEncoding.EncodeToString(jsonData)
-			webAppURL = fmt.Sprintf("%s?v=%d#bot=%s&mode=schedule&locs=%s", uc.webAppURL, time.Now().Unix(), uc.botUsername, encoded)
+			isAdminStr := ""
+			if u.Role == user.RoleAdmin {
+				isAdminStr = "&is_admin=true"
+			}
+			webAppURL = fmt.Sprintf("%s?v=%d#bot=%s&mode=schedule%s&locs=%s", uc.webAppURL, time.Now().Unix(), uc.botUsername, isAdminStr, encoded)
 		}
 	}
 

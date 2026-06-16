@@ -164,7 +164,11 @@ func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) 
 		jsonData, err := json.Marshal(webAppLocs)
 		if err == nil {
 			encoded := base64.URLEncoding.EncodeToString(jsonData)
-			webAppURL = fmt.Sprintf("%s?v=%d#bot=%s&locs=%s", uc.webAppURL, time.Now().Unix(), uc.botUsername, encoded)
+			isAdminStr := ""
+			if u.Role == user.RoleAdmin {
+				isAdminStr = "&is_admin=true"
+			}
+			webAppURL = fmt.Sprintf("%s?v=%d#bot=%s%s&locs=%s", uc.webAppURL, time.Now().Unix(), uc.botUsername, isAdminStr, encoded)
 		}
 	}
 

@@ -3,6 +3,7 @@ package keys
 // common
 const (
 	TextCommonErrGeneral      = "common.err.general"
+	TextCommonErrAccessDenied = "common.err.access_denied"
 	TextCommonBtnBack         = "common.btn.back"
 	TextCommonBtnMenu         = "common.btn.menu"
 	TextCommonBtnCancel       = "common.btn.cancel"

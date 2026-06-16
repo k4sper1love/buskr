@@ -442,6 +442,7 @@
     const hashParams = getParamsFromHash();
     const botUsername = hashParams['bot'] || 'BuskrBot';
     const mode = hashParams['mode'] || 'user';
+    const isAdmin = hashParams['is_admin'] === 'true' || mode === 'admin';
     const base64Str = hashParams['locs'] || '';
 
     function getSpotsFromBase64(base64Str) {
@@ -585,8 +586,10 @@
           }
 
           document.getElementById('detail-card').classList.add('active');
-          document.getElementById('btn-suggest').style.opacity = '0';
-          document.getElementById('btn-suggest').style.pointerEvents = 'none';
+          if (!isAdmin) {
+            document.getElementById('btn-suggest').style.opacity = '0';
+            document.getElementById('btn-suggest').style.pointerEvents = 'none';
+          }
         });
       });
 
@@ -602,8 +605,10 @@
 
         document.getElementById('detail-card').classList.remove('active');
 
-        document.getElementById('btn-suggest').style.opacity = '1';
-        document.getElementById('btn-suggest').style.pointerEvents = 'auto';
+        if (!isAdmin) {
+          document.getElementById('btn-suggest').style.opacity = '1';
+          document.getElementById('btn-suggest').style.pointerEvents = 'auto';
+        }
 
         if (selectedMarker) {
           const innerElement = selectedMarker.getElement().querySelector('.custom-marker');
@@ -645,9 +650,9 @@
       }, 100);
     });
 
-    // Show suggest button for musicians
-    if (mode !== 'admin') {
-    document.getElementById('btn-suggest').style.display = 'flex';
+    // Show suggest button for musicians only (not admins)
+    if (!isAdmin) {
+      document.getElementById('btn-suggest').style.display = 'flex';
     }
 
     // Suggest spot handler

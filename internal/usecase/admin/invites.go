@@ -2,7 +2,6 @@ package admin
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/k4sper1love/buskr/internal/domain/user"
@@ -12,7 +11,7 @@ import (
 
 func (uc *Usecase) Invites(ctx context.Context, actor *user.User) (response.Reply, error) {
 	if actor.Role != user.RoleAdmin {
-		return response.Reply{}, errors.New("access denied")
+		return response.Reply{}, user.ErrAccessDenied
 	}
 
 	return response.Reply{
@@ -58,7 +57,7 @@ func (uc *Usecase) Invites(ctx context.Context, actor *user.User) (response.Repl
 
 func (uc *Usecase) GenerateInvite(ctx context.Context, actor *user.User, botUsername string, noise string) (response.Reply, error) {
 	if actor.Role != user.RoleAdmin {
-		return response.Reply{}, errors.New("access denied")
+		return response.Reply{}, user.ErrAccessDenied
 	}
 
 	invite, err := uc.users.GenerateInvite(ctx, actor.ID, user.NoiseLevel(noise), uc.inviteTTL)

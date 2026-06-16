@@ -1,5 +1,6 @@
 {
   "common.err.general": "⚠️ <b>Ошибка</b>\nЧто-то пошло не так. Повторите попытку.",
+  "common.err.access_denied": "⛔ Доступ запрещён",
   "common.btn.back": "« Назад",
   "common.btn.menu": "🏠 Главное меню",
   "common.btn.cancel": "✕ Отмена",

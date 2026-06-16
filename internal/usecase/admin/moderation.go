@@ -2,7 +2,6 @@ package admin
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/k4sper1love/buskr/internal/domain/location"
@@ -13,7 +12,7 @@ import (
 
 func (uc *Usecase) ApproveApplication(ctx context.Context, actor *user.User, targetUserID string, category user.NoiseLevel) (ModerationResult, error) {
 	if actor.Role != user.RoleAdmin {
-		return ModerationResult{}, errors.New("access denied")
+		return ModerationResult{}, user.ErrAccessDenied
 	}
 
 	err := uc.users.ApproveApplication(ctx, targetUserID, category)
@@ -63,7 +62,7 @@ func (uc *Usecase) ApproveApplication(ctx context.Context, actor *user.User, tar
 
 func (uc *Usecase) RejectApplication(ctx context.Context, actor *user.User, targetUserID string) (ModerationResult, error) {
 	if actor.Role != user.RoleAdmin {
-		return ModerationResult{}, errors.New("access denied")
+		return ModerationResult{}, user.ErrAccessDenied
 	}
 
 	err := uc.users.RejectApplication(ctx, targetUserID)
@@ -113,7 +112,7 @@ func (uc *Usecase) RejectApplication(ctx context.Context, actor *user.User, targ
 
 func (uc *Usecase) ApproveNoiseUpgrade(ctx context.Context, actor *user.User, targetUserID string, category user.NoiseLevel) (ModerationResult, error) {
 	if actor.Role != user.RoleAdmin {
-		return ModerationResult{}, errors.New("access denied")
+		return ModerationResult{}, user.ErrAccessDenied
 	}
 
 	targetUser, err := uc.users.GetByID(ctx, targetUserID)
@@ -172,7 +171,7 @@ func (uc *Usecase) ApproveNoiseUpgrade(ctx context.Context, actor *user.User, ta
 
 func (uc *Usecase) RejectNoiseUpgrade(ctx context.Context, actor *user.User, targetUserID string) (ModerationResult, error) {
 	if actor.Role != user.RoleAdmin {
-		return ModerationResult{}, errors.New("access denied")
+		return ModerationResult{}, user.ErrAccessDenied
 	}
 
 	targetUser, err := uc.users.GetByID(ctx, targetUserID)
@@ -216,7 +215,7 @@ func (uc *Usecase) RejectNoiseUpgrade(ctx context.Context, actor *user.User, tar
 
 func (uc *Usecase) ApproveLocationSuggestion(ctx context.Context, actor *user.User, locID string) (ModerationResult, error) {
 	if actor.Role != user.RoleAdmin {
-		return ModerationResult{}, errors.New("access denied")
+		return ModerationResult{}, user.ErrAccessDenied
 	}
 
 	loc, err := uc.locs.GetByID(ctx, locID)
@@ -272,7 +271,7 @@ func (uc *Usecase) ApproveLocationSuggestion(ctx context.Context, actor *user.Us
 
 func (uc *Usecase) RejectLocationSuggestion(ctx context.Context, actor *user.User, locID string) (ModerationResult, error) {
 	if actor.Role != user.RoleAdmin {
-		return ModerationResult{}, errors.New("access denied")
+		return ModerationResult{}, user.ErrAccessDenied
 	}
 
 	loc, err := uc.locs.GetByID(ctx, locID)

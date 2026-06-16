@@ -1,5 +1,6 @@
 {
   "common.err.general": "⚠️ Something went wrong. Shall we try again?",
+  "common.err.access_denied": "⛔ Access denied",
   "common.btn.back": "⬅️",
   "common.btn.menu": "🏠 Menu",
   "common.btn.cancel": "❌",
