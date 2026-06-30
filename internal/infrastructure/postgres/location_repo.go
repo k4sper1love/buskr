@@ -19,8 +19,8 @@ func NewLocationRepository(db *sql.DB) *LocationRepository {
 func (r *LocationRepository) Create(ctx context.Context, loc *location.Location) error {
 	// ST_SetSRID(ST_MakePoint(longitude, latitude), 4326) creates a standard GPS point
 	query := `
-		INSERT INTO locations (id, name, description, coords, max_noise, status, suggested_by, created_at, updated_at)
-		VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326), $6, $7, $8, $9, $10)
+		INSERT INTO locations (id, name, description, coords, max_noise, status, suggested_by, is_veteran, created_at, updated_at)
+		VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326), $6, $7, $8, $9, $10, $11)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
@@ -32,6 +32,7 @@ func (r *LocationRepository) Create(ctx context.Context, loc *location.Location)
 		string(loc.MaxNoise),
 		string(loc.Status),
 		loc.SuggestedBy,
+		loc.IsVeteran,
 		loc.CreatedAt,
 		loc.UpdatedAt,
 	)
@@ -45,7 +46,7 @@ func (r *LocationRepository) GetByID(ctx context.Context, id string) (*location.
 		SELECT 
 			id, name, description, 
 			ST_Y(coords::geometry) as lat, ST_X(coords::geometry) as lon, 
-			max_noise, status, suggested_by, created_at, updated_at
+			max_noise, status, suggested_by, is_veteran, created_at, updated_at
 		FROM locations
 		WHERE id = $1
 	`
@@ -62,6 +63,7 @@ func (r *LocationRepository) GetByID(ctx context.Context, id string) (*location.
 		&maxNoise,
 		&status,
 		&loc.SuggestedBy,
+		&loc.IsVeteran,
 		&loc.CreatedAt,
 		&loc.UpdatedAt,
 	)
@@ -84,7 +86,7 @@ func (r *LocationRepository) List(ctx context.Context, includeInactive bool) ([]
 		SELECT 
 			id, name, description, 
 			ST_Y(coords::geometry) as lat, ST_X(coords::geometry) as lon, 
-			max_noise, status, suggested_by, created_at, updated_at
+			max_noise, status, suggested_by, is_veteran, created_at, updated_at
 		FROM locations
 		WHERE status = 'active' OR ($1 = true AND status = 'inactive')
 	`
@@ -110,6 +112,7 @@ func (r *LocationRepository) List(ctx context.Context, includeInactive bool) ([]
 			&maxNoise,
 			&status,
 			&loc.SuggestedBy,
+			&loc.IsVeteran,
 			&loc.CreatedAt,
 			&loc.UpdatedAt,
 		)
@@ -140,8 +143,9 @@ func (r *LocationRepository) Update(ctx context.Context, loc *location.Location)
 			max_noise = $5, 
 			status = $6, 
 			suggested_by = $7,
-			updated_at = $8
-		WHERE id = $9
+			is_veteran = $8,
+			updated_at = $9
+		WHERE id = $10
 	`
 
 	res, err := r.db.ExecContext(ctx, query,
@@ -152,6 +156,7 @@ func (r *LocationRepository) Update(ctx context.Context, loc *location.Location)
 		string(loc.MaxNoise),
 		string(loc.Status),
 		loc.SuggestedBy,
+		loc.IsVeteran,
 		loc.UpdatedAt,
 		loc.ID,
 	)
@@ -174,7 +179,7 @@ func (r *LocationRepository) FindNearby(ctx context.Context, lat, lon, radiusMet
 	query := `
 		SELECT id, name, description, 
 			ST_Y(coords::geometry) as lat, ST_X(coords::geometry) as lon, 
-			max_noise, status, suggested_by, created_at, updated_at,
+			max_noise, status, suggested_by, is_veteran, created_at, updated_at,
 			ST_Distance(
 				coords::geography, 
 				ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
@@ -210,6 +215,7 @@ func (r *LocationRepository) FindNearby(ctx context.Context, lat, lon, radiusMet
 			&maxNoise,
 			&status,
 			&loc.SuggestedBy,
+			&loc.IsVeteran,
 			&loc.CreatedAt, &loc.UpdatedAt,
 			&dist,
 		); err != nil {

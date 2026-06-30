@@ -23,12 +23,13 @@ const (
 )
 
 type webAppLocation struct {
-	ID     string  `json:"id"`
-	Name   string  `json:"name"`
-	Desc   string  `json:"desc"`
-	Lat    float64 `json:"lat"`
-	Lon    float64 `json:"lon"`
-	Status string  `json:"status"`
+	ID        string  `json:"id"`
+	Name      string  `json:"name"`
+	Desc      string  `json:"desc"`
+	Lat       float64 `json:"lat"`
+	Lon       float64 `json:"lon"`
+	Status    string  `json:"status"`
+	IsVeteran bool    `json:"is_veteran"`
 }
 
 func (uc *Usecase) List(ctx context.Context, actor *user.User, page int) (response.Reply, error) {
@@ -49,12 +50,13 @@ func (uc *Usecase) List(ctx context.Context, actor *user.User, page int) (respon
 		var webAppLocs []webAppLocation
 		for _, loc := range locs {
 			webAppLocs = append(webAppLocs, webAppLocation{
-				ID:     loc.ID,
-				Name:   loc.Name,
-				Desc:   loc.Description,
-				Lat:    loc.Coords.Lat,
-				Lon:    loc.Coords.Lon,
-				Status: string(loc.Status),
+				ID:        loc.ID,
+				Name:      loc.Name,
+				Desc:      loc.Description,
+				Lat:       loc.Coords.Lat,
+				Lon:       loc.Coords.Lon,
+				Status:    string(loc.Status),
+				IsVeteran: loc.IsVeteran,
 			})
 		}
 		jsonData, err := json.Marshal(webAppLocs)
@@ -116,6 +118,16 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 		toogleKey = keys.TextAdminLocsBtnEnable
 	}
 
+	statusKey := "common.lbl.loc_status_" + string(loc.Status)
+	if loc.IsVeteran {
+		statusKey = "common.lbl.loc_status_veteran"
+	}
+
+	veteranToggleKey := keys.TextAdminLocsBtnPromoteVeteran
+	if loc.IsVeteran {
+		veteranToggleKey = keys.TextAdminLocsBtnDemoteVeteran
+	}
+
 	map2GISURL := fmt.Sprintf("https://2gis.kz/geo/%f,%f", loc.Coords.Lon, loc.Coords.Lat)
 	mapYandexURL := fmt.Sprintf("https://yandex.kz/maps/?text=%f,%f", loc.Coords.Lat, loc.Coords.Lon)
 
@@ -127,7 +139,7 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 				"name":      loc.Name,
 				"desc":      loc.Description,
 				"max_noise": "common.lbl.noise_" + string(loc.MaxNoise),
-				"status":    "common.lbl.loc_status_" + string(loc.Status),
+				"status":    statusKey,
 				"lat":       fmt.Sprintf("%.6f", loc.Coords.Lat),
 				"lon":       fmt.Sprintf("%.6f", loc.Coords.Lon),
 			},
@@ -159,6 +171,12 @@ func (uc *Usecase) Details(ctx context.Context, actor *user.User, locID string) 
 					{
 						Text: response.Text{Key: toogleKey},
 						Data: response.CallbackData{Unique: keys.BtnAdminLocTog, Args: []string{loc.ID}},
+					},
+				},
+				{
+					{
+						Text: response.Text{Key: veteranToggleKey},
+						Data: response.CallbackData{Unique: keys.BtnAdminLocTogVeteran, Args: []string{loc.ID}},
 					},
 				},
 				{
@@ -197,6 +215,21 @@ func (uc *Usecase) ToggleStatus(ctx context.Context, actor *user.User, locID str
 	}
 
 	if err := uc.locs.ChangeStatus(ctx, locID, newStatus); err != nil {
+		return response.Reply{
+			Kind: response.KindEdit,
+			Text: response.Text{Key: keys.TextCommonErrGeneral},
+		}, nil
+	}
+
+	return uc.Details(ctx, actor, locID)
+}
+
+func (uc *Usecase) ToggleVeteran(ctx context.Context, actor *user.User, locID string) (response.Reply, error) {
+	if actor.Role != user.RoleAdmin {
+		return response.Reply{}, nil
+	}
+
+	if err := uc.locs.ToggleVeteran(ctx, locID); err != nil {
 		return response.Reply{
 			Kind: response.KindEdit,
 			Text: response.Text{Key: keys.TextCommonErrGeneral},

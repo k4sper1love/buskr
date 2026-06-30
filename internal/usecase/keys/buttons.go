@@ -51,6 +51,7 @@ const (
 	BtnAdminLocs             = "ad_loc"
 	BtnAdminLocDet           = "ad_ldt"
 	BtnAdminLocTog           = "ad_ltg"
+	BtnAdminLocTogVeteran    = "ad_ltgv"
 	BtnAdminLocAdd           = "ad_lad"
 	BtnAdminLocNoise         = "ad_lno"
 	BtnAdminLocCancel        = "ad_lcn"

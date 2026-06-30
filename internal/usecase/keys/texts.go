@@ -136,6 +136,8 @@ const (
 	TextAdminLocsDetails         = "admin.locs.details"
 	TextAdminLocsBtnEnable       = "admin.locs.btn_enable"
 	TextAdminLocsBtnDisable      = "admin.locs.btn_disable"
+	TextAdminLocsBtnPromoteVeteran = "admin.locs.btn_promote_veteran"
+	TextAdminLocsBtnDemoteVeteran  = "admin.locs.btn_demote_veteran"
 
 	TextAdminLocsBtnEdit        = "admin.locs.btn_edit"
 	TextAdminLocsEditTitle      = "admin.locs.edit_title"
@@ -260,6 +262,7 @@ const (
 	TextBookErrInvalidStatus    = "book.err.invalid_status"
 	TextBookErrHotSlotsDisabled = "book.err.hot_slots_disabled"
 	TextBookErrAlreadyCheckedIn = "book.err.already_checked_in"
+	TextBookErrLocationUnbookable = "book.err.location_unbookable"
 )
 
 // worker

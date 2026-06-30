@@ -62,6 +62,18 @@ func (s *Service) ChangeStatus(ctx context.Context, id string, status Status) er
 	return s.repo.Update(ctx, loc)
 }
 
+func (s *Service) ToggleVeteran(ctx context.Context, id string) error {
+	loc, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	loc.IsVeteran = !loc.IsVeteran
+	loc.UpdatedAt = time.Now()
+
+	return s.repo.Update(ctx, loc)
+}
+
 func (s *Service) GetLocationsForAdmin(ctx context.Context) ([]*Location, error) {
 	return s.repo.List(ctx, true)
 }

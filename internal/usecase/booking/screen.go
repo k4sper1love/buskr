@@ -229,12 +229,13 @@ func (uc *Usecase) ScheduleStart(ctx context.Context, u *user.User) (response.Re
 	var webAppLocs []webAppLocation
 	for _, loc := range locations {
 		webAppLocs = append(webAppLocs, webAppLocation{
-			ID:       loc.ID,
-			Name:     loc.Name,
-			Desc:     loc.Description,
-			Lat:      loc.Coords.Lat,
-			Lon:      loc.Coords.Lon,
-			MaxNoise: string(loc.MaxNoise),
+			ID:        loc.ID,
+			Name:      loc.Name,
+			Desc:      loc.Description,
+			Lat:       loc.Coords.Lat,
+			Lon:       loc.Coords.Lon,
+			MaxNoise:  string(loc.MaxNoise),
+			IsVeteran: loc.IsVeteran,
 		})
 	}
 

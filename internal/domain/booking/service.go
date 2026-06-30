@@ -77,6 +77,9 @@ func (s *Service) BookSlot(ctx context.Context, userID, locID string, start, end
 	if loc.Status != location.StatusActive {
 		return nil, ErrLocationInactive
 	}
+	if loc.IsVeteran {
+		return nil, ErrLocationUnbookable
+	}
 
 	bypassNoise := u.Role == user.RoleAdmin && s.cfg.AdminBypassNoiseLimits
 	if !bypassNoise && !IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise) {

@@ -26,6 +26,7 @@ type Locations interface {
 	GetLocationsForAdmin(ctx context.Context) ([]*location.Location, error)
 	GetByID(ctx context.Context, id string) (*location.Location, error)
 	ChangeStatus(ctx context.Context, id string, status location.Status) error
+	ToggleVeteran(ctx context.Context, id string) error
 	FindNearby(ctx context.Context, lat, lon float64, radiusMeters float64) ([]*location.LocationWithDist, error)
 	DeleteLocation(ctx context.Context, id string) error
 }

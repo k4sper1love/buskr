@@ -41,11 +41,10 @@ func (h *GroupHandler) HandleAddedToGroup(c telebot.Context) error {
 func (h *GroupHandler) HandleUserJoined(c telebot.Context) error {
 	slog.Debug("user joined event", "chat_id", c.Chat().ID, "chat_title", c.Chat().Title)
 
-	if c.Chat().ID == h.cfg.AdminChatID {
-		return nil
-	}
-
 	if c.Chat().ID != h.cfg.PublicChatID {
+		if c.Chat().ID == h.cfg.AdminChatID {
+			return nil
+		}
 		slog.Warn("user joined unauthorized chat, leaving", "chat_id", c.Chat().ID)
 		_ = c.Bot().Leave(c.Chat())
 		return nil

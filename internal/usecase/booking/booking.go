@@ -82,13 +82,14 @@ type Usecase struct {
 }
 
 type webAppLocation struct {
-	ID       string  `json:"id"`
-	Name     string  `json:"name"`
-	Desc     string  `json:"desc"`
-	Lat      float64 `json:"lat"`
-	Lon      float64 `json:"lon"`
-	MaxNoise string  `json:"max_noise,omitempty"`
-	Allowed  *bool   `json:"allowed,omitempty"`
+	ID        string  `json:"id"`
+	Name      string  `json:"name"`
+	Desc      string  `json:"desc"`
+	Lat       float64 `json:"lat"`
+	Lon       float64 `json:"lon"`
+	MaxNoise  string  `json:"max_noise,omitempty"`
+	Allowed   *bool   `json:"allowed,omitempty"`
+	IsVeteran bool    `json:"is_veteran"`
 }
 
 func NewUsecase(

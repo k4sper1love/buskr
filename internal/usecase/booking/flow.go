@@ -132,13 +132,14 @@ func (uc *Usecase) DateSelected(ctx context.Context, u *user.User, date string) 
 		allowed := booking.IsNoiseCompatible(u.NoiseLevel, loc.MaxNoise)
 
 		webAppLocs = append(webAppLocs, webAppLocation{
-			ID:       loc.ID,
-			Name:     loc.Name,
-			Desc:     loc.Description,
-			Lat:      loc.Coords.Lat,
-			Lon:      loc.Coords.Lon,
-			MaxNoise: string(loc.MaxNoise),
-			Allowed:  &allowed,
+			ID:        loc.ID,
+			Name:      loc.Name,
+			Desc:      loc.Description,
+			Lat:       loc.Coords.Lat,
+			Lon:       loc.Coords.Lon,
+			MaxNoise:  string(loc.MaxNoise),
+			Allowed:   &allowed,
+			IsVeteran: loc.IsVeteran,
 		})
 	}
 
@@ -691,6 +692,8 @@ func bookingErrKey(err error) string {
 		return keys.TextBookErrMaxPerLoc
 	case errors.Is(err, booking.ErrTooFarInFuture):
 		return keys.TextBookErrTooFarInFuture
+	case errors.Is(err, booking.ErrLocationUnbookable):
+		return keys.TextBookErrLocationUnbookable
 	default:
 		return ""
 	}

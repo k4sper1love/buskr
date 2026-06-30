@@ -186,6 +186,16 @@ func (h *FSM) HandleLocationMsg(c telebot.Context) error {
 
 	state, _ := h.State.GetState(ctx, c.Sender().ID)
 
+	var suggestLocMsgID int
+	if state == keys.StateSuggestLocGeo {
+		suggestLocMsgID, _ = h.Booking.GetSuggestLocMessageID(ctx, u.TelegramID)
+	}
+
+	var adminLocMsgID int
+	if state == keys.StateAdminLocGeo || state == keys.StateAdminLocEditGeo {
+		adminLocMsgID, _ = h.AdminLoc.GetAdminLocMessageID(ctx, u.TelegramID)
+	}
+
 	var rep response.Reply
 	var errLoc error
 
@@ -205,9 +215,9 @@ func (h *FSM) HandleLocationMsg(c telebot.Context) error {
 	if state == keys.StateSuggestLocGeo {
 		_ = c.Delete()
 
-		if msgID, err := h.Booking.GetSuggestLocMessageID(ctx, u.TelegramID); err == nil && msgID != 0 {
+		if suggestLocMsgID != 0 {
 			_ = c.Bot().Delete(&telebot.Message{
-				ID:   msgID,
+				ID:   suggestLocMsgID,
 				Chat: &telebot.Chat{ID: u.TelegramID},
 			})
 			_ = h.Booking.ClearSuggestLocMessageID(ctx, u.TelegramID)
@@ -219,9 +229,9 @@ func (h *FSM) HandleLocationMsg(c telebot.Context) error {
 	if state == keys.StateAdminLocGeo {
 		_ = c.Delete()
 
-		if msgID, err := h.AdminLoc.GetAdminLocMessageID(ctx, u.TelegramID); err == nil && msgID != 0 {
+		if adminLocMsgID != 0 {
 			_ = c.Bot().Delete(&telebot.Message{
-				ID:   msgID,
+				ID:   adminLocMsgID,
 				Chat: &telebot.Chat{ID: u.TelegramID},
 			})
 			_ = h.AdminLoc.ClearAdminLocMessageID(ctx, u.TelegramID)
@@ -231,6 +241,16 @@ func (h *FSM) HandleLocationMsg(c telebot.Context) error {
 	}
 
 	if state == keys.StateAdminLocEditGeo {
+		_ = c.Delete()
+
+		if adminLocMsgID != 0 {
+			_ = c.Bot().Delete(&telebot.Message{
+				ID:   adminLocMsgID,
+				Chat: &telebot.Chat{ID: u.TelegramID},
+			})
+			_ = h.AdminLoc.ClearAdminLocMessageID(ctx, u.TelegramID)
+		}
+
 		success := response.Reply{
 			Kind: response.KindSend,
 			Text: response.Text{Key: keys.TextAdminLocsEditMsgSuccess},

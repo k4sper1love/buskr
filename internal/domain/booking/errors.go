@@ -8,6 +8,7 @@ var (
 	ErrNoiseExceeded          = errors.New("equipment noise level exceeds location limits")
 	ErrUserNotActive          = errors.New("booking is only available for active users")
 	ErrLocationInactive       = errors.New("location is temporarily unavailable for booking")
+	ErrLocationUnbookable     = errors.New("location is reserved for veterans only and cannot be booked")
 	ErrInvalidTime            = errors.New("invalid booking time")
 	ErrInvalidStatus          = errors.New("invalid booking status for this action")
 	ErrAlreadyCheckedIn       = errors.New("booking is already checked in")
