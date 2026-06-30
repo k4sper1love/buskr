@@ -17,6 +17,12 @@ func AuthMiddleware(users *user.Service) telebot.MiddlewareFunc {
 				return next(c) // skip if there's no sender (e.g., some channel events)
 			}
 
+			// Do not register/load users for group messages (only allow private chats and callback clicks in groups)
+			chat := c.Chat()
+			if chat != nil && chat.Type != telebot.ChatPrivate && c.Callback() == nil {
+				return next(c)
+			}
+
 			u, err := users.GetOrCreateUser(c.Get("ctx").(context.Context), sender.ID, sender.Username)
 			if err != nil {
 				slog.Error("failed to get or create user", "telegram_id", sender.ID, "err", err)
