@@ -569,7 +569,7 @@
 
           const badge = document.getElementById('spot-status-badge');
           if (spot.is_veteran === true) {
-            badge.innerText = userLang.startsWith('ru') || userLang.startsWith('kk') ? 'Постоянная (ветераны)' : 'Veteran Spot';
+            badge.innerText = userLang.startsWith('ru') || userLang.startsWith('kk') ? '📌 Постоянная точка' : '📌 Permanent Spot';
             badge.style.backgroundColor = 'rgba(245, 158, 11, 0.2)';
             badge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
             badge.style.color = '#fbbf24';
@@ -585,12 +585,12 @@
           }
 
           const btnSelect = document.getElementById('btn-select');
-          if (spot.is_veteran === true) {
+          if (spot.is_veteran === true && mode !== 'admin' && mode !== 'schedule') {
             btnSelect.disabled = true;
             btnSelect.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
             btnSelect.style.boxShadow = 'none';
             btnSelect.style.cursor = 'not-allowed';
-            btnSelect.innerHTML = userLang.startsWith('ru') || userLang.startsWith('kk') ? '👵 Точка ветеранов (без брони)' : '👵 Veteran Spot (no booking)';
+            btnSelect.innerHTML = userLang.startsWith('ru') || userLang.startsWith('kk') ? '📌 Постоянная точка (без брони)' : '📌 Permanent Spot (no booking)';
           } else if (spot.allowed === false) {
             btnSelect.disabled = true;
             btnSelect.style.background = 'linear-gradient(135deg, #374151 0%, #1f2937 100%)';
