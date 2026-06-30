@@ -93,6 +93,14 @@ func (uc *Usecase) Start(ctx context.Context, u *user.User, payload string) (res
 		}, nil
 
 	case user.StatusActive:
+		if u.Name == "" {
+			_ = uc.state.SetState(ctx, u.TelegramID, keys.StateAuthInvitedName, uc.ttl)
+			return response.Reply{
+				Kind: response.KindSend,
+				Text: response.Text{Key: keys.TextAuthInvitedPromptName},
+			}, nil
+		}
+
 		var rows [][]response.Button
 
 		rows = append(rows, []response.Button{
